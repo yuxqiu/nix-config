@@ -1,5 +1,5 @@
 {
-  flake.modules.nixos.yuxqiu-cedrus =
+  flake.modules.nixos.bt-proximity-lock =
     { pkgs, ... }:
     let
       poll-interval-seconds = 5;
@@ -23,14 +23,20 @@
           locked_for_absence=false
 
           while true; do
-            if bluetoothctl info "$mac" 2>/dev/null | grep -q "Connected: yes"; then
-              misses=0
-              locked_for_absence=false
-            else
-              misses=$((misses + 1))
-              if [ "$misses" -ge ${toString misses-before-lock} ] && [ "$locked_for_absence" = false ]; then
-                loginctl lock-sessions
-                locked_for_absence=true
+            # BlueZ keeps reporting the last-known "Connected: no" for a
+            # device even with the adapter powered off, indistinguishable
+            # from the phone actually being out of range. Only treat
+            # absence as meaningful while the adapter itself is up.
+            if bluetoothctl show 2>/dev/null | grep -q "Powered: yes"; then
+              if bluetoothctl info "$mac" 2>/dev/null | grep -q "Connected: yes"; then
+                misses=0
+                locked_for_absence=false
+              else
+                misses=$((misses + 1))
+                if [ "$misses" -ge ${toString misses-before-lock} ] && [ "$locked_for_absence" = false ]; then
+                  loginctl lock-sessions
+                  locked_for_absence=true
+                fi
               fi
             fi
             sleep ${toString poll-interval-seconds}

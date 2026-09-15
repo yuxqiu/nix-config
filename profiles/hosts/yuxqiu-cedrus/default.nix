@@ -43,6 +43,7 @@
         config.flake.modules.nixos.coredump
         config.flake.modules.nixos.geoclue
         config.flake.modules.nixos.usbguard
+        config.flake.modules.nixos.bt-proximity-lock
 
         # services
         config.flake.modules.nixos.time
