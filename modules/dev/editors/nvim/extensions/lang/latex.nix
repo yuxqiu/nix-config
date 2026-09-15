@@ -91,26 +91,34 @@
           enable = true;
           settings = {
             texlab = {
-              build = {
-                onSave = false;
-                forwardSearchAfter = false;
-                executable = "tectonic";
-                args = [
-                  "-X"
-                  "compile"
-                  "%f"
-                  "--untrusted"
-                  "--synctex"
-                  "--keep-logs"
-                  "--keep-intermediates"
-                ];
-              };
               diagnostics = {
                 ignoredPatterns = [ "Unused" ];
                 delay = 0.4;
               };
+              # texlab's \ref/\Cref inlay hints inline the full referenced
+              # figure/table caption as virtual text, which with wrap=true
+              # (above) can wrap across several screen lines mid-edit and
+              # make it look like the cursor jumped. Ask texlab to stop
+              # computing them...
+              inlayHints = {
+                labelDefinitions = false;
+                labelReferences = false;
+              };
             };
           };
+          # ...but that alone isn't enough: at buffer open, texlab can
+          # compute its first inlay-hint response using default settings
+          # before workspace/didChangeConfiguration settles, and Neovim only
+          # re-requests hints for viewport ranges it redraws afterward -- so
+          # stale hints near wherever the buffer opened can persist
+          # indefinitely. Belt-and-suspenders: also disable client-side, the
+          # instant texlab (specifically, not any other attached client)
+          # attaches to a buffer -- scoped here via texlab's own on_attach,
+          # not the generic onAttach in lsp.nix, since this is a texlab
+          # quirk, not something every language server needs.
+          onAttach.function = ''
+            vim.lsp.inlay_hint.enable(false, { bufnr = bufnr })
+          '';
         };
 
         plugins.conform-nvim.settings.formatters_by_ft = {

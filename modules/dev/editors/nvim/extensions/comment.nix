@@ -11,7 +11,23 @@
         settings = {
           padding = true;
           sticky = true;
-          pre_hook.__raw = "require('ts_context_commentstring.utils').get_cs";
+          # ts_context_commentstring only covers filetypes/injections in its own
+          # table; Comment.nvim's own fallback (Comment.ft.calculate) crashes
+          # when a filetype has no treesitter parser installed at all (e.g.
+          # lean, which relies on legacy syntax highlighting), since
+          # vim.treesitter.get_parser() returns nil instead of erroring. Own
+          # the fallback chain here instead of delegating into that: ts
+          # context -> Comment.nvim's static per-filetype table -> plain
+          # 'commentstring'.
+          pre_hook.__raw = ''
+            function(ctx)
+              local cs = require('ts_context_commentstring.integrations.comment_nvim').create_pre_hook()(ctx)
+              if cs then
+                return cs
+              end
+              return require('Comment.ft').get(vim.bo.filetype, ctx.ctype) or vim.bo.commentstring
+            end
+          '';
           opleader.line = "gc";
         };
       };

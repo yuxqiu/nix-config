@@ -94,9 +94,6 @@
           '';
 
           onAttach = ''
-            if client.name ~= "texlab" then
-              vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
-            end
             if client.server_capabilities.foldingRangeProvider then
               local win = vim.api.nvim_get_current_win()
               vim.wo[win].foldexpr = "v:lua.vim.lsp.foldexpr()"
