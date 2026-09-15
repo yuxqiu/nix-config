@@ -13,9 +13,9 @@
           lsp.enable = true;
         };
       };
-      # Append (not prepend) the nix lean4 package to PATH so elan —
-      # which respects each project's lean-toolchain pin — takes
-      # precedence. lean4 remains available as a fallback for standalone files.
-      programs.nixvim.dependencies.lean.packageFallback = true;
+      # elan (via toolchain) already provides lean/lake on PATH, respecting
+      # each project's lean-toolchain pin. Don't pull in nixvim's own
+      # lean4 package as an extra dependency.
+      programs.nixvim.dependencies.lean.enable = false;
     };
 }

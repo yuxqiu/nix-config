@@ -44,6 +44,7 @@
 
       hardware.cpu.intel.npu.enable = true;
       hardware.cpu.intel.updateMicrocode = true;
+      hardware.sensor.iio.enable = true;
 
       # enable hardware decoding
       hardware.graphics.extraPackages = with pkgs; [

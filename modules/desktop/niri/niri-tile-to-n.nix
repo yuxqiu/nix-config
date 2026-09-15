@@ -5,8 +5,8 @@
       niri-tweaks-src = pkgs.fetchFromGitHub {
         owner = "heyoeyo";
         repo = "niri_tweaks";
-        rev = "06b3556eaee6f99f2affd403fd56856b94c569ae"; # follow:branch main
-        hash = "sha256-Agt2+k/LJCuKocXCB+6CA1G5b61sINUBnV1ZgHt0nmI=";
+        rev = "9f43651be8ddb5f16f7c80daeb15b8c5dcd4dd23"; # follow:branch main
+        hash = "sha256-a1QSTfcO1xC1OS7THxXEeu/s68Lb7cf0a1lQ8epVJ58=";
       };
 
       niri-tile-to-n = pkgs.writeShellApplication {
