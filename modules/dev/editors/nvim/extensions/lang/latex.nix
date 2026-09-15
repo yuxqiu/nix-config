@@ -10,6 +10,34 @@
       programs.nixvim = {
         extraPlugins = with pkgs.vimPlugins; [ vimtex ];
 
+        # vimtex is loaded eagerly (extraPlugins puts it in the "start"
+        # pack), so its own ftplugin auto-inits on the first tex/latex/bib
+        # FileType event before the lz-n "before" hook below would run.
+        # These must be set here (like mapleader in ../default.nix) so
+        # vimtex sees them at that first init instead of falling back to
+        # its default compiler (latexmk, which isn't installed).
+        globals = {
+          vimtex_view_method = "sioyek";
+          vimtex_compiler_method = "tectonic";
+          vimtex_compiler_tectonic = {
+            options = [
+              "--untrusted"
+              "--synctex"
+              "--keep-logs"
+              "--keep-intermediates"
+              "-Z"
+              "continue-on-errors"
+            ];
+          };
+          tex_flavor = "latex";
+          vimtex_quickfix_mode = 2;
+          # Treesitter (see plugins.treesitter.grammarPackages below) owns
+          # highlighting for tex/latex; vimtex's own legacy syntax highlighter
+          # would otherwise clash with it and log a "Syntax highlighting is
+          # controlled by Treesitter!" error on every tex buffer.
+          vimtex_syntax_enabled = 0;
+        };
+
         plugins.lz-n.plugins = [
           {
             __unkeyed-1 = "vimtex";
@@ -18,17 +46,6 @@
               "latex"
               "bib"
             ];
-            before.__raw = ''
-              function()
-                vim.g.vimtex_view_method = "sioyek"
-                vim.g.vimtex_compiler_method = "tectonic"
-                vim.g.vimtex_compiler_tectonic = {
-                  options = { "--untrusted", "--synctex", "--keep-logs", "--keep-intermediates", "-Z", "continue-on-errors" },
-                }
-                vim.g.tex_flavor = "latex"
-                vim.g.vimtex_quickfix_mode = 2
-              end
-            '';
             after.__raw = ''
               function()
                 vim.fn["vimtex#init"]()
