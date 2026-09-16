@@ -77,7 +77,7 @@ in
         hmChecks = lib.mapAttrs' (
           name: _:
           lib.nameValuePair "home-${name}" (
-            pkgs.runCommandNoCC "check-home-${name}" { } ''
+            pkgs.runCommand "check-home-${name}" { } ''
               test -e ${config.flake.homeConfigurations.${name}.activationPackage}
               touch "$out"
             ''
@@ -87,7 +87,7 @@ in
         nixosChecks = lib.mapAttrs' (
           name: _:
           lib.nameValuePair "nixos-${name}" (
-            pkgs.runCommandNoCC "check-nixos-${name}" { } ''
+            pkgs.runCommand "check-nixos-${name}" { } ''
               test -e ${config.flake.nixosConfigurations.${name}.config.system.build.toplevel}
               touch "$out"
             ''

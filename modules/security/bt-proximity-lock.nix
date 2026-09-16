@@ -10,6 +10,7 @@
         runtimeInputs = [
           pkgs.bluez
           pkgs.systemd
+          pkgs.gawk
         ];
         text = ''
           set -euo pipefail
@@ -21,8 +22,28 @@
           mac=$(cat /run/secrets/aux_token)
           misses=0
           locked_for_absence=false
+          # Never count misses until we've seen one confirmed "connected"
+          # reading. Without this, restarting this service (e.g. on
+          # nixos-rebuild switch) or unlocking the session races Bluetooth
+          # reconnection: the phone reads as absent for a few seconds and
+          # we'd lock again before it has a chance to reconnect.
+          armed=false
+          prev_locked_hint=""
 
           while true; do
+            # Find the seat-attached (graphical) session, not any manager
+            # sessions, without hardcoding a username.
+            session=$(loginctl list-sessions --no-legend 2>/dev/null | awk '$4 != "-" {print $1; exit}')
+            if [ -n "$session" ]; then
+              locked_hint=$(loginctl show-session "$session" -p LockedHint --value 2>/dev/null || true)
+              if [ "$prev_locked_hint" = "yes" ] && [ "$locked_hint" = "no" ]; then
+                armed=false
+                misses=0
+                locked_for_absence=false
+              fi
+              prev_locked_hint="$locked_hint"
+            fi
+
             # BlueZ keeps reporting the last-known "Connected: no" for a
             # device even with the adapter powered off, indistinguishable
             # from the phone actually being out of range. Only treat
@@ -31,7 +52,8 @@
               if bluetoothctl info "$mac" 2>/dev/null | grep -q "Connected: yes"; then
                 misses=0
                 locked_for_absence=false
-              else
+                armed=true
+              elif [ "$armed" = true ]; then
                 misses=$((misses + 1))
                 if [ "$misses" -ge ${toString misses-before-lock} ] && [ "$locked_for_absence" = false ]; then
                   loginctl lock-sessions
