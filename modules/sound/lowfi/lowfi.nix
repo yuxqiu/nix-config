@@ -4,7 +4,7 @@
 }:
 {
   flake.modules.homeManager.lowfi =
-    { pkgs, config, ... }:
+    { pkgs, ... }:
     let
       lowfi = pkgs.lowfi.overrideAttrs (old: {
         nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ pkgs.makeWrapper ];
@@ -15,23 +15,17 @@
           ''}
         '';
       });
-      trackList = ./lofigirl.txt;
+      trackList = "${pkgs.lowfi.src}/data/archive.txt";
 
-      # note: must symlink the txt as the created dbus name is directly related
-      # to the path of the provided track list
       lofiWrapped = pkgs.writeShellApplication {
         name = "lofigirl";
         runtimeInputs = [ lowfi ];
         text = ''
-          exec lowfi --track-list "${config.xdg.configHome}/lofi/lofigirl.txt" "$@"
+          exec lowfi --track-list "${trackList}" "$@"
         '';
       };
     in
     {
-      xdg.configFile."lofi/lofigirl.txt" = {
-        source = trackList;
-      };
-
       home.packages = [
         lowfi
         lofiWrapped

@@ -2,69 +2,167 @@
   flake.modules.nixos.bt-proximity-lock =
     { pkgs, ... }:
     let
-      poll-interval-seconds = 5;
-      misses-before-lock = 3;
+      # BlueZ never invalidates a bonded device's cached RSSI on its own
+      # (its "temporary device" expiry only applies to unpaired devices),
+      # so a stale reading looks identical to a live one. The signal's
+      # value is the only real freshness signal: react to it weakening,
+      # not just to it existing.
+      rssi-threshold-dbm = -80;
+      # A single weak reading near the threshold is often just multipath
+      # fading or body-blocking, not the device actually leaving - require
+      # a couple of consecutive weak readings before treating it as gone.
+      weak-readings-before-lock = 3;
+      loginctl = "${pkgs.systemd}/bin/loginctl";
 
-      bt-proximity-lock = pkgs.writeShellApplication {
-        name = "bt-proximity-lock";
-        runtimeInputs = [
-          pkgs.bluez
-          pkgs.systemd
-          pkgs.gawk
-        ];
-        text = ''
-          set -euo pipefail
+      bt-proximity-lock =
+        pkgs.writers.writePython3Bin "bt-proximity-lock"
+          {
+            libraries = [ pkgs.python3Packages.dbus-next ];
+            flakeIgnore = [
+              "E501" # long lines
+            ];
+          }
+          ''
+            import asyncio
+            import subprocess
+            import sys
 
-          # The tracked device's MAC lives in a sops secret under a
-          # deliberately generic key: it's a stable identifier for a
-          # specific device, so its key name shouldn't advertise what
-          # it's for in the (public, plaintext-keyed) sops file.
-          mac=$(cat /run/secrets/aux_token)
-          misses=0
-          locked_for_absence=false
-          # Never count misses until we've seen one confirmed "connected"
-          # reading. Without this, restarting this service (e.g. on
-          # nixos-rebuild switch) or unlocking the session races Bluetooth
-          # reconnection: the phone reads as absent for a few seconds and
-          # we'd lock again before it has a chance to reconnect.
-          armed=false
-          prev_locked_hint=""
+            from dbus_next.aio import MessageBus
+            from dbus_next.constants import BusType
 
-          while true; do
-            # Find the seat-attached (graphical) session, not any manager
-            # sessions, without hardcoding a username.
-            session=$(loginctl list-sessions --no-legend 2>/dev/null | awk '$4 != "-" {print $1; exit}')
-            if [ -n "$session" ]; then
-              locked_hint=$(loginctl show-session "$session" -p LockedHint --value 2>/dev/null || true)
-              if [ "$prev_locked_hint" = "yes" ] && [ "$locked_hint" = "no" ]; then
-                armed=false
-                misses=0
-                locked_for_absence=false
-              fi
-              prev_locked_hint="$locked_hint"
-            fi
+            # The tracked device's MAC lives in a sops secret under a
+            # deliberately generic key: it's a stable identifier for a specific
+            # device, so its key name shouldn't advertise what it's for in the
+            # (public, plaintext-keyed) sops file.
+            MAC_FILE = "/run/secrets/aux_token"
+            RSSI_THRESHOLD_DBM = ${toString rssi-threshold-dbm}
+            WEAK_READINGS_BEFORE_LOCK = ${toString weak-readings-before-lock}
+            LOGINCTL = "${loginctl}"
 
-            # BlueZ keeps reporting the last-known "Connected: no" for a
-            # device even with the adapter powered off, indistinguishable
-            # from the phone actually being out of range. Only treat
-            # absence as meaningful while the adapter itself is up.
-            if bluetoothctl show 2>/dev/null | grep -q "Powered: yes"; then
-              if bluetoothctl info "$mac" 2>/dev/null | grep -q "Connected: yes"; then
-                misses=0
-                locked_for_absence=false
-                armed=true
-              elif [ "$armed" = true ]; then
-                misses=$((misses + 1))
-                if [ "$misses" -ge ${toString misses-before-lock} ] && [ "$locked_for_absence" = false ]; then
-                  loginctl lock-sessions
-                  locked_for_absence=true
-                fi
-              fi
-            fi
-            sleep ${toString poll-interval-seconds}
-          done
-        '';
-      };
+
+            def read_mac():
+                with open(MAC_FILE) as f:
+                    return f.read().strip()
+
+
+            def mac_to_device_path(adapter_path, mac):
+                return f"{adapter_path}/dev_{mac.replace(':', '_')}"
+
+
+            async def find_adapter_path(bus):
+                introspection = await bus.introspect("org.bluez", "/")
+                root = bus.get_proxy_object("org.bluez", "/", introspection)
+                manager = root.get_interface("org.freedesktop.DBus.ObjectManager")
+                objects = await manager.call_get_managed_objects()
+                for path, ifaces in objects.items():
+                    if "org.bluez.Adapter1" in ifaces:
+                        return path
+                raise RuntimeError("no Bluetooth adapter found")
+
+
+            def is_present(rssi):
+                return rssi is not None and rssi.value >= RSSI_THRESHOLD_DBM
+
+
+            async def main():
+                mac = read_mac()
+                bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
+                adapter_path = await find_adapter_path(bus)
+                device_path = mac_to_device_path(adapter_path, mac)
+
+                adapter_introspection = await bus.introspect("org.bluez", adapter_path)
+                adapter_obj = bus.get_proxy_object("org.bluez", adapter_path, adapter_introspection)
+                adapter = adapter_obj.get_interface("org.bluez.Adapter1")
+                adapter_props = adapter_obj.get_interface("org.freedesktop.DBus.Properties")
+
+                device_introspection = await bus.introspect("org.bluez", device_path)
+                device_obj = bus.get_proxy_object("org.bluez", device_path, device_introspection)
+                device_props = device_obj.get_interface("org.freedesktop.DBus.Properties")
+
+                # Three states, not a bool: only a present -> absent
+                # transition triggers a lock, and only once. A fresh start
+                # ("unknown") can't lock off a stale reading, and staying
+                # absent can't repeat-lock - both fall out of the
+                # transition rule itself, no separate flags needed.
+                #
+                # Purely reactive, no timeout fallback: a device that goes
+                # silent without ever reporting one final weak reading
+                # (e.g. Bluetooth switched off outright) won't be detected.
+                state = {"presence": "unknown", "weak_streak": 0}
+
+                def on_device_props_changed(interface, changed, invalidated):
+                    if interface != "org.bluez.Device1":
+                        return
+                    if "RSSI" not in changed:
+                        return
+                    rssi = changed["RSSI"]
+                    if is_present(rssi):
+                        state["presence"] = "present"
+                        state["weak_streak"] = 0
+                        return
+                    state["weak_streak"] += 1
+                    if state["weak_streak"] < WEAK_READINGS_BEFORE_LOCK:
+                        return
+                    if state["presence"] == "present":
+                        print(
+                            f"locking: RSSI={rssi.value} below threshold "
+                            f"{RSSI_THRESHOLD_DBM} for {state['weak_streak']} readings",
+                            file=sys.stderr,
+                            flush=True,
+                        )
+                        subprocess.run([LOGINCTL, "lock-sessions"], check=False)
+                    state["presence"] = "absent"
+
+                device_props.on_properties_changed(on_device_props_changed)
+
+                # BlueZ ties a discovery session to the client that
+                # requested it, so keeping this process's connection open
+                # is what keeps RSSI updates flowing. Re-issued when the
+                # adapter is (re-)powered on, since that drops any
+                # existing session along with the radio itself.
+                async def ensure_discovery():
+                    try:
+                        discovering = (
+                            await adapter_props.call_get("org.bluez.Adapter1", "Discovering")
+                        ).value
+                        if not discovering:
+                            await adapter.call_start_discovery()
+                    except Exception:
+                        pass
+
+                def on_adapter_props_changed(interface, changed, invalidated):
+                    if interface != "org.bluez.Adapter1":
+                        return
+                    powered = changed.get("Powered")
+                    if powered is not None and powered.value:
+                        asyncio.create_task(ensure_discovery())
+
+                adapter_props.on_properties_changed(on_adapter_props_changed)
+
+                # Seed from whatever BlueZ already knows, in case the
+                # device was already visible before this started.
+                try:
+                    current = await device_props.call_get_all("org.bluez.Device1")
+                    if is_present(current.get("RSSI")):
+                        state["presence"] = "present"
+                except Exception:
+                    pass
+
+                try:
+                    if (
+                        await adapter_props.call_get("org.bluez.Adapter1", "Powered")
+                    ).value:
+                        await ensure_discovery()
+                except Exception:
+                    pass
+
+                # Everything from here is driven by the signal handlers
+                # above; nothing left to do proactively.
+                await asyncio.Event().wait()
+
+
+            asyncio.run(main())
+          '';
     in
     {
       # Runs as its own unprivileged system account rather than the
