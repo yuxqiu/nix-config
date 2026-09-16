@@ -1,7 +1,7 @@
 {
   "currentThemeName": "custom",
   "currentThemeCategory": "registry",
-  "customThemeFile": "/nix/store/sxlrh0j4fw8qk6cvis3wxxcz3wy8ng0b-source/themes/catppuccin/theme.json",
+  "customThemeFile": "/nix/store/w5j1k330pipcmhfh31db8pinssl3x922-source/themes/catppuccin/theme.json",
   "registryThemeVariants": {
     "catppuccin": {
       "dark": {
@@ -163,7 +163,6 @@
   "dockAutoHide": true,
   "lockScreenShowMediaPlayer": false,
   "lockScreenShowWeather": false,
-  "lockScreenPowerOffMonitorsOnLock": true,
   "enableFprint": true,
   "maxFprintTries": 3,
   "notificationCompactMode": true,
@@ -175,42 +174,6 @@
       "matchType": "contains",
       "pattern": "niri",
       "urgency": "default"
-    }
-  ],
-  "dankIslandBarId": "default",
-  "dankIslandReserveHeight": 24,
-  "dankIslandOuterGap": 0,
-  "dankIslandPalette": "dim",
-  "dankIslandTransparency": 0.6,
-  "dankIslandHomeCompactTight": true,
-  "dankIslandHomeLayout": [
-    {
-      "enabled": true,
-      "id": "media"
-    },
-    {
-      "enabled": true,
-      "id": "clock"
-    },
-    {
-      "enabled": false,
-      "id": "weather"
-    },
-    {
-      "enabled": true,
-      "id": "status"
-    },
-    {
-      "enabled": false,
-      "id": "volume"
-    },
-    {
-      "enabled": false,
-      "id": "brightness"
-    },
-    {
-      "enabled": true,
-      "id": "notifications"
     }
   ],
   "osdAlwaysShowValue": true,
@@ -295,7 +258,43 @@
       "visible": true,
       "widgetOutlineEnabled": false,
       "widgetPadding": 12,
-      "widgetTransparency": 0.3
+      "widgetTransparency": 0.3,
+      "island": true,
+      "islandReserveThickness": 24,
+      "islandOuterGap": 0,
+      "islandPalette": "dim",
+      "islandTransparency": 0.6,
+      "islandHomeCompactTight": true,
+      "islandHomeLayout": [
+        {
+          "enabled": true,
+          "id": "media"
+        },
+        {
+          "enabled": true,
+          "id": "clock"
+        },
+        {
+          "enabled": false,
+          "id": "weather"
+        },
+        {
+          "enabled": true,
+          "id": "status"
+        },
+        {
+          "enabled": false,
+          "id": "volume"
+        },
+        {
+          "enabled": false,
+          "id": "brightness"
+        },
+        {
+          "enabled": true,
+          "id": "notifications"
+        }
+      ]
     }
   ],
   "desktopClockCustomColor": {
@@ -413,5 +412,5 @@
     }
   },
   "frameMode": "separate",
-  "configVersion": 17
+  "configVersion": 18
 }
