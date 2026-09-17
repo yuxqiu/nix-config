@@ -9,9 +9,10 @@
       # not just to it existing.
       rssi-threshold-dbm = -80;
       # A single weak reading near the threshold is often just multipath
-      # fading or body-blocking, not the device actually leaving - require
-      # a couple of consecutive weak readings before treating it as gone.
-      weak-readings-before-lock = 3;
+      # fading or body-blocking, not the device actually leaving - confirm
+      # it with a few quick active reads rather than trusting one sample.
+      confirm-poll-interval-seconds = 3;
+      confirm-polls-required = 2;
       loginctl = "${pkgs.systemd}/bin/loginctl";
 
       bt-proximity-lock =
@@ -36,7 +37,8 @@
             # (public, plaintext-keyed) sops file.
             MAC_FILE = "/run/secrets/aux_token"
             RSSI_THRESHOLD_DBM = ${toString rssi-threshold-dbm}
-            WEAK_READINGS_BEFORE_LOCK = ${toString weak-readings-before-lock}
+            CONFIRM_POLL_INTERVAL_SECONDS = ${toString confirm-poll-interval-seconds}
+            CONFIRM_POLLS_REQUIRED = ${toString confirm-polls-required}
             LOGINCTL = "${loginctl}"
 
 
@@ -79,39 +81,63 @@
                 device_obj = bus.get_proxy_object("org.bluez", device_path, device_introspection)
                 device_props = device_obj.get_interface("org.freedesktop.DBus.Properties")
 
-                # Three states, not a bool: only a present -> absent
-                # transition triggers a lock, and only once. A fresh start
-                # ("unknown") can't lock off a stale reading, and staying
-                # absent can't repeat-lock - both fall out of the
-                # transition rule itself, no separate flags needed.
-                #
-                # Purely reactive, no timeout fallback: a device that goes
-                # silent without ever reporting one final weak reading
-                # (e.g. Bluetooth switched off outright) won't be detected.
-                state = {"presence": "unknown", "weak_streak": 0}
+                # Presence is tri-state, not a bool: only a present ->
+                # absent transition ever locks, and only once - a fresh
+                # start ("unknown") can't lock off a stale reading, and
+                # staying absent can't repeat-lock. A single weak RSSI
+                # reading only starts a short burst of active confirmation
+                # reads rather than locking immediately (one weak sample is
+                # often just multipath fading, not a real departure) or
+                # waiting for a second natural signal (gaps of up to ~90s
+                # between readings are normal for a stationary device). A
+                # device that goes silent without ever reporting one weak
+                # reading at all (e.g. Bluetooth switched off outright)
+                # isn't detected - there's no fallback timeout for that.
+                state = {"presence": "unknown", "confirming": False}
+
+                async def confirm_departure():
+                    if state["confirming"]:
+                        return
+                    state["confirming"] = True
+                    try:
+                        weak_count = 0
+                        while True:
+                            await asyncio.sleep(CONFIRM_POLL_INTERVAL_SECONDS)
+                            try:
+                                rssi = (
+                                    await device_props.call_get_all("org.bluez.Device1")
+                                ).get("RSSI")
+                            except Exception:
+                                rssi = None
+                            if is_present(rssi):
+                                state["presence"] = "present"
+                                return
+                            weak_count += 1
+                            if weak_count >= CONFIRM_POLLS_REQUIRED:
+                                if state["presence"] == "present":
+                                    print(
+                                        f"locking: RSSI={rssi.value if rssi else None} "
+                                        f"confirmed weak over {weak_count} active reads",
+                                        file=sys.stderr,
+                                        flush=True,
+                                    )
+                                    subprocess.run(
+                                        [LOGINCTL, "lock-sessions"], check=False
+                                    )
+                                state["presence"] = "absent"
+                                return
+                    finally:
+                        state["confirming"] = False
 
                 def on_device_props_changed(interface, changed, invalidated):
                     if interface != "org.bluez.Device1":
                         return
                     if "RSSI" not in changed:
                         return
-                    rssi = changed["RSSI"]
-                    if is_present(rssi):
+                    if is_present(changed["RSSI"]):
                         state["presence"] = "present"
-                        state["weak_streak"] = 0
-                        return
-                    state["weak_streak"] += 1
-                    if state["weak_streak"] < WEAK_READINGS_BEFORE_LOCK:
-                        return
-                    if state["presence"] == "present":
-                        print(
-                            f"locking: RSSI={rssi.value} below threshold "
-                            f"{RSSI_THRESHOLD_DBM} for {state['weak_streak']} readings",
-                            file=sys.stderr,
-                            flush=True,
-                        )
-                        subprocess.run([LOGINCTL, "lock-sessions"], check=False)
-                    state["presence"] = "absent"
+                    elif state["presence"] == "present" and not state["confirming"]:
+                        asyncio.create_task(confirm_departure())
 
                 device_props.on_properties_changed(on_device_props_changed)
 
