@@ -11,8 +11,8 @@
       # A single weak reading near the threshold is often just multipath
       # fading or body-blocking, not the device actually leaving - confirm
       # it with a few quick active reads rather than trusting one sample.
-      confirm-poll-interval-seconds = 3;
-      confirm-polls-required = 2;
+      confirm-poll-interval-seconds = 10;
+      confirm-polls-required = 3;
       loginctl = "${pkgs.systemd}/bin/loginctl";
 
       bt-proximity-lock =

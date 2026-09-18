@@ -1,7 +1,6 @@
 {
   "currentThemeName": "custom",
-  "currentThemeCategory": "registry",
-  "customThemeFile": "/nix/store/w5j1k330pipcmhfh31db8pinssl3x922-source/themes/catppuccin/theme.json",
+  "customThemeFile": "/nix/store/9wff0hpnjk2yw56kg8fhab78lpwmhbd4-source/themes/catppuccin/theme.json",
   "registryThemeVariants": {
     "catppuccin": {
       "dark": {
@@ -10,16 +9,86 @@
       }
     }
   },
-  "runUserMatugenTemplates": false,
-  "popupTransparency": 0.6,
-  "cornerRadius": 12,
+  "radiusStrength": 38,
   "clockFormat": "24h",
   "showSeconds": true,
-  "animationSpeed": 2,
+  "animationDuration": 500,
+  "blurBorderOpacity": 0.5,
+  "greeterEnableFprint": true,
+  "weatherEnabled": false,
+  "lockScreenShowWeather": false,
+  "powerActionHoldDuration": 1,
+  "dockConfigs": [
+    {
+      "id": "dock",
+      "name": "Dock",
+      "enabled": true,
+      "screenPreferences": ["all"],
+      "showOnLastDisplay": true,
+      "position": 1,
+      "mode": "compact",
+      "taskbarAlign": "center",
+      "widgetExpansion": "popout",
+      "iconSize": 40,
+      "spacing": 4,
+      "itemSpacing": 4,
+      "margin": 0,
+      "bottomGap": 0,
+      "transparency": 1,
+      "followInterfaceStyle": false,
+      "autoHide": true,
+      "smartAutoHide": false,
+      "useOverlayLayer": false,
+      "editOnRightClick": false,
+      "showOnFullscreen": false,
+      "openOnOverview": false,
+      "groupByApp": false,
+      "separatePinnedAndRunningApps": false,
+      "restoreSpecialWorkspaceOnClick": false,
+      "isolateDisplays": false,
+      "indicatorStyle": "circle",
+      "borderEnabled": false,
+      "borderColor": "surfaceText",
+      "borderOpacity": 1,
+      "borderThickness": 1,
+      "launcherEnabled": false,
+      "launcherLogoMode": "apps",
+      "launcherLogoCustomPath": "",
+      "launcherLogoColorOverride": "",
+      "launcherLogoSizeOffset": 0,
+      "launcherLogoBrightness": 0.5,
+      "launcherLogoContrast": 1,
+      "maxVisibleApps": 0,
+      "maxVisibleRunningApps": 0,
+      "showOverflowBadge": true,
+      "showTrash": false,
+      "trashFileManager": "default",
+      "trashCustomCommand": "",
+      "order": [],
+      "widgets": [
+        {
+          "id": "dock_launcher",
+          "widgetId": "dockLauncher",
+          "enabled": true
+        },
+        {
+          "id": "dock_apps",
+          "widgetId": "appsDock",
+          "enabled": true
+        },
+        {
+          "id": "dock_trash",
+          "widgetId": "dockTrash",
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "currentThemeCategory": "registry",
+  "runUserMatugenTemplates": false,
+  "popupTransparency": 0.6,
   "barElevationEnabled": false,
   "blurEnabled": true,
-  "blurBorderOpacity": 0.5,
-  "controlCenterShowVpnIcon": false,
   "controlCenterWidgets": [
     {
       "enabled": true,
@@ -72,9 +141,6 @@
       "width": 25
     }
   ],
-  "workspaceOccupiedColorMode": "default",
-  "keyboardLayoutNameCompactMode": true,
-  "runningAppsCurrentWorkspace": false,
   "appIdSubstitutions": [
     {
       "pattern": "Spotify",
@@ -102,14 +168,12 @@
       "type": "regex"
     }
   ],
-  "greeterEnableFprint": true,
   "dankLauncherV2Size": "micro",
   "dankLauncherV2ShowFooter": false,
   "dankLauncherV2UnloadOnClose": true,
   "dankLauncherV2IncludeFilesInAll": true,
   "dankLauncherV2IncludeFoldersInAll": true,
   "launcherStyle": "spotlight",
-  "weatherEnabled": false,
   "dashTabs": [
     {
       "enabled": true,
@@ -132,6 +196,62 @@
       "id": "settings"
     }
   ],
+  "dashCards": [
+    {
+      "id": "user",
+      "w": 3,
+      "h": 1
+    },
+    {
+      "id": "clock",
+      "w": 3,
+      "h": 1
+    },
+    {
+      "id": "weather",
+      "w": 1,
+      "h": 1
+    },
+    {
+      "id": "notifications",
+      "w": 3,
+      "h": 3
+    },
+    {
+      "id": "calendar",
+      "w": 3,
+      "h": 3
+    },
+    {
+      "id": "sysmon",
+      "w": 3,
+      "h": 1
+    },
+    {
+      "id": "network",
+      "w": 2,
+      "h": 1
+    },
+    {
+      "id": "battery",
+      "w": 1,
+      "h": 1
+    }
+  ],
+  "dashOptions": {
+    "media": {
+      "lyrics": false
+    },
+    "notifications": {
+      "panelColumns": 3
+    },
+    "user": {
+      "hostname": false
+    },
+    "clock": {
+      "seconds": true
+    }
+  },
   "networkPreference": "wifi",
   "cursorSettings": {
     "dwl": {
@@ -159,10 +279,7 @@
   "lockBeforeSuspend": true,
   "runDmsMatugenTemplates": false,
   "matugenTemplateNeovim": true,
-  "showDock": true,
-  "dockAutoHide": true,
   "lockScreenShowMediaPlayer": false,
-  "lockScreenShowWeather": false,
   "enableFprint": true,
   "maxFprintTries": 3,
   "notificationCompactMode": true,
@@ -178,7 +295,6 @@
   ],
   "osdAlwaysShowValue": true,
   "osdPowerProfileEnabled": true,
-  "powerActionHoldDuration": 1,
   "displayShowDisconnected": true,
   "barConfigs": [
     {
@@ -214,9 +330,49 @@
       "gothCornersEnabled": false,
       "id": "default",
       "innerPadding": 4,
+      "island": true,
+      "islandHomeCompactTight": true,
+      "islandHomeLayout": [
+        {
+          "id": "media",
+          "enabled": true
+        },
+        {
+          "id": "clock",
+          "enabled": true
+        },
+        {
+          "id": "weather",
+          "enabled": true
+        },
+        {
+          "id": "status",
+          "enabled": true
+        },
+        {
+          "id": "volume",
+          "enabled": false
+        },
+        {
+          "id": "brightness",
+          "enabled": false
+        },
+        {
+          "id": "notifications",
+          "enabled": true
+        }
+      ],
+      "islandOuterGap": 0,
+      "islandPalette": "dim",
+      "islandReserveThickness": 24,
+      "islandTransparency": 0.6,
       "leftWidgets": [
         "launcherButton",
-        "workspaceSwitcher",
+        {
+          "id": "workspaceSwitcher",
+          "enabled": true,
+          "workspaceOccupiedColorMode": "default"
+        },
         {
           "enabled": true,
           "focusedWindowCompactMode": false,
@@ -233,7 +389,6 @@
       "popupGapsAuto": true,
       "popupGapsManual": 4,
       "position": 0,
-      "removeWidgetPadding": false,
       "rightWidgets": [
         {
           "enabled": true,
@@ -259,70 +414,9 @@
       "widgetOutlineEnabled": false,
       "widgetPadding": 12,
       "widgetTransparency": 0.3,
-      "island": true,
-      "islandReserveThickness": 24,
-      "islandOuterGap": 0,
-      "islandPalette": "dim",
-      "islandTransparency": 0.6,
-      "islandHomeCompactTight": true,
-      "islandHomeLayout": [
-        {
-          "enabled": true,
-          "id": "media"
-        },
-        {
-          "enabled": true,
-          "id": "clock"
-        },
-        {
-          "enabled": false,
-          "id": "weather"
-        },
-        {
-          "enabled": true,
-          "id": "status"
-        },
-        {
-          "enabled": false,
-          "id": "volume"
-        },
-        {
-          "enabled": false,
-          "id": "brightness"
-        },
-        {
-          "enabled": true,
-          "id": "notifications"
-        }
-      ]
+      "followInterfaceStyle": false
     }
   ],
-  "desktopClockCustomColor": {
-    "r": 1,
-    "g": 1,
-    "b": 1,
-    "a": 1,
-    "hsvHue": -1,
-    "hsvSaturation": 0,
-    "hsvValue": 1,
-    "hslHue": -1,
-    "hslSaturation": 0,
-    "hslLightness": 1,
-    "valid": true
-  },
-  "systemMonitorCustomColor": {
-    "r": 1,
-    "g": 1,
-    "b": 1,
-    "a": 1,
-    "hsvHue": -1,
-    "hsvSaturation": 0,
-    "hsvValue": 1,
-    "hslHue": -1,
-    "hslSaturation": 0,
-    "hslLightness": 1,
-    "valid": true
-  },
   "desktopWidgetInstances": [
     {
       "config": {
@@ -404,6 +498,9 @@
     },
     "dms_settings_search": {
       "trigger": "?"
+    },
+    "dms_power": {
+      "trigger": "pw"
     }
   },
   "launcherPluginVisibility": {
@@ -412,5 +509,5 @@
     }
   },
   "frameMode": "separate",
-  "configVersion": 18
+  "configVersion": 26
 }
