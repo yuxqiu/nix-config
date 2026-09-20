@@ -1,6 +1,6 @@
 {
   flake.modules.homeManager.ghostty =
-    { lib, ... }:
+    { lib, pkgs, ... }:
     {
       programs.ghostty = {
         enable = true;
@@ -63,6 +63,15 @@
         TerminalApplication = "ghostty";
         TerminalService = "com.mitchellh.ghostty.desktop";
       };
+
+      # Debian's `x-terminal-emulator` alternatives convention: some
+      # third-party apps probe for this name specifically rather than
+      # reading xdg-terminal-exec/kdeglobals.
+      home.packages = [
+        (pkgs.writeShellScriptBin "x-terminal-emulator" ''
+          exec ghostty "$@"
+        '')
+      ];
 
       wayland.windowManager.niri.settings.binds."Mod+Return" = {
         _props.hotkey-overlay-title = "Open a Terminal: ghostty";
