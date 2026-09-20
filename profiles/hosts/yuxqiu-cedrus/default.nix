@@ -189,7 +189,6 @@
         config.flake.modules.homeManager.json
         config.flake.modules.homeManager.css
         config.flake.modules.homeManager.lean
-        config.flake.modules.homeManager.entire
         config.flake.modules.homeManager.fence
         config.flake.modules.homeManager.hyperfine
         config.flake.modules.homeManager.poop
