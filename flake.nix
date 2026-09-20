@@ -61,24 +61,26 @@
       url = "github:Kyure-A/agent-skills-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    omp = {
-      url = "github:yuxqiu/omp-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     mdbrowse = {
       url = "github:yuxqiu/mdbrowse";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.inputs.systems.follows = "systems";
     };
-    terminal-browser = {
-      url = "github:yuxqiu/terminal-browser.nix";
+    llm-agents-nix = {
+      url = "github:numtide/llm-agents.nix";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.systems.follows = "systems";
     };
     nixvim = {
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
       inputs.systems.follows = "systems";
+    };
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     # All versions of every nixpkgs package that ever existed, fetched lazily.
     # See: https://fzakaria.com/2026/08/09/nixpkgs-multiverse-every-version-that-ever-existed
@@ -126,10 +128,6 @@
     };
     paseo = {
       url = "github:getpaseo/paseo?ref=v0.9.0-beta.2";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    rust-overlay = {
-      url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     edgepad = {

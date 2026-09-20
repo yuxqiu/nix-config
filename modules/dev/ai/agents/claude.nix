@@ -48,6 +48,11 @@
           settings = {
             includeCoAuthoredBy = false;
             permissions.defaultMode = "acceptEdits";
+            # https://code.claude.com/docs/en/data-usage
+            env = {
+              DISABLE_TELEMETRY = "1";
+              DISABLE_ERROR_REPORTING = "1";
+            };
             statusLine = {
               type = "command";
               command = "${statusline}/bin/claude-statusline";

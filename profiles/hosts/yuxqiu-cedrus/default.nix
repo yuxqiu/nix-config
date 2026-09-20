@@ -152,9 +152,10 @@
 
         # dev (ai)
         config.flake.modules.homeManager.agent-lsp
-        config.flake.modules.homeManager.browser
+        config.flake.modules.homeManager.agent-orchestrator
+        config.flake.modules.homeManager.agentsview
+        config.flake.modules.homeManager.agent-browser
         config.flake.modules.homeManager.harness
-        config.flake.modules.homeManager.herdr
         config.flake.modules.homeManager.hunk
         config.flake.modules.homeManager.mcp
         config.flake.modules.homeManager.skills
@@ -164,7 +165,6 @@
         config.flake.modules.homeManager.codex
         config.flake.modules.homeManager.devin
         config.flake.modules.homeManager.opencode
-        config.flake.modules.homeManager.omp
 
         # dev
         config.flake.modules.homeManager.editorconfig

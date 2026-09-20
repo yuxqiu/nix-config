@@ -3,7 +3,7 @@
   flake.modules.homeManager.mdbrowse =
     { config, pkgs, ... }:
     let
-      terminal-browser = inputs.terminal-browser.packages.${pkgs.stdenv.system}.default;
+      terminal-browser = inputs.llm-agents-nix.packages.${pkgs.stdenv.system}.terminal-browser;
       mdbrowseUnwrapped = inputs.mdbrowse.packages.${pkgs.stdenv.system}.default;
       mdbrowse = pkgs.writeShellApplication {
         name = "mdbrowse";
