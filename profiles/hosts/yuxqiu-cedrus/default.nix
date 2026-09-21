@@ -153,6 +153,7 @@
         config.flake.modules.homeManager.agent-lsp
         config.flake.modules.homeManager.agentsview
         config.flake.modules.homeManager.agent-browser
+        config.flake.modules.homeManager.kangentic
         config.flake.modules.homeManager.harness
         config.flake.modules.homeManager.hunk
         config.flake.modules.homeManager.mcp
