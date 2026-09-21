@@ -138,7 +138,6 @@
         config.flake.modules.homeManager.zoom
         config.flake.modules.homeManager.pointer
         config.flake.modules.homeManager.mdbrowse
-        config.flake.modules.homeManager.terminal-browser
         config.flake.modules.homeManager.quicksnip
         config.flake.modules.homeManager.sioyek
         config.flake.modules.homeManager.stylix
@@ -152,7 +151,6 @@
 
         # dev (ai)
         config.flake.modules.homeManager.agent-lsp
-        config.flake.modules.homeManager.agent-orchestrator
         config.flake.modules.homeManager.agentsview
         config.flake.modules.homeManager.agent-browser
         config.flake.modules.homeManager.harness

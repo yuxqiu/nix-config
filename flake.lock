@@ -609,11 +609,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789384071,
-        "narHash": "sha256-L2f/0r04q5C4T6RsexweotEWTqTU09hsYUs4+RMpsF0=",
+        "lastModified": 1789948079,
+        "narHash": "sha256-JJH6sLJCIdHf+U3ChpDstKepCzFAHKH8ZhGuwfZKzWs=",
         "owner": "yuxqiu",
         "repo": "mdbrowse",
-        "rev": "1ed8705d79467ca3943900eefb4969e0394f72f0",
+        "rev": "94ea12211684515a40ce357b0082bd43130d80b9",
         "type": "github"
       },
       "original": {
