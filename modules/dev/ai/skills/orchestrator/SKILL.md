@@ -21,6 +21,10 @@ work honest and the board state true.
   launch and control worker panes. If that check fails, say so and stop.
 - Assumes the `herdr` and `tsk-cli` skills for exact command syntax; load
   them if not already active.
+- Scope is the current project only — the repo your pane/cwd is in. Board-wide
+  reads (`tsk list --all --json`, `--desk`, `-p <other>`) are fine for
+  diagnostics, but never delegate, verify, commit, or merge a task from
+  another project — only report it to the user.
 
 ## Rules
 
