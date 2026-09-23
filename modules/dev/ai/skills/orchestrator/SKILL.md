@@ -74,12 +74,25 @@ Run every currently ready task concurrently, not one at a time.
    delegate — a task without a testable contract can't be verified later.
 3. Delegate: create a worktree (`herdr worktree create --cwd <repo> --branch
    task/<slug> --path <path> --no-focus`), split a pane into it, and start a
-   fresh worker agent there with the task's brief. Mark it `tsk status <id>
-   start`. Do not implement any of them yourself.
+fresh worker agent there with the task's brief. When you start it,
+   configure it to run at the same permission/autonomy level you yourself
+   are running under — using whatever mechanism that agent kind exposes for
+   this (a startup option, an initial mode selection, or equivalent) —
+   rather than leaving it on a stricter interactive-approval default. If it
+   still stalls on an approval-style prompt right after starting, resolve
+   that one bootstrapping prompt yourself by picking whatever option
+   matches your own autonomy level, then continue; that's not a genuine
+   blocked case needing inspection, which is reserved for a real question
+   or design choice the agent raises under the Rules above. None of this
+   relaxes "never bypass signing" or any other explicit safety rule,
+   regardless of autonomy level. Mark it `tsk status <id> start`. Do not
+   implement any of them yourself.
 4. When a worker hands back (`tsk status <id> review`, notes updated with its
    changes staged but left **uncommitted**), launch a fresh verification
    agent in the same worktree, in a new pane, with no memory of the
-   implementation. It must re-run every command the worker claims to have
+   implementation. Start it the same way as in step 3 — same
+   permission/autonomy level, same handling if it stalls on a bootstrapping
+   approval prompt. It must re-run every command the worker claims to have
    run, check exit codes itself, and read the real diff, not the worker's
    summary of it. If its verdict is PASS, it itself runs the single
    `git commit` for that task (one task, one commit) and records the hash in
