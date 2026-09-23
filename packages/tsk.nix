@@ -11,7 +11,7 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "tsk";
-  inherit version;
+  version = "0.11.6";
 
   src = fetchFromGitHub {
     owner = "smarzban";
