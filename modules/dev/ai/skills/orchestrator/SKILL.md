@@ -34,9 +34,10 @@ work honest and the board state true.
   verdict.
 - Communicate through the board, not chat: put every handoff on the tsk task
   itself. `tsk edit <id> --notes` **replaces the whole notes field** —
-  always `tsk list <id> --json` first and append to existing notes, never
-  overwrite blind. Use `tsk steps` for concrete checklist items, notes for
-  narrative summaries and verdicts, and commit messages or committed files
+  always `tsk list <id> --json` first and prepend new content above the
+  existing notes, never overwrite blind. Use `tsk steps` for concrete
+  checklist items, notes for narrative summaries and verdicts, and commit
+  messages or committed files
   (e.g. a plan under `docs/plans/`) for anything too large for notes.
 - One task = one commit, made by the verification agent, never by the worker
   or by you. Don't leave a task at `review` without a matching commit, and
@@ -88,7 +89,7 @@ Run every currently ready task concurrently, not one at a time.
    the real diff, not the worker's summary. If PASS, it runs the single
    `git commit` for that task itself and records the hash in the notes. If
    FAIL, it leaves everything uncommitted and records specific findings in
-   the notes. Either way it appends its verdict to the notes the same way
+   the notes. Either way it prepends its verdict to the notes the same way
    workers do.
 5. If verification fails, send a worker back into the same worktree to
    address the findings already on the task's notes (`tsk status <id> start`
@@ -111,7 +112,7 @@ Run every currently ready task concurrently, not one at a time.
    exactly (re-staging as needed) — never drop the user's changes or ask
    them to clear their tree first; if restoring the stash itself conflicts,
    stop and surface that too. After a clean merge: remove the worktree,
-   close its pane/workspace, delete the merged local branch, and append the
+   close its pane/workspace, delete the merged local branch, and prepend the
    final merge commit hash to the task's notes.
 9. If a pass finds nothing ready, nothing blocked-on-user, and nothing to
    verify, commit, or merge, don't report "nothing to do" and stop: call
