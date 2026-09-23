@@ -52,8 +52,21 @@ Run every currently ready task concurrently, not one at a time.
 1. `tsk list --ready --json` to find every ready task that isn't already
    started.
 2. For each: if its notes lack a clear problem statement and acceptance
-   criteria, refine it first (see the tsk-cli skill's "Refine a task"
-   workflow) — a task without a testable contract can't be verified later.
+   criteria, launch a freshly-started subagent to refine it — don't do the
+   grounding, proposing, or asking yourself. Give it the task ID and
+   pointers to neighbouring tasks/threads worth checking; it runs the
+   tsk-cli skill's "Refine a task" workflow end-to-end: grounds in code,
+   diverges on approaches, asks the user clarifying questions directly (it
+   has its own AskUserQuestion-style tool), gets a yes, and writes the
+   settled result back via `tsk edit`/`tsk add` itself. This is a
+   deliberate exception to "communicate through the board, not chat" below
+   — that rule governs implementation handoffs, but refinement needs a live
+   back-and-forth with the user that the board can't carry. Multiple tasks
+   needing refinement can be refined concurrently by separate subagents,
+   same as any other ready work. Once a refinement subagent reports back,
+   re-read `tsk list <id> --json` yourself to confirm the notes and
+   acceptance criteria actually landed before treating the task as ready to
+   delegate — a task without a testable contract can't be verified later.
 3. Delegate: create a worktree (`herdr worktree create --cwd <repo> --branch
    task/<slug> --path <path> --no-focus`), split a pane into it, and start a
    fresh worker agent there with the task's brief. Mark it `tsk status <id>
