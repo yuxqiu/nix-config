@@ -77,13 +77,12 @@ Run every currently ready task concurrently, not one at a time.
 3. Delegate: create a worktree (`herdr worktree create --cwd <repo> --branch
    task/<slug> --path <path> --no-focus`), split a pane into it, and start a
    fresh worker agent there with the task's brief. Configure it to run at
-   the same permission/autonomy level you yourself are running under
-   (whatever mechanism that agent kind exposes — startup option, initial
-   mode selection, or equivalent) rather than a stricter interactive-approval
-   default. If it stalls on an approval-style prompt right after starting,
-   resolve that one bootstrapping prompt yourself, matching your own
-   autonomy level, then mark it `tsk status <id> start`. Never bypass
-   signing or any other explicit safety rule regardless of autonomy level.
+   auto mode (`--permission-mode auto`, or that agent kind's equivalent)
+   rather than a stricter interactive-approval default. If it stalls on an
+   approval-style prompt right after starting, resolve that one
+   bootstrapping prompt yourself, matching your own autonomy level, then
+   mark it `tsk status <id> start`. Never bypass signing or any other
+   explicit safety rule regardless of autonomy level.
 4. When a worker hands back (`tsk status <id> review`, notes updated with its
    changes staged but left **uncommitted**), launch a fresh verification
    agent in the same worktree, in a new pane, with no memory of the
