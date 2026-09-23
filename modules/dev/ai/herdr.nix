@@ -18,6 +18,9 @@
           experimental.kitty_graphics = true;
           ui.sound.enabled = false;
           ui.toast.delivery = "terminal";
+          # Disable background network checks that phone home to herdr.dev.
+          update.version_check = false;
+          update.manifest_check = false;
           keys.command = [
             {
               key = "prefix+t";
