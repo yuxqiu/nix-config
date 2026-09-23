@@ -55,7 +55,8 @@ Run every currently ready task concurrently, not one at a time.
 1. `tsk list --ready --json` to find every ready task that isn't already
    started.
 2. For each: if its notes lack a clear problem statement and acceptance
-   criteria, split a pane in the current checkout (no worktree) and
+   criteria, create a worktree (`herdr worktree create --cwd <repo> --branch
+   plan/<slug> --path <path> --no-focus`), split a pane into it, and
    `herdr agent start` a planner agent there to refine it — don't ground,
    propose, or ask yourself. Give it the task ID and pointers to
    neighbouring tasks/threads worth checking; it runs the tsk-cli skill's
@@ -64,9 +65,10 @@ Run every currently ready task concurrently, not one at a time.
    AskUserQuestion-style tool), gets a yes, and writes the settled result
    back via `tsk edit`/`tsk add` itself (exception to "communicate through
    the board" — refinement needs live back-and-forth). No `--wait`: once the
-   planner reports back, re-read `tsk list <id> --json` yourself to
-   confirm the notes and acceptance criteria landed before treating the
-   task as ready to delegate.
+   planner reports back, re-read `tsk list <id> --json` yourself to confirm
+   the notes and acceptance criteria landed, then remove that worktree and
+   branch and close its pane — no merge/done gating, unlike implementation
+   worktrees.
 3. Delegate: create a worktree (`herdr worktree create --cwd <repo> --branch
    task/<slug> --path <path> --no-focus`), split a pane into it, and start a
    fresh worker agent there with the task's brief. Configure it to run at
