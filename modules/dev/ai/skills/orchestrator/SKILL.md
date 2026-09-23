@@ -62,11 +62,10 @@ Run every currently ready task concurrently, not one at a time.
    approaches, asks the user clarifying questions directly (its own
    AskUserQuestion-style tool), gets a yes, and writes the settled result
    back via `tsk edit`/`tsk add` itself (exception to "communicate through
-   the board" — refinement needs live back-and-forth). Refine multiple
-   tasks concurrently with separate subagents. Once a refinement subagent
-   reports back, re-read `tsk list <id> --json` yourself to confirm the
-   notes and acceptance criteria landed before treating the task as ready
-   to delegate.
+   the board" — refinement needs live back-and-forth). Once a refinement
+   subagent reports back, re-read `tsk list <id> --json` yourself to
+   confirm the notes and acceptance criteria landed before treating the
+   task as ready to delegate.
 3. Delegate: create a worktree (`herdr worktree create --cwd <repo> --branch
    task/<slug> --path <path> --no-focus`), split a pane into it, and start a
    fresh worker agent there with the task's brief. Configure it to run at
