@@ -72,6 +72,15 @@ Run every currently ready task concurrently, not one at a time.
    Leave the task at `review` with the verified evidence in its notes — do
    not move it to `done`.
 7. Repeat: as tasks finish and new ones turn ready, delegate those too.
+8. If a pass finds nothing ready, nothing blocked-on-user, and nothing to
+   verify or commit, don't report "nothing to do" and stop: call
+   `ScheduleWakeup` to re-run the loop. Use a short delay (60-120s), not the
+   tool's generic 20-30min idle default — the board is external state the
+   harness can't track, and `tsk list --ready --json` is a cheap local read,
+   which is exactly the case the tool's own docs carve out for a shorter
+   poll. Set `noop:true` when the re-check changes nothing and `noop:false`
+   the moment something does; only surface a message to the user on that
+   state change, not on every empty tick.
 
 ## Reporting
 
