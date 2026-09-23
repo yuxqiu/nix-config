@@ -15,6 +15,9 @@
             # Chinese dictionary
             fcitx5-pinyin-zhwiki
 
+            # Rounded-corner classic-ui theme
+            fcitx5-mellow-themes
+
             # Optional: GTK support for better integration in GTK apps
             fcitx5-gtk
 
@@ -49,7 +52,7 @@
               };
             };
             addons = {
-              classicui.globalSection.Theme = "default-dark";
+              classicui.globalSection.Theme = "mellow-graphite-dark";
               pinyin.globalSection.EmojiEnabled = "True";
 
               keyboard = {
