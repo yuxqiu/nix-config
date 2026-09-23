@@ -49,6 +49,7 @@
               };
             };
             addons = {
+              classicui.globalSection.Theme = "default-dark";
               pinyin.globalSection.EmojiEnabled = "True";
 
               keyboard = {
@@ -79,5 +80,7 @@
           };
         };
       };
+
+      stylix.targets.fcitx5.enable = false;
     };
 }
