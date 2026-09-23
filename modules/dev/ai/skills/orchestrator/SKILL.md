@@ -40,10 +40,15 @@ and the board state true.
   steps` for concrete checklist items, notes for narrative summaries and
   verdicts, and commit messages or committed files (e.g. a plan under
   `docs/plans/`) for anything too large to belong in a task's notes.
-- One task = one commit. Don't leave a task at `review` without a matching
-  commit, and don't bundle multiple tasks into one commit.
+- One task = one commit, made by the verification agent, never by the worker
+  or by you. Don't leave a task at `review` without a matching commit, and
+  don't bundle multiple tasks into one commit.
 - Never set a task to `done` yourself, even though nothing technically stops
   you. That status is the user's alone; your terminal state is `review`.
+- Merge and cleanup are gated strictly on a task reaching `done` — never on
+  `review` alone, and never on your own initiative. A worktree or branch for
+  a task that isn't yet `done` is never touched by that step, even if a
+  stacked sibling is ready to merge.
 
 ## Operating loop
 
@@ -71,22 +76,43 @@ Run every currently ready task concurrently, not one at a time.
    task/<slug> --path <path> --no-focus`), split a pane into it, and start a
    fresh worker agent there with the task's brief. Mark it `tsk status <id>
    start`. Do not implement any of them yourself.
-4. When a worker hands back (`tsk status <id> review`, notes updated),
-   launch a fresh verification agent in the same worktree, in a new pane,
-   with no memory of the implementation. It must re-run every command the
-   worker claims to have run, check exit codes itself, and read the real
-   diff, not the worker's summary of it. It appends its verdict to the
-   task's notes the same way.
-5. If verification fails, append its specific findings to the task's notes
-   and send a worker back into the same worktree to address them
-   (`tsk status <id> start` again if it had moved on). Don't redo the work
-   yourself.
-6. If verification passes, commit (one task, one commit) in the worktree.
-   Leave the task at `review` with the verified evidence in its notes — do
-   not move it to `done`.
+4. When a worker hands back (`tsk status <id> review`, notes updated with its
+   changes staged but left **uncommitted**), launch a fresh verification
+   agent in the same worktree, in a new pane, with no memory of the
+   implementation. It must re-run every command the worker claims to have
+   run, check exit codes itself, and read the real diff, not the worker's
+   summary of it. If its verdict is PASS, it itself runs the single
+   `git commit` for that task (one task, one commit) and records the hash in
+   the notes. If its verdict is FAIL, it leaves everything uncommitted and
+   records its specific findings in the notes instead. Either way, it
+   appends its verdict to the task's notes the same way workers do.
+5. If verification fails, send a worker back into the same worktree to
+   address the findings already on the task's notes (`tsk status <id> start`
+   again if it had moved on) — nothing is committed at this point. Don't
+   redo the work yourself.
+6. If verification passes, the verifier has already made the commit. Leave
+   the task at `review` with the verified evidence and commit hash in its
+   notes — do not move it to `done`.
 7. Repeat: as tasks finish and new ones turn ready, delegate those too.
-8. If a pass finds nothing ready, nothing blocked-on-user, and nothing to
-   verify or commit, don't report "nothing to do" and stop: call
+8. Merge + cleanup: on each loop pass, for every task at `done` (the user-set
+   status — never `review` alone, and never your own initiative) with a
+   branch that isn't merged yet, merge it into its base — `main`, or the
+   branch it stacked on for a shared-file dependency — merging stacked tasks
+   in dependency order. Prefer linear history: when the task's single commit
+   applies cleanly, cherry-pick or rebase it onto the current tip of the base
+   rather than making a merge commit. On any conflict during that
+   rebase/cherry-pick/merge, stop and surface it to the user with specifics
+   (which files, what conflicts) rather than resolving it yourself. If the
+   merge target has unrelated uncommitted local changes at merge time, stash
+   them, merge, then restore exactly (re-staging as needed) — never drop the
+   user's changes or ask them to clear their tree first; if restoring the
+   stash itself conflicts, stop and surface that too. After a clean merge:
+   remove the worktree, close its pane/workspace, delete the merged local
+   branch, and append the final merge commit hash to the task's notes. Never
+   touch the worktree or branch for a task that isn't yet `done`, even if a
+   stacked sibling of it is ready.
+9. If a pass finds nothing ready, nothing blocked-on-user, and nothing to
+   verify, commit, or merge, don't report "nothing to do" and stop: call
    `ScheduleWakeup` to re-run the loop. Use a short delay (60-120s), not the
    tool's generic 20-30min idle default — the board is external state the
    harness can't track, and `tsk list --ready --json` is a cheap local read,
