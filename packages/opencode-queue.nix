@@ -10,8 +10,8 @@ let
   src = fetchFromGitHub {
     owner = "mirsella";
     repo = "opencode-queue";
-    rev = "3096bcaf671594def5f682221ea494a8a618c597"; # follow:branch main
-    hash = "sha256-GihiCcZQjfdJD9Fi/5egNTQpjYEKmcIAZADBM9XPvb8=";
+    rev = "f2767db7162a06d669c501ccbca512e851cb9c4d"; # follow:branch main
+    hash = "sha256-tDrpe93QO4rVCKc/He/TgHEFU8ylErI0V6ippxf0BK4=";
   };
 
   nodeModules = stdenv.mkDerivation {

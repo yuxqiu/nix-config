@@ -174,12 +174,19 @@
         };
 
         plugins.telescope.extensions.fzf-native.enable = true;
+        plugins.telescope.extensions.undo.enable = true;
 
         keymaps = [
           {
             key = "<C-f>";
             action = "/";
             options.desc = "Search in file";
+          }
+          {
+            mode = "n";
+            key = "<leader>ut";
+            action = "<cmd>Telescope undo<CR>";
+            options.desc = "Undo history";
           }
         ];
 

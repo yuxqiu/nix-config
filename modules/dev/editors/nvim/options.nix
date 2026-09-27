@@ -13,6 +13,7 @@
       formatoptions = "croqln";
       backup = false;
       writebackup = false;
+      undofile = true;
       wrap = false;
       ignorecase = true;
       smartcase = true;
@@ -40,6 +41,17 @@
       vim.opt.diffopt:append("algorithm:histogram")
       vim.opt.whichwrap:append("<,>,h,l,[,]")
 
+      -- Temporary files may hold secrets:
+      -- no undo file, no swap file, and skip writing shada for this session
+      vim.api.nvim_create_autocmd({ "BufReadPre", "BufNewFile", "BufWritePre" }, {
+        pattern = "/tmp/*",
+        callback = function()
+          vim.opt_local.undofile = false
+          vim.opt_local.swapfile = false
+          vim.o.shada = ""
+        end,
+      })
+
       local function change_font_size(delta)
         local guifont = vim.o.guifont
         if guifont == "" then return end
@@ -49,5 +61,8 @@
         vim.o.guifont = base .. ":h" .. new_size
       end
     '';
+
+    # Delete undo files not touched in 90 days
+    systemd.user.tmpfiles.rules = [ "e %h/.local/state/nvim/undo - - - 90d" ];
   };
 }
