@@ -28,17 +28,32 @@
                   build = {
                     onSave = true;
                     forwardSearchAfter = true;
-                    executable = "tectonic";
-                    args = [
-                      "-X"
-                      "compile"
-                      "%f"
-                      "--untrusted"
-                      "--synctex"
-                      "--keep-logs"
-                      "--keep-intermediates"
-                    ];
-                  };
+                  }
+                  // (
+                    if config.my.dev.latex.engine == "tectonic" then
+                      {
+                        executable = "tectonic";
+                        args = [
+                          "-X"
+                          "compile"
+                          "%f"
+                          "--untrusted"
+                          "--synctex"
+                          "--keep-logs"
+                          "--keep-intermediates"
+                        ];
+                      }
+                    else
+                      {
+                        executable = "latexmk";
+                        args = [
+                          "-pdf"
+                          "-interaction=nonstopmode"
+                          "-synctex=1"
+                          "%f"
+                        ];
+                      }
+                  );
                 };
               };
             };

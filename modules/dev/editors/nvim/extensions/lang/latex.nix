@@ -15,20 +15,10 @@
         # FileType event before the lz-n "before" hook below would run.
         # These must be set here (like mapleader in ../default.nix) so
         # vimtex sees them at that first init instead of falling back to
-        # its default compiler (latexmk, which isn't installed).
+        # its default compiler (latexmk, which the tectonic engine doesn't
+        # install).
         globals = {
           vimtex_view_method = "sioyek";
-          vimtex_compiler_method = "tectonic";
-          vimtex_compiler_tectonic = {
-            options = [
-              "--untrusted"
-              "--synctex"
-              "--keep-logs"
-              "--keep-intermediates"
-              "-Z"
-              "continue-on-errors"
-            ];
-          };
           tex_flavor = "latex";
           vimtex_quickfix_mode = 2;
           # Treesitter (see plugins.treesitter.grammarPackages below) owns
@@ -36,7 +26,29 @@
           # would otherwise clash with it and log a "Syntax highlighting is
           # controlled by Treesitter!" error on every tex buffer.
           vimtex_syntax_enabled = 0;
-        };
+        }
+        // (
+          if config.my.dev.latex.engine == "tectonic" then
+            {
+              vimtex_compiler_method = "tectonic";
+              vimtex_compiler_tectonic = {
+                options = [
+                  "--untrusted"
+                  "--synctex"
+                  "--keep-logs"
+                  "--keep-intermediates"
+                  "-Z"
+                  "continue-on-errors"
+                ];
+              };
+            }
+          else
+            {
+              # vimtex's default latexmk options already include
+              # -synctex=1 -interaction=nonstopmode -file-line-error.
+              vimtex_compiler_method = "latexmk";
+            }
+        );
 
         plugins.lz-n.plugins = [
           {

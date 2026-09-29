@@ -13,16 +13,28 @@
 
       programs.vscode.profiles.default.userSettings = lib.mkIf (config.my.dev.languages ? latex) {
         "latex-workshop.latex.outDir" = "%DIR%/latex-build";
-        "latex-workshop.latex.recipes" = [
-          {
-            name = "tectonic";
-            tools = [ "tectonic" ];
-          }
-          {
-            name = "latexmk";
-            tools = [ "latexmk" ];
-          }
-        ];
+        # latex-workshop builds with the first recipe by default.
+        "latex-workshop.latex.recipes" =
+          let
+            tectonic = {
+              name = "tectonic";
+              tools = [ "tectonic" ];
+            };
+            latexmk = {
+              name = "latexmk";
+              tools = [ "latexmk" ];
+            };
+          in
+          if config.my.dev.latex.engine == "tectonic" then
+            [
+              tectonic
+              latexmk
+            ]
+          else
+            [
+              latexmk
+              tectonic
+            ];
         "latex-workshop.latex.tools" = [
           {
             name = "tectonic";

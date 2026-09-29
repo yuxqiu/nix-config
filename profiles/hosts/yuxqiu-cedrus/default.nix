@@ -177,6 +177,9 @@
         config.flake.modules.homeManager.c
         # config.flake.modules.homeManager.sage
         config.flake.modules.homeManager.bash-lang
+        {
+          config.my.dev.latex.engine = "texlive";
+        }
         config.flake.modules.homeManager.latex
         config.flake.modules.homeManager.lua
         config.flake.modules.homeManager.markdown

@@ -55,9 +55,9 @@
               ) serviceCfg.endpoints;
               advertiseCmd =
                 if serviceCfg.advertised == true then
-                  "tailscale serve advertise --service svc:${name}"
+                  "tailscale serve advertise svc:${name}"
                 else if serviceCfg.advertised == false then
-                  "tailscale serve unadvertise --service svc:${name}"
+                  "tailscale serve drain svc:${name}"
                 else
                   "";
             in
@@ -103,7 +103,9 @@
       hasServices = cfg.services != { };
     in
     {
-      # NOTE: enable when upstream supports https protocol
+      # NOTE: upstream only configures Tailscale Services (svc:, `serve set-config`),
+      # which requires a tagged host and admin-console service definitions. This
+      # module does node-level serve on the machine's own MagicDNS name instead.
       disabledModules = [ "services/networking/tailscale-serve.nix" ];
 
       options.services.tailscale.serve = {
@@ -152,17 +154,15 @@
         # and waits for tailscale to reach "Running" state, which blocks the
         # login screen.
         #
+        # Ordering alone doesn't help: greetd is Type=idle, so it waits until the
+        # boot job queue is empty, and a pending notify start job keeps it busy.
+        # Type=exec finishes the start job at exec; NotifyAccess=all keeps
+        # NOTIFY_SOCKET set so the script's `systemd-notify --ready` doesn't fail.
+        #
         # https://github.com/NixOS/nixpkgs/issues/430756
-        systemd.services.tailscaled-autoconnect = {
-          after = lib.mkForce [
-            "network-online.target"
-            "tailscaled.service"
-          ];
-          wantedBy = lib.mkForce [ "network-online.target" ];
-          wants = lib.mkForce [
-            "network-online.target"
-            "tailscaled.service"
-          ];
+        systemd.services.tailscaled-autoconnect.serviceConfig = {
+          Type = lib.mkForce "exec";
+          NotifyAccess = "all";
         };
 
         systemd.services.tailscale-serve =
