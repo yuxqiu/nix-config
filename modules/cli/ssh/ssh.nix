@@ -1,6 +1,6 @@
 {
   config.flake.modules.homeManager.ssh =
-    { pkgs, ... }:
+    { mv, ... }:
     {
       programs.ssh = {
         enable = true;
@@ -20,7 +20,9 @@
         enableDefaultConfig = false;
       };
 
-      home.packages = [ pkgs.mosh ];
+      # TEMP: nixpkgs mosh fails to build upstream; use the cached 1.4.0
+      # from nixpkgs-multiverse. Switch back to pkgs.mosh once it builds again.
+      home.packages = [ mv.versions.mosh."1.4.0" ];
       programs.zsh.shellAliases = {
         # Immortal ssh
         sshx = ''mosh "$@" -- screen -s -/bin/bash -qRRUS "mosh-''${HOSTNAME}"'';

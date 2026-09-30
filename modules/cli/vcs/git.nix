@@ -1,6 +1,11 @@
 {
   flake.modules.homeManager.git =
-    { config, pkgs, ... }:
+    {
+      config,
+      pkgs,
+      mv,
+      ...
+    }:
     {
       programs.git = {
         enable = true;
@@ -104,7 +109,9 @@
               --prefix LD_LIBRARY_PATH : ${pkgs.lib.makeLibraryPath [ pkgs.openssl ]}
           '';
         })
-        mergiraf
+        # TEMP: nixpkgs mergiraf fails to build upstream; use the cached
+        # 0.19.1 from nixpkgs-multiverse. Switch back once it builds again.
+        mv.versions.mergiraf."0.19.1"
         onefetch
       ];
     };

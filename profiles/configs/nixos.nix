@@ -61,14 +61,16 @@
 
   config.flake.nixosConfigurations = lib.mapAttrs (
     name: cfg:
+    let
+      mv = inputs.multiverse.lib.mkMultiverse {
+        inherit (cfg) system;
+        config.allowUnfree = true;
+      };
+    in
     inputs.nixpkgs.lib.nixosSystem {
       inherit (cfg) system;
       specialArgs = {
-        inherit inputs;
-        mv = inputs.multiverse.lib.mkMultiverse {
-          inherit (cfg) system;
-          config.allowUnfree = true;
-        };
+        inherit inputs mv;
       };
       modules =
         cfg.modules
@@ -80,6 +82,7 @@
             imports = cfg.homeManager.modules;
             home.stateVersion = cfg.homeManager.stateVersion;
           };
+          home-manager.extraSpecialArgs = { inherit mv; };
           home-manager.sharedModules = [
             {
               nixpkgs.config = config.nixpkgs.config;

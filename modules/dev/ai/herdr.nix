@@ -5,6 +5,7 @@
       config,
       lib,
       pkgs,
+      mv,
       ...
     }:
     let
@@ -13,6 +14,9 @@
     {
       programs.herdr = {
         enable = true;
+        # TEMP: nixpkgs herdr fails to build upstream; use the cached 0.9.1
+        # from nixpkgs-multiverse. Drop this line once it builds again.
+        package = mv.versions.herdr."0.9.1";
         settings = {
           onboarding = false;
           experimental.kitty_graphics = true;
