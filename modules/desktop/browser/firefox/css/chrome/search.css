@@ -1,11 +1,10 @@
 /* ===== CENTERED POPUP SEARCH BOX ===== */
 /* Modified from gwfox, With the help of Grok */
+/* Firefox 157+: the urlbar no longer breaks out; only the results view
+   (.urlbarView) is a popover, anchored to .urlbar-input-container.
+   `popover-open` on #urlbar is set while the view is open. */
 :root {
-    --bg4: light-dark(rgba(255, 255, 255, 0.75), rgba(15, 15, 12, 0.75));
     --bs1: 0 5px 15px rgba(0, 0, 0, 0.2), 0 0 0 0.5px rgba(0, 0, 0, 0.15);
-    --bs2:
-        0 5px 15px rgba(0, 0, 0, 0.25), inset 0 0 0 0.5px rgba(0, 0, 0, 0.78),
-        0 0 0 0.5px rgba(0, 0, 0, 0.2);
     --br2: 8px;
     --button-hover-bgcolor: light-dark(
         rgba(70, 70, 70, 0.1),
@@ -17,69 +16,133 @@
     ) !important;
 }
 
-#urlbar[breakout][breakout-extend],
-:has(#urlbar[usertyping]:not([persistsearchterms])[focused][breakout-extend])
-    #urlbar {
+/* No background color for url bar (replaces Firefox-Mod-Blur's
+   search_bar_transparent_background.css, which targets the removed
+   [breakout] attributes) */
+#nav-bar #urlbar:not([popover-open]) .urlbar-background {
+    border: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
+#nav-bar #search-container #searchbar {
+    border-bottom: none !important;
+    border-top: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
+/* Keep the toolbar slot from collapsing while the bar is lifted out */
+#urlbar-container:has(> #urlbar[popover-open]) {
+    min-height: calc(
+        var(--urlbar-height) + 2 * var(--urlbar-container-padding-block)
+    ) !important;
+}
+
+/* The toolbox is a stacking context below the content area; raise it so the
+   lifted bar isn't painted under the page */
+#navigator-toolbox:has(#urlbar[popover-open]) {
+    z-index: 9999 !important;
+}
+
+/* Lift the bar out of the toolbar into the centered box; the results view
+   follows the input container through its anchor */
+#urlbar[popover-open] {
+    position: fixed !important;
     top: 20vh !important;
     left: 29vw !important;
     width: 45vw !important;
     max-width: unset !important;
     margin-top: 15px !important;
-    animation-name: panel-grow;
-    animation-duration: 250ms;
     transition: none !important;
     z-index: 9999 !important;
 }
 
-#urlbar[breakout][breakout-extend] .urlbar-input,
-#urlbar[breakout][breakout-extend] .urlbar-input::placeholder,
-:has(#urlbar[usertyping]:not([persistsearchterms])[focused][breakout-extend])
-    .urlbar-input,
-:has(#urlbar[usertyping]:not([persistsearchterms])[focused][breakout-extend])
-    .urlbar-input::placeholder {
+#urlbar[popover-open] .urlbar-input,
+#urlbar[popover-open] .urlbar-input::placeholder {
     font-size: 21px !important;
     text-align: left !important;
 }
 
-#urlbar[breakout][breakout-extend] .urlbar-input-container,
-:has(#urlbar[usertyping]:not([persistsearchterms])[focused][breakout-extend])
-    .urlbar-input-container {
+#urlbar[popover-open] .urlbar-input-container {
     height: 50px !important;
+    margin: 0 !important;
+    padding-block: 0 !important;
     padding-inline: 15px !important;
     align-items: center !important;
+    outline: none !important;
+    border-radius: var(--br2) var(--br2) 0 0 !important; /* round only top when suggestions are open */
+    overflow: hidden !important;
 }
 
-#urlbar[breakout][breakout-extend] .urlbar-background,
-:has(#urlbar[usertyping]:not([persistsearchterms])[focused][breakout-extend])
-    .urlbar-background {
+/* Input half: drop Firefox's overhang/clip so it sits exactly on the input.
+   #navigator-toolbox outranks liquid-fox's all-corner radius; the clip cuts
+   the shadow at the seam so input and results read as one surface */
+#navigator-toolbox #urlbar[popover-open] .urlbar-background {
+    inset: 0 !important;
+    clip-path: inset(-30px -30px 0 -30px) !important;
+    border: none !important;
+    border-radius: var(--br2) var(--br2) 0 0 !important;
+    height: 50px !important;
+    background-color: var(--bg2) !important;
     backdrop-filter: blur(30px) !important;
     box-shadow: var(--bs1) !important;
-    border-radius: var(--br2) !important;
-    height: 50px !important;
 }
 
-@media (prefers-color-scheme: dark) {
-    #urlbar[breakout][breakout-extend] .urlbar-background,
-    :has(
-            #urlbar[usertyping]:not(
-                    [persistsearchterms]
-                )[focused][breakout-extend]
-        )
-        .urlbar-background {
-        box-shadow: var(--bs2) !important;
-    }
+/* Results half: paint the view itself instead of Firefox's joint background */
+#urlbar[popover-open] .urlbarView-background {
+    display: none !important;
+}
+
+#urlbar[popover-open] .urlbarView {
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 0 var(--br2) var(--br2) !important; /* round only bottom corners */
+    overflow: hidden !important; /* prevent visual glitches at edges */
+    background: var(--bg2) !important;
+    backdrop-filter: blur(30px) !important;
+    box-shadow: var(--bs1) !important;
+    clip-path: inset(0 -30px -30px -30px) !important;
+}
+
+#urlbar[popover-open] .urlbarView-body-outer,
+#urlbar[popover-open] .urlbarView-body-inner {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* Make suggestions look good inside the big centered box */
-#urlbar[breakout][breakout-extend] .urlbarView-row-inner,
-:has(#urlbar[usertyping]:not([persistsearchterms])[focused][breakout-extend])
-    .urlbarView-row-inner {
+#urlbar[popover-open] .urlbarView-row-inner {
     flex-wrap: nowrap !important;
 }
-#urlbar[breakout][breakout-extend] .urlbarView-no-wrap,
-:has(#urlbar[usertyping]:not([persistsearchterms])[focused][breakout-extend])
-    .urlbarView-no-wrap {
+#urlbar[popover-open] .urlbarView-no-wrap {
     max-width: 50% !important;
+}
+
+/* Fix any inner rows overflowing the new width */
+#urlbar[popover-open] .urlbarView-row,
+#urlbar[popover-open] .urlbarView-row-inner {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-inline: 12px !important; /* match your input padding feel */
+    box-sizing: border-box !important;
+}
+
+/* Grow both halves together. The view is a top-layer popover, so a transform
+   on #urlbar doesn't reach it; each half scales toward the seam instead */
+#urlbar[popover-open],
+#urlbar[popover-open] .urlbarView {
+    animation-name: panel-grow;
+    animation-duration: 250ms;
+}
+#urlbar[popover-open] {
+    transform-origin: 50% 100%;
+}
+#urlbar[popover-open] .urlbarView {
+    transform-origin: 50% 0;
 }
 
 @keyframes panel-grow {
@@ -91,94 +154,21 @@
     }
 }
 
-/* Fix transparent background on centered breakout popup */
-#urlbar[breakout][breakout-extend] .urlbar-background,
-#urlbar[breakout][breakout-extend] > .urlbar-input-container,
-:has(#urlbar[usertyping]:not([persistsearchterms])[focused][breakout-extend])
-    .urlbar-background,
-:has(#urlbar[usertyping]:not([persistsearchterms])[focused][breakout-extend])
-    > .urlbar-input-container {
-    background-color: var(
-        --bg2
-    ) !important; /* semi-transparent light/dark adaptive from gwfox */
-    backdrop-filter: blur(30px) !important; /* keep the nice blur */
-    box-shadow: var(--bs1) !important;
-}
-
-/* Make sure the view/results panel also has proper background (dropdown part) */
-#urlbar[breakout][breakout-extend] .urlbarView-body-outer,
-#urlbar[open][breakout][breakout-extend] .urlbarView {
-    background: var(
-        --bg2
-    ) !important; /* slightly more opaque base for results list */
-    border-radius: 0 0 var(--br2) var(--br2) !important;
-    margin-top: -1px !important; /* avoid tiny gap */
-}
-
-/* Force suggestions container to same width as the breakout bar */
-#urlbar[breakout][breakout-extend] .urlbarView,
-#urlbar[breakout][breakout-extend] .urlbarView-body-outer,
-#urlbar[breakout][breakout-extend] .urlbarView-body-inner {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* Align suggestions directly under the input (no offset) */
-#urlbar[breakout][breakout-extend] .urlbarView {
-    margin-top: 2px !important; /* tiny gap so it doesn't overlap — adjust 0–4px */
-    border-radius: 0 0 var(--br2) var(--br2) !important; /* round only bottom corners */
-    overflow: hidden !important; /* prevent visual glitches at edges */
-    background: var(
-        --bg4
-    ) !important; /* match blur bg or use var(--bg2) for more solid */
-    backdrop-filter: blur(30px) !important;
-    box-shadow: var(--bs1) !important;
-}
-
-/* If you want the ENTIRE popup (bar + suggestions) to look like one rounded rectangle */
-#urlbar[breakout][breakout-extend] {
-    --urlbar-popup-border-radius: var(--br2) !important;
-    overflow: hidden !important; /* helps clip children properly */
-}
-
-/* Round the top of the suggestions only if you want a visible seam / separator look */
-#urlbar[breakout][breakout-extend][open] .urlbarView-body-inner {
-    border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent) !important;
-    border-radius: 0 0 var(--br2) var(--br2) !important;
-}
-
-/* Fix any inner rows overflowing the new width */
-#urlbar[breakout][breakout-extend] .urlbarView-row,
-#urlbar[breakout][breakout-extend] .urlbarView-row-inner {
-    width: 100% !important;
-    max-width: 100% !important;
-    padding-inline: 12px !important; /* match your input padding feel */
-    box-sizing: border-box !important;
-}
-
-#urlbar[breakout][breakout-extend] .urlbar-input-container {
-    border-radius: var(--br2) var(--br2) 0 0 !important; /* round only top when suggestions are open */
-    overflow: hidden !important;
-}
-
 /* ─────────────────────────────
    Special UI fixes below
    ───────────────────────────── */
 
 /* Hide the misaligned right arrow */
-#urlbar[breakout][breakout-extend] .urlbar-go-button {
+#urlbar[popover-open] .urlbar-go-button {
     display: none !important;
 }
 
-/* Vertically center trust icons inside the taller breakout bar */
-#urlbar[breakout][breakout-extend] #trust-icon-container {
+/* Vertically center trust icons inside the taller bar */
+#urlbar[popover-open] #trust-icon-container {
     align-items: center !important;
     height: 100% !important;
 }
 
-#urlbar[breakout][breakout-extend] #identity-icon-box {
+#urlbar[popover-open] #identity-icon-box {
     padding-block: 0 !important;
 }

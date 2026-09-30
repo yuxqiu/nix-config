@@ -35,7 +35,6 @@
         (builtins.readFile "${firefox-mod-blur}/EXTRA MODS/Compact extensions menu/Style 1/With no settings wheel icon/cleaner_extensions_menu.css")
         (builtins.readFile "${firefox-mod-blur}/EXTRA MODS/Icon and Button Mods/uBlock icon change/ublock-icon-change.css")
         (builtins.readFile "${firefox-mod-blur}/EXTRA MODS/Search Bar Mods/Search box - no border/url_bar_no_border.css")
-        (builtins.readFile "${firefox-mod-blur}/EXTRA MODS/Search Bar Mods/Search box - transparent background/search_bar_transparent_background.css")
         (builtins.readFile "${firefox-mod-blur}/EXTRA MODS/Icon and Button Mods/Icons in main menu/icons_in_main_menu.css")
         (builtins.readFile "${firefox-mod-blur}/EXTRA MODS/Tabs Bar Mods/Colored sound playing tab/colored_soundplaying_tab.css")
       ];
