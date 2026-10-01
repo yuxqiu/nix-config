@@ -110,8 +110,8 @@
           '';
         })
         # TEMP: nixpkgs mergiraf fails to build upstream; use the cached
-        # 0.19.1 from nixpkgs-multiverse. Switch back once it builds again.
-        mv.versions.mergiraf."0.19.1"
+        # 0.19.1 pinned to nixpkgs 7a0f122f5090 via multiverse. Switch back once it builds again.
+        (mv.at "7a0f122f5090").mergiraf
         onefetch
       ];
     };

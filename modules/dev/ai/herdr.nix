@@ -15,8 +15,8 @@
       programs.herdr = {
         enable = true;
         # TEMP: nixpkgs herdr fails to build upstream; use the cached 0.9.1
-        # from nixpkgs-multiverse. Drop this line once it builds again.
-        package = mv.versions.herdr."0.9.1";
+        # pinned to nixpkgs 7a0f122f5090 via multiverse. Drop this line once it builds again.
+        package = (mv.at "7a0f122f5090").herdr;
         settings = {
           onboarding = false;
           experimental.kitty_graphics = true;
