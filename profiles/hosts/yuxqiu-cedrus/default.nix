@@ -148,6 +148,7 @@
         config.flake.modules.homeManager.xdg
         config.flake.modules.homeManager.jan
         config.flake.modules.homeManager.edgepad
+        config.flake.modules.homeManager.quillway
 
         # dev (ai)
         config.flake.modules.homeManager.agent-lsp

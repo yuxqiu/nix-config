@@ -19,7 +19,6 @@
 
       opencodeQueue = pkgs.callPackage (inputs.self + /packages/opencode-queue.nix) { };
       goalPlugin = pkgs.callPackage (inputs.self + /packages/opencode-goal.nix) { };
-      btwOpencode = pkgs.callPackage (inputs.self + /packages/opencode-btw.nix) { };
     in
     {
       # Other Interesting Plugins
@@ -69,11 +68,6 @@
       # Plugin options (maxTurns/duration/tokens) configured in settings.plugin above
       home.file.".config/opencode/plugins/opencode-goal.js".source =
         "${goalPlugin}/lib/opencode-goal-plugin/goal-plugin.js";
-
-      # btw-opencode plugin - fork sessions and run prompts in background
-      # https://github.com/aptdnfapt/btw-opencode
-      home.file.".config/opencode/plugins/btw-opencode.js".source =
-        "${btwOpencode}/lib/btw-opencode/btw-opencode.js";
 
       programs.agent-skills.targets.opencode.enable = true;
 

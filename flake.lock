@@ -124,6 +124,21 @@
     },
     "crane": {
       "locked": {
+        "lastModified": 1789760033,
+        "narHash": "sha256-jtT4yxZpR8seYnlCMMWSSPlFN92zO6ICuZ8pJrmi86k=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "73b980519cefc727a5f6cc8e5c0947a2f9be6edd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
+    "crane_2": {
+      "locked": {
         "lastModified": 1785782307,
         "narHash": "sha256-MPaRdVkf6zZP5fCPxYCi8Dr4pZzgmXzg8T9nVEbp3Mw=",
         "owner": "ipetkov",
@@ -856,6 +871,31 @@
         "type": "github"
       }
     },
+    "quillway": {
+      "inputs": {
+        "crane": "crane",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "rust-overlay": [
+          "rust-overlay"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790830010,
+        "narHash": "sha256-ehggex+J6+bxCLqEohrTVQKoiDr4SYbsUCwGyOaxtOE=",
+        "owner": "yuxqiu",
+        "repo": "quillway",
+        "rev": "e32393ff41c435834f18a0be71ca1d8d99ccef1b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "yuxqiu",
+        "ref": "v0.1.0",
+        "repo": "quillway",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "agent-skills-nix": "agent-skills-nix",
@@ -883,6 +923,7 @@
         "nixvim": "nixvim",
         "paseo": "paseo",
         "quicksnip": "quicksnip",
+        "quillway": "quillway",
         "rust-overlay": "rust-overlay",
         "sops-nix": "sops-nix",
         "ssh-agent-ac": "ssh-agent-ac",
@@ -1114,7 +1155,7 @@
     },
     "xremap": {
       "inputs": {
-        "crane": "crane",
+        "crane": "crane_2",
         "flake-parts": [
           "flake-parts"
         ],
