@@ -15,20 +15,10 @@
           ''}
         '';
       });
-      trackList = "${pkgs.lowfi.src}/data/archive.txt";
-
-      lofiWrapped = pkgs.writeShellApplication {
-        name = "lofigirl";
-        runtimeInputs = [ lowfi ];
-        text = ''
-          exec lowfi --track-list "${trackList}" "$@"
-        '';
-      };
     in
     {
       home.packages = [
         lowfi
-        lofiWrapped
       ];
     };
 }

@@ -127,7 +127,7 @@
       inputs.flake-parts.follows = "flake-parts";
     };
     paseo = {
-      url = "github:getpaseo/paseo?ref=v0.11.0-beta.1";
+      url = "github:getpaseo/paseo?ref=v0.11.0-beta.3";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     edgepad = {
@@ -136,7 +136,7 @@
       inputs.rust-overlay.follows = "rust-overlay";
     };
     quillway = {
-      url = "github:yuxqiu/quillway?ref=v0.1.0";
+      url = "github:yuxqiu/quillway?ref=v0.1.1";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.rust-overlay.follows = "rust-overlay";
     };
