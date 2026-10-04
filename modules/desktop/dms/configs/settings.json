@@ -1,6 +1,6 @@
 {
   "currentThemeName": "custom",
-  "customThemeFile": "/nix/store/iaiz230xfdnlab0i4x5inldx810d6bc0-source/themes/catppuccin/theme.json",
+  "customThemeFile": "/nix/store/6551ax34l98kwyi8ys4y3fxd1r0pizpi-source/themes/catppuccin/theme.json",
   "registryThemeVariants": {
     "catppuccin": {
       "dark": {
@@ -65,6 +65,9 @@
       "showTrash": false,
       "trashFileManager": "default",
       "trashCustomCommand": "",
+      "magnification": false,
+      "magnificationScale": 130,
+      "magnificationProfile": "parabolic",
       "order": [],
       "widgets": [
         {
@@ -94,64 +97,98 @@
   "blurBorderSeeded": true,
   "controlCenterWidgets": [
     {
+      "id": "user",
       "enabled": true,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "id": "settings",
+      "enabled": true,
+      "w": 1,
+      "h": 1,
+      "small": true
+    },
+    {
+      "id": "lock",
+      "enabled": true,
+      "w": 1,
+      "h": 1,
+      "small": true
+    },
+    {
+      "id": "power",
+      "enabled": true,
+      "w": 1,
+      "h": 1,
+      "small": true
+    },
+    {
+      "enabled": true,
+      "h": 1,
       "id": "volumeSlider",
-      "w": 4,
-      "h": 1
+      "w": 4
     },
     {
       "enabled": true,
+      "h": 1,
       "id": "brightnessSlider",
-      "w": 4,
-      "h": 1
+      "w": 4
     },
     {
       "enabled": true,
+      "h": 1,
       "id": "wifi",
-      "w": 4,
-      "h": 1
+      "w": 4
     },
     {
       "enabled": true,
+      "h": 1,
       "id": "bluetooth",
-      "w": 4,
-      "h": 1
+      "w": 4
     },
     {
       "enabled": true,
+      "h": 1,
       "id": "audioOutput",
-      "w": 4,
-      "h": 1
+      "w": 4
     },
     {
       "enabled": true,
+      "h": 1,
       "id": "audioInput",
-      "w": 4,
-      "h": 1
+      "w": 4
     },
     {
       "enabled": true,
+      "h": 1,
       "id": "plugin_quickCapture",
-      "w": 2,
-      "h": 1
+      "w": 2
     },
     {
       "enabled": true,
+      "h": 1,
       "id": "battery",
-      "w": 2,
-      "h": 1
+      "w": 2
     },
     {
       "enabled": true,
+      "h": 1,
       "id": "darkMode",
-      "w": 2,
-      "h": 1
+      "w": 2
     },
     {
       "enabled": true,
+      "h": 1,
       "id": "nightMode",
-      "w": 2,
-      "h": 1
+      "w": 2
+    },
+    {
+      "id": "runningApps",
+      "enabled": true,
+      "w": 4,
+      "h": 1,
+      "footer": true
     }
   ],
   "appIdSubstitutions": [
@@ -424,10 +461,17 @@
       "squareCorners": false,
       "transparency": 0.6,
       "visible": true,
+      "widgetFollowInterfaceStyle": false,
       "widgetOutlineEnabled": false,
       "widgetPadding": 12,
       "widgetTransparency": 0.3,
-      "widgetFollowInterfaceStyle": false
+      "islandBatteryStyle": "solid",
+      "islandHomeStatusContent": "battery",
+      "batteryColorMode": "theme",
+      "widgetStyle": "pills",
+      "islandRouteLauncher": "follow",
+      "islandRouteControlCenter": "follow",
+      "islandInteractionMode": "hybrid"
     },
     {
       "autoHide": false,
@@ -455,6 +499,7 @@
         }
       ],
       "clickThrough": false,
+      "dot": true,
       "enabled": false,
       "followInterfaceStyle": false,
       "fontScale": 1,
@@ -543,11 +588,10 @@
       "squareCorners": false,
       "transparency": 0.6,
       "visible": true,
+      "widgetFollowInterfaceStyle": false,
       "widgetOutlineEnabled": false,
       "widgetPadding": 12,
-      "widgetTransparency": 0.3,
-      "widgetFollowInterfaceStyle": false,
-      "dot": true
+      "widgetTransparency": 0.3
     }
   ],
   "desktopWidgetInstances": [
@@ -642,5 +686,5 @@
     }
   },
   "frameMode": "separate",
-  "configVersion": 31
+  "configVersion": 36
 }

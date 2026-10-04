@@ -291,11 +291,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791025672,
-        "narHash": "sha256-b833Sy2SpVnVRDG/QHQuGWXohSWm+wer1njsi0cBdX4=",
+        "lastModified": 1791074965,
+        "narHash": "sha256-ybShJ2eycwGkCJRluaLb5c0exiI/YJAW4Pp+M3uGABk=",
         "owner": "AvengeMedia",
         "repo": "DankMaterialShell",
-        "rev": "49d7d6b2fefadd506de667d9a517e5cfba7871c2",
+        "rev": "585827e7e4c1433d09f0e92a1b1e6d534bf0bcff",
         "type": "github"
       },
       "original": {
@@ -882,16 +882,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1790882432,
-        "narHash": "sha256-2/+lKGqfyrie9067bjibfSc0Ey58VP0uJiHot51bc0Q=",
+        "lastModified": 1791089834,
+        "narHash": "sha256-4K8V4UYhpjHXIeCemiH2W/DdxcKxTbLRhj/dfcaNYPU=",
         "owner": "yuxqiu",
         "repo": "quillway",
-        "rev": "5f03ea55ae144ddf23ffc016f4c0d6b5690ebe18",
+        "rev": "38fb7f45828cd5975e4328ebbdab3ebf13e1d004",
         "type": "github"
       },
       "original": {
         "owner": "yuxqiu",
-        "ref": "v0.1.1",
+        "ref": "v0.1.4",
         "repo": "quillway",
         "type": "github"
       }
