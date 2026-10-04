@@ -136,7 +136,7 @@
       inputs.rust-overlay.follows = "rust-overlay";
     };
     quillway = {
-      url = "github:yuxqiu/quillway?ref=v0.1.4";
+      url = "github:yuxqiu/quillway?ref=v0.1.5";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.rust-overlay.follows = "rust-overlay";
     };
