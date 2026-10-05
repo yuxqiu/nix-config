@@ -48,6 +48,7 @@
           settings = {
             includeCoAuthoredBy = false;
             permissions.defaultMode = "acceptEdits";
+            tui = "fullscreen";
             # https://code.claude.com/docs/en/data-usage
             env = {
               DISABLE_TELEMETRY = "1";
