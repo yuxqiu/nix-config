@@ -3,10 +3,10 @@
   flake.modules.homeManager.niri = {
     wayland.windowManager.niri.settings = {
       blur = {
-        passes = 3;
-        offset = 3;
-        noise = 0.02;
-        saturation = 1.5;
+        passes = 4;
+        offset = 5;
+        noise = 0.03;
+        saturation = 1.0;
       };
 
       _children = lib.mkAfter [

@@ -11,7 +11,6 @@
           window-padding-y = 10;
           window-padding-balance = true;
           background-blur = true;
-          background-opacity = 0.6;
           quit-after-last-window-closed = false;
 
           keybind = [

@@ -35,7 +35,7 @@
           window-rule = {
             match._props."app-id" = "gcr-prompter";
             background-effect.blur = true;
-            opacity = 0.6;
+            opacity = 0.8;
           };
         }
       ];

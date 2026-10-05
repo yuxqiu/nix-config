@@ -56,7 +56,7 @@
           window-rule = {
             match._props."app-id" = "opensnitch_ui";
             background-effect.blur = true;
-            opacity = 0.6;
+            opacity = 0.8;
           };
         }
 

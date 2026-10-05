@@ -34,10 +34,10 @@
         };
 
         opacity = {
-          desktop = 0.6;
+          desktop = 0.8;
           applications = 1.0;
-          terminal = 0.6;
-          popups = 0.6;
+          terminal = 0.8;
+          popups = 0.8;
         };
 
         icons = {
