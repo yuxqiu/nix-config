@@ -21,11 +21,6 @@
       };
     in
     {
-      # Workaround: niri's config generator (writeText) doesn't track
-      # string-interpolated store paths as runtime dependencies, so this
-      # would get GC'd. Remove once upstream niri HM module fixes this.
-      home.packages = [ niri-tile-to-n ];
-
       # Run as a systemd service instead of spawn-at-startup so it auto-restarts
       # when tilemod crashes (e.g. KeyError on monitor hotplug — upstream bug).
       # On restart it re-requests Outputs and picks up the new monitor state.

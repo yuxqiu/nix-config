@@ -8,8 +8,6 @@
       daemon = "${niri-zoom}/bin/niri-zoomd";
     in
     {
-      home.packages = [ niri-zoom ];
-
       wayland.windowManager.niri.settings = {
         binds = {
           "Mod+Shift+WheelScrollUp" = {

@@ -72,10 +72,6 @@
     {
       home.packages = [
         handy
-        # Workaround: niri's config generator (writeText) doesn't track
-        # string-interpolated store paths as runtime dependencies, so this
-        # would get GC'd. Remove once upstream niri HM module fixes this.
-        handy-stt
         pkgs.dotool
       ];
 

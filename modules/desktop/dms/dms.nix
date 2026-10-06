@@ -17,11 +17,6 @@
       };
     in
     {
-      # Workaround: niri's config generator (writeText) doesn't track
-      # string-interpolated store paths as runtime dependencies, so this
-      # would get GC'd. Remove once upstream niri HM module fixes this.
-      home.packages = [ dms-brightness ];
-
       imports = [
         inputs.dms.homeModules.dank-material-shell
         inputs.dms-plugin-registry.homeModules.default
@@ -67,13 +62,29 @@
           # Show wallpaper on desktop and overview.
           layout.background-color = "transparent";
 
-          _children = lib.mkAfter [
-            {
-              layer-rule = {
-                match._props.namespace = "^quickshell$";
-                place-within-backdrop = true;
-              };
-            }
+          _children = lib.mkMerge [
+            (lib.mkAfter [
+              {
+                layer-rule = {
+                  match._props.namespace = "^quickshell$";
+                  place-within-backdrop = true;
+                };
+              }
+            ])
+
+            # The bar reserves its space, so only wallpaper sits under it;
+            # non-xray blur would just bleed in adjacent windows. The dock is
+            # left out: with auto-hide it reserves nothing and overlaps windows.
+            # Ordered after the top/overlay xray=false rule in
+            # niri/configs/blur.nix (mkAfter = 1500) so this one wins.
+            (lib.mkOrder 1600 [
+              {
+                layer-rule = {
+                  match._props.namespace = "^dms:(bar|dankisland)$";
+                  background-effect.xray = true;
+                };
+              }
+            ])
           ];
 
           overview.workspace-shadow.off = [ ];

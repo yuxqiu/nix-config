@@ -157,17 +157,17 @@
       "widgetType": "lockPower"
     },
     {
-      "id": "greeter_session",
-      "widgetType": "greeterSession",
-      "enabled": true,
       "config": {
         "displayPreferences": ["all"],
         "syncPositionAcrossScreens": true
-      }
+      },
+      "enabled": true,
+      "id": "greeter_session",
+      "widgetType": "greeterSession"
     }
   ],
   "currentThemeName": "custom",
-  "customThemeFile": "/nix/store/6rv9c5j7k8ddcvvqyvjjhxr97krb122x-source/themes/catppuccin/theme.json",
+  "customThemeFile": "/nix/store/pjpxq9gaiyjgxf3bv9j6jh8lz14qwydv-source/themes/catppuccin/theme.json",
   "registryThemeVariants": {
     "catppuccin": {
       "dark": {
@@ -203,7 +203,7 @@
       "margin": 0,
       "bottomGap": 0,
       "transparency": 1,
-      "followInterfaceStyle": false,
+      "followInterfaceStyle": true,
       "autoHide": true,
       "smartAutoHide": false,
       "useOverlayLayer": false,
@@ -641,7 +641,7 @@
       "showOnWindowsOpen": true,
       "spacing": 0,
       "squareCorners": false,
-      "transparency": 0.6,
+      "transparency": 0.8,
       "visible": true,
       "widgetFollowInterfaceStyle": false,
       "widgetOutlineEnabled": false,
