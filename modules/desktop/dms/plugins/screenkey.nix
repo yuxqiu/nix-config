@@ -4,7 +4,7 @@
     {
       programs.dank-material-shell.plugins.screenkey = {
         enable = true;
-        settings.enabled = false;
+        settings.visualizerEnabled = false;
       };
 
       home.packages = with pkgs; [

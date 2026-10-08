@@ -50,10 +50,14 @@
 
       programs.dsearch.enable = true;
 
-      # Restart dms service when settings are changed
+      # Restart dms service when settings or plugins are changed
       systemd.user.services.dms.Unit.X-Restart-Triggers = [
         config.xdg.configFile."DankMaterialShell/settings.json".source
-      ];
+        config.xdg.configFile."DankMaterialShell/plugin_settings.json".source
+      ]
+      ++ lib.mapAttrsToList (_: plugin: plugin.src) (
+        lib.filterAttrs (_: plugin: plugin.enable) config.programs.dank-material-shell.plugins
+      );
 
       wayland.windowManager.niri = {
         settings = {
