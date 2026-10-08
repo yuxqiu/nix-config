@@ -6,18 +6,20 @@
   cacert,
 }:
 
-let
+stdenv.mkDerivation rec {
+  pname = "opencode-queue";
+  version = "0.17.0";
+
   src = fetchFromGitHub {
     owner = "mirsella";
     repo = "opencode-queue";
-    rev = "3472ea6c491fa992720924418c478ff026623f50"; # follow:branch main
-    hash = "sha256-KrP4d6ja70v1mei/lt7fl9JaY+sXIo8GnbXzlfYDVHk=";
+    rev = "v${version}";
+    hash = "sha256-9ANBuH8bUAV6TAEaX1+CZmVaN5iGq93BMhPrC1Vnvos=";
   };
 
-  nodeModules = stdenv.mkDerivation {
+  passthru.nodeModules = stdenv.mkDerivation {
     pname = "opencode-queue-node-modules";
-    version = "0.10.0";
-    inherit src;
+    inherit version src;
 
     nativeBuildInputs = [
       bun
@@ -35,20 +37,14 @@ let
 
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
-    outputHash = "sha256-yRHauQF/+UbKCKlKbTg1mE9EClFWEVgYXBPjblMiUDQ=";
+    outputHash = "sha256-ZnyfMav+RupjnV0dar8ZrkFX2XLvKqLbFHgewxr48tg=";
   };
-in
-stdenv.mkDerivation {
-  pname = "opencode-queue";
-  version = "0.10.0";
-
-  inherit src;
 
   nativeBuildInputs = [ bun ];
 
   buildPhase = ''
     runHook preBuild
-    cp -r ${nodeModules}/node_modules .
+    cp -r ${passthru.nodeModules}/node_modules .
     bun build ./index.ts --outdir dist --target bun
     runHook postBuild
   '';

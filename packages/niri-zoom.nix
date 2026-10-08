@@ -11,8 +11,8 @@ rustPlatform.buildRustPackage rec {
   src = fetchFromGitHub {
     owner = "Ahmedhossamdev";
     repo = "niri-zoom";
-    rev = "7b0c6056d1e29331924036bd21cfcf6105d124cb"; # follow:branch master
-    hash = "sha256-Sztt+4GoEZixO0lbk+eRBIcB3koHECtF6EMarFqVqjQ=";
+    rev = "v${version}";
+    hash = "sha256-PuLdv0/spVNhUF865+D4uZXOqPquLCb6Ve5Nt2Hh/Co=";
   };
 
   cargoHash = "sha256-ISKNipvoRpaZ9mx6J9XUialXwuTrpRlNb+0Y5DaNIxY=";

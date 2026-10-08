@@ -474,26 +474,6 @@
         "type": "github"
       }
     },
-    "flake-utils_4": {
-      "inputs": {
-        "systems": [
-          "systems"
-        ]
-      },
-      "locked": {
-        "lastModified": 1731533236,
-        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
     "fromYaml": {
       "flake": false,
       "locked": {
@@ -613,27 +593,6 @@
       "original": {
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "type": "github"
-      }
-    },
-    "mdbrowse": {
-      "inputs": {
-        "flake-utils": "flake-utils",
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1790873419,
-        "narHash": "sha256-5Lgfu1obMhS/TnUUhCJei7pRKuRDh1P8kEYRDUUSN1c=",
-        "owner": "yuxqiu",
-        "repo": "mdbrowse",
-        "rev": "992720b8b5eac5240a37f13a46a9b4f9c88856c0",
-        "type": "github"
-      },
-      "original": {
-        "owner": "yuxqiu",
-        "repo": "mdbrowse",
         "type": "github"
       }
     },
@@ -835,7 +794,7 @@
     },
     "quicksnip": {
       "inputs": {
-        "flake-utils": "flake-utils_2",
+        "flake-utils": "flake-utils",
         "nixpkgs": [
           "nixpkgs"
         ],
@@ -912,7 +871,6 @@
         "home-manager": "home-manager",
         "import-tree": "import-tree",
         "llm-agents-nix": "llm-agents-nix",
-        "mdbrowse": "mdbrowse",
         "multiverse": "multiverse",
         "nix-flatpak": "nix-flatpak",
         "nix-index-database": "nix-index-database",
@@ -975,7 +933,7 @@
     },
     "ssh-agent-ac": {
       "inputs": {
-        "flake-utils": "flake-utils_3",
+        "flake-utils": "flake-utils_2",
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -1134,7 +1092,7 @@
     },
     "tun2proxy": {
       "inputs": {
-        "flake-utils": "flake-utils_4",
+        "flake-utils": "flake-utils_3",
         "nixpkgs": [
           "nixpkgs"
         ]
