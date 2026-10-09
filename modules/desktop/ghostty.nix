@@ -2,6 +2,11 @@
   flake.modules.homeManager.ghostty =
     { lib, pkgs, ... }:
     {
+      # Glyphs neither FiraCode nor the emoji font has (e.g. Lean's ↦, ⟦),
+      # or text-presentation requests like ✝ + VS15, otherwise land on random
+      # system fonts. Add JuliaMono (broad math/Unicode coverage) as the last
+      # fallback; it must stay after the emoji font, or it takes over emoji
+      # such as ⭐ ✅ ❌ that it also has monochrome glyphs for.
       programs.ghostty = {
         enable = true;
         clearDefaultKeybinds = true;
@@ -12,6 +17,8 @@
           window-padding-balance = true;
           background-blur = true;
           quit-after-last-window-closed = false;
+
+          font-family = lib.mkAfter [ "JuliaMono" ];
 
           keybind = [
             "ctrl+alt+tab=next_tab"
@@ -70,6 +77,7 @@
         (pkgs.writeShellScriptBin "x-terminal-emulator" ''
           exec ghostty "$@"
         '')
+        pkgs.julia-mono
       ];
 
       wayland.windowManager.niri.settings.binds."Mod+Return" = {

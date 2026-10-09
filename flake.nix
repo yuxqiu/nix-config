@@ -122,11 +122,11 @@
       inputs.flake-parts.follows = "flake-parts";
     };
     paseo = {
-      url = "github:getpaseo/paseo?ref=v0.11.1";
+      url = "github:getpaseo/paseo?ref=v0.11.2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     edgepad = {
-      url = "github:assembledev/edgepad";
+      url = "github:assembledev/edgepad?ref=v0.2.5";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.rust-overlay.follows = "rust-overlay";
     };
