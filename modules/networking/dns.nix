@@ -5,8 +5,8 @@
       dnscrypt-resolvers = pkgs.fetchFromGitHub {
         owner = "DNSCrypt";
         repo = "dnscrypt-resolvers";
-        rev = "521e60f14d2872884d38c842c5cded41d96c050e"; # follow:branch master
-        hash = "sha256-RKMkRTEJjwjqEoXr56PZciyXxj44UVOPETRdr9VrX2c=";
+        rev = "b5279b0e249d532b44f3ee6c35f8a69870e9314d"; # follow:branch master
+        hash = "sha256-YpT30/rR2F/ohiq3JDKGbiJeikYzyDzhnMsDHDDnJkw=";
       };
     in
     {

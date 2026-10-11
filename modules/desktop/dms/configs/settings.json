@@ -634,6 +634,10 @@
         {
           "enabled": true,
           "id": "codeburn"
+        },
+        {
+          "enabled": true,
+          "id": "dmsAirDrop"
         }
       ],
       "screenPreferences": ["all"],
@@ -755,6 +759,10 @@
         {
           "enabled": true,
           "id": "codeburn"
+        },
+        {
+          "enabled": true,
+          "id": "dmsAirDrop"
         }
       ],
       "screenPreferences": ["all"],

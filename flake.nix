@@ -82,7 +82,7 @@
     multiverse.url = "github:fzakaria/nixpkgs-multiverse";
 
     # Linux
-    nix-flatpak.url = "github:gmodena/nix-flatpak?ref=v0.7.0";
+    nix-flatpak.url = "github:gmodena/nix-flatpak?ref=v0.8.0";
     dms = {
       url = "github:AvengeMedia/DankMaterialShell";
       inputs.nixpkgs.follows = "nixpkgs";
