@@ -1,3 +1,4 @@
+{ inputs, ... }:
 let
   port = 6767;
 in
@@ -18,4 +19,17 @@ in
         "https:443" = "http://127.0.0.1:${toString port}";
       };
     };
+
+  # Paseo's orchestration skills (what the UI's "Install" would copy), matched
+  # to the pinned Paseo. Skills are global to the user, so only here, where
+  # agents only ever run through Paseo.
+  flake.modules.homeManager.snowflake-dracaena = {
+    programs.agent-skills = {
+      sources.paseo = {
+        path = inputs.paseo;
+        subdir = "skills";
+      };
+      skills.enableAll = [ "paseo" ];
+    };
+  };
 }

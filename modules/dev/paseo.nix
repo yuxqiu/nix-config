@@ -51,6 +51,13 @@
         # Clients reach each daemon over the tailnet (tailscale serve), not
         # through the hosted relay.
         relay.enable = false;
+        # Set here because the module rewrites config.json on every start,
+        # discarding changes made in the UI.
+        settings.daemon = {
+          # Paseo's MCP tools, passed only to agents Paseo itself launches.
+          mcp.injectIntoAgents = true;
+          browserTools.enabled = false;
+        };
         environment = {
           GIT_CONFIG_COUNT = toString (builtins.length agentGitConfig);
         }
