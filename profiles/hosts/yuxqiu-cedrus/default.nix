@@ -152,7 +152,6 @@
         config.flake.modules.homeManager.agentsview
         config.flake.modules.homeManager.agent-browser
         config.flake.modules.homeManager.herdr
-        config.flake.modules.homeManager.orchestrator
         config.flake.modules.homeManager.harness
         config.flake.modules.homeManager.hunk
         config.flake.modules.homeManager.mcp
