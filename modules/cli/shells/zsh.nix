@@ -68,7 +68,10 @@
             if [ $# -eq 1 ]; then
               nh os switch . -H "$1"
             else
-              nixos-rebuild switch --flake ".#$1" --build-host "$2" --target-host "$2"
+              # Logging in as root needs no sudo on the target.
+              local elevation=auto
+              [[ "$2" == root@* ]] && elevation=none
+              nh os switch . -H "$1" --build-host "$2" --target-host "$2" -e "$elevation"
             fi
           '';
           hm-news = ''
