@@ -10,14 +10,19 @@
     }:
     let
       happier-server = pkgs.callPackage (inputs.self + /packages/happier-server.nix) { };
-      port = 3005;
       cfg = config.my.happier;
     in
     {
-      options.my.happier.serverUrl = lib.mkOption {
-        type = lib.types.str;
-        example = "https://relay.example.ts.net";
-        description = "URL clients use to reach this server (it also serves the web UI).";
+      options.my.happier = {
+        serverUrl = lib.mkOption {
+          type = lib.types.str;
+          example = "https://relay.example.ts.net";
+          description = "URL clients use to reach this server (it also serves the web UI).";
+        };
+        port = lib.mkOption {
+          type = lib.types.port;
+          description = "Loopback port the server listens on.";
+        };
       };
 
       config = {
@@ -27,7 +32,7 @@
           after = [ "network-online.target" ];
           wants = [ "network-online.target" ];
           environment = {
-            PORT = toString port;
+            PORT = toString cfg.port;
             HAPPIER_SERVER_HOST = "127.0.0.1";
             HAPPIER_SERVER_LIGHT_DATA_DIR = "/var/lib/happier-server";
             HAPPIER_PUBLIC_SERVER_URL = cfg.serverUrl;
@@ -47,7 +52,7 @@
         };
 
         services.tailscale.serve.services.happier-server.endpoints = {
-          "https:443" = "http://127.0.0.1:${toString port}";
+          "https:443" = "http://127.0.0.1:${toString cfg.port}";
         };
       };
     };
@@ -65,10 +70,18 @@
       cfg = config.my.happier;
     in
     {
-      options.my.happier.serverUrl = lib.mkOption {
-        type = lib.types.str;
-        example = "https://relay.example.ts.net";
-        description = "URL of the Happier relay server (it also serves the web UI).";
+      options.my.happier = {
+        serverUrl = lib.mkOption {
+          type = lib.types.str;
+          example = "https://relay.example.ts.net";
+          description = "URL of the Happier relay server (it also serves the web UI). Identifies the server, so it must match on every machine.";
+        };
+        localServerUrl = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "http://127.0.0.1:3005";
+          description = "Address this machine connects to instead of serverUrl, e.g. on the host running the server.";
+        };
       };
 
       config = {
@@ -77,6 +90,9 @@
         home.sessionVariables = {
           HAPPIER_SERVER_URL = cfg.serverUrl;
           HAPPIER_WEBAPP_URL = cfg.serverUrl;
+        }
+        // lib.optionalAttrs (cfg.localServerUrl != null) {
+          HAPPIER_LOCAL_SERVER_URL = cfg.localServerUrl;
         };
 
         # Mirrors the unit `happier daemon install` would write.
@@ -97,7 +113,8 @@
               "HAPPIER_DAEMON_WAIT_FOR_AUTH_TIMEOUT_MS=0"
               # Agent CLIs (claude, codex, ...) come from the user profile.
               "PATH=${config.home.profileDirectory}/bin:/run/current-system/sw/bin"
-            ];
+            ]
+            ++ lib.optional (cfg.localServerUrl != null) "HAPPIER_LOCAL_SERVER_URL=${cfg.localServerUrl}";
             # Agent sessions are child processes; let them outlive a daemon restart.
             KillMode = "process";
             Restart = "always";
