@@ -1,7 +1,7 @@
 {
-  # Login user for agents run by the Happier daemon. Key-only, no sudo, and
-  # no GitHub credentials: work leaves this box via cedrus (handoff or a git
-  # remote over the tailnet), never by pushing from here.
+  # Login user for running coding agents over SSH. Key-only, no sudo, and
+  # no GitHub credentials: work leaves this box via cedrus (a git remote over
+  # the tailnet), never by pushing from here.
   flake.modules.nixos.snowflake-dracaena =
     { config, pkgs, ... }:
     {
@@ -9,9 +9,6 @@
         isNormalUser = true;
         shell = pkgs.zsh;
         openssh.authorizedKeys.keys = [ config.my.user.keys."general-ssh" ];
-        # Keep the user's systemd instance (and the Happier daemon) running
-        # without an active login.
-        linger = true;
       };
 
       services.openssh.settings = {

@@ -29,9 +29,6 @@
         config.flake.modules.nixos.journald
         config.flake.modules.nixos.fstrim
 
-        # dev
-        config.flake.modules.nixos.happier-server
-
         config.flake.modules.nixos.snowflake-dracaena
       ];
       homeManager.username = "snowflake";
@@ -52,7 +49,6 @@
         config.flake.modules.homeManager.agents-md
         config.flake.modules.homeManager.claude
         config.flake.modules.homeManager.codex
-        config.flake.modules.homeManager.happier
 
         # user
         config.flake.modules.homeManager.snowflake-dracaena
