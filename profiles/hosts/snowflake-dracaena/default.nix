@@ -29,6 +29,9 @@
         config.flake.modules.nixos.journald
         config.flake.modules.nixos.fstrim
 
+        # dev
+        config.flake.modules.nixos.paseo
+
         config.flake.modules.nixos.snowflake-dracaena
       ];
       homeManager.username = "snowflake";

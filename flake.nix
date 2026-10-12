@@ -121,6 +121,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
     };
+    # Only for its NixOS module; the package comes from nixpkgs, so keep the
+    # tag in step with nixpkgs' paseo version.
+    paseo = {
+      url = "github:getpaseo/paseo?ref=v0.11.1";
+      flake = false;
+    };
     edgepad = {
       url = "github:assembledev/edgepad?ref=v0.2.5";
       inputs.nixpkgs.follows = "nixpkgs";

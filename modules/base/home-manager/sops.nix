@@ -27,6 +27,28 @@
       # half never leaves it: the encrypted file is copied over, sops runs
       # there, and the result is copied back.
       remoteLib = ''
+        # Every ssh/scp below shares one authenticated connection per host, so
+        # a confirming agent (ssh-agent-ac) asks once instead of per command.
+        ssh_ctl_dir="$(mktemp -d)"
+        ssh_opts=(-o ControlMaster=auto -o "ControlPath=$ssh_ctl_dir/%C" -o ControlPersist=yes)
+        # Remote arguments are quoted with printf %q, so expanding them on
+        # this side before ssh sends them is intended.
+        # shellcheck disable=SC2029
+        rssh() { ssh "''${ssh_opts[@]}" "$@"; }
+        rscp() { scp "''${ssh_opts[@]}" "$@"; }
+
+        # Runs on exit: remote cleanup first (over the shared connection), then
+        # close the connections.
+        remote_cleanup=""
+        cleanup() {
+          if [ -n "$remote_cleanup" ]; then eval "$remote_cleanup" || true; fi
+          for sock in "$ssh_ctl_dir"/*; do
+            [ -S "$sock" ] && ssh -o "ControlPath=$sock" -O exit _ 2>/dev/null || true
+          done
+          rm -rf "$ssh_ctl_dir"
+        }
+        trap cleanup EXIT
+
         is_remote() {
           case "$1" in
             *:*) return 0 ;;
@@ -34,13 +56,10 @@
           esac
         }
 
-        # Remote arguments are quoted with printf %q, so expanding them on
-        # this side before ssh sends them is intended.
-        # shellcheck disable=SC2029
         # Prints the SSH public key of a local or remote private key path.
         read_pub() {
           if is_remote "$1"; then
-            ssh "''${1%%:*}" cat "$(printf "%q" "''${1#*:}.pub")"
+            rssh -n "''${1%%:*}" cat "$(printf "%q" "''${1#*:}.pub")"
           else
             if [ ! -f "$1.pub" ]; then
               echo "Missing SSH public key: $1.pub" >&2
@@ -51,21 +70,20 @@
         }
 
         # remote_sops <edit|updatekeys> <host:key> <local file> <path on host> [.sops.yaml]
-        # shellcheck disable=SC2029,SC2064
         remote_sops() {
           local mode="$1" spec="$2" local_file="$3" rel="$4" sops_yaml="''${5:-}"
           local host="''${spec%%:*}" key="''${spec#*:}" rdir
-          rdir="$(ssh "$host" mktemp -d)"
-          trap "ssh $(printf "%q" "$host") rm -rf $(printf "%q" "$rdir")" EXIT
-          ssh "$host" mkdir -p "$(printf "%q" "$rdir/$(dirname "$rel")")"
-          scp -q ${remoteRun} "$host:$rdir/run.sh"
-          scp -q "$local_file" "$host:$rdir/$rel"
+          rdir="$(rssh -n "$host" mktemp -d)"
+          remote_cleanup="rssh -n $(printf "%q" "$host") rm -rf $(printf "%q" "$rdir")"
+          rssh -n "$host" mkdir -p "$(printf "%q" "$rdir/$(dirname "$rel")")"
+          rscp -q ${remoteRun} "$host:$rdir/run.sh"
+          rscp -q "$local_file" "$host:$rdir/$rel"
           if [ -n "$sops_yaml" ]; then
-            scp -q "$sops_yaml" "$host:$rdir/.sops.yaml"
+            rscp -q "$sops_yaml" "$host:$rdir/.sops.yaml"
           fi
-          ssh -t "$host" "$(printf "%q " nix shell nixpkgs#sops nixpkgs#ssh-to-age nixpkgs#neovim \
+          rssh -t "$host" "$(printf "%q " nix shell nixpkgs#sops nixpkgs#ssh-to-age nixpkgs#neovim \
             -c bash "$rdir/run.sh" "$mode" "$key" "$rel")"
-          scp -q "$host:$rdir/$rel" "$local_file"
+          rscp -q "$host:$rdir/$rel" "$local_file"
         }
       '';
 

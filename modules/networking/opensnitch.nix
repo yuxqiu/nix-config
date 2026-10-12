@@ -5,42 +5,8 @@
       lib,
       ...
     }:
-    let
-      toggleOpensnitch = pkgs.writeShellApplication {
-        name = "toggle-opensnitch";
-        runtimeInputs = with pkgs; [ systemd ];
-        text = ''
-          set -euo pipefail
-
-          action="$1"
-
-          case "$action" in
-            disable)
-              if systemctl is-active --quiet opensnitchd; then
-                echo "Disabling OpenSnitch..."
-                sudo systemctl stop opensnitchd
-              else
-                echo "OpenSnitch is already disabled."
-              fi
-              ;;
-            enable)
-              if ! systemctl is-active --quiet opensnitchd; then
-                echo "Re-enabling OpenSnitch..."
-                sudo systemctl start opensnitchd
-              fi
-              ;;
-            *)
-              echo "Usage: toggle-opensnitch [disable|enable]"
-              ;;
-          esac
-        '';
-      };
-    in
     {
-      home.packages = [
-        pkgs.opensnitch-ui
-        toggleOpensnitch
-      ];
+      home.packages = [ pkgs.opensnitch-ui ];
 
       # Add restart as opensnitch-ui is started too early and crashes consistently.
       services.opensnitch-ui.enable = true;
