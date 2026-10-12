@@ -1,13 +1,4 @@
 {
-  flake.modules.generic.yuxqiu-cedrus = {
-    my = {
-      networking = {
-        bindAddress = "100.99.246.87";
-        publicHost = "cedrus.taile30f2a.ts.net";
-      };
-    };
-  };
-
   flake.modules.nixos.yuxqiu-cedrus =
     { config, ... }:
     {

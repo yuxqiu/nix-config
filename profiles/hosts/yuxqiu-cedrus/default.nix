@@ -11,7 +11,6 @@
       modules = [
         config.flake.modules.generic.base
         config.flake.modules.generic.yuxqiu
-        config.flake.modules.generic.yuxqiu-cedrus
 
         # base
         config.flake.modules.nixos.base
@@ -69,7 +68,6 @@
         config.flake.modules.nixos.display-manager
         config.flake.modules.nixos.pipewire
         config.flake.modules.nixos.dms
-        config.flake.modules.nixos.hister
         config.flake.modules.nixos.niri
         config.flake.modules.nixos.xdg
         config.flake.modules.nixos.xremap
@@ -97,7 +95,6 @@
       homeManager.modules = [
         config.flake.modules.generic.base
         config.flake.modules.generic.yuxqiu
-        config.flake.modules.generic.yuxqiu-cedrus
 
         # base
         config.flake.modules.homeManager.base
@@ -165,6 +162,7 @@
         config.flake.modules.homeManager.codex
         config.flake.modules.homeManager.devin
         config.flake.modules.homeManager.opencode
+        config.flake.modules.homeManager.happier
 
         # dev
         config.flake.modules.homeManager.editorconfig

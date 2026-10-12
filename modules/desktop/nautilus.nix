@@ -51,11 +51,13 @@
       stylix.targets.gtk.extraCss = ''
         ${window}.background,
         ${window}.view,
-        ${selectors (
-          [ "> widget" ]
-          ++ map (child: sidebarPane + child) sidebarChildren
-          ++ map (child: collapsedSidebarPane + child) sidebarChildren
-        )} {
+        ${
+          selectors (
+            [ "> widget" ]
+            ++ map (child: sidebarPane + child) sidebarChildren
+            ++ map (child: collapsedSidebarPane + child) sidebarChildren
+          )
+        } {
           background-color: transparent;
           background-image: none;
         }

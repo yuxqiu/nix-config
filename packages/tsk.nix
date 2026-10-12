@@ -27,6 +27,16 @@ rustPlatform.buildRustPackage rec {
   # available in the Nix build sandbox.
   doCheck = false;
 
+  # The TUI checks GitHub for a newer release once a day at startup (a
+  # background curl) to show a "run tsk update" notice, which is useless for
+  # a Nix-managed binary. Hard-wire upstream's TSK_NO_UPDATE_CHECK opt-out;
+  # --replace-fail breaks the build if upstream moves it. `tsk update` itself
+  # is an explicit command and is left alone.
+  postPatch = ''
+    substituteInPlace src/update.rs \
+      --replace-fail 'std::env::var_os("TSK_NO_UPDATE_CHECK").is_some()' 'true'
+  '';
+
   postInstall = ''
     # share/skills/<name>/SKILL.md, for programs.agent-skills to discover.
     # A real copy, not a symlink: agent-skills-nix's scanner treats any

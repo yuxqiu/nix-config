@@ -1,14 +1,13 @@
 {
-  flake.modules.nixos.usbguard =
-    {
-      services.usbguard = {
-        implicitPolicyTarget = "block";
-        IPCAllowedGroups = [ "usbguard" ];
-        dbus.enable = true;
-      };
-
-      users.groups.usbguard = { };
+  flake.modules.nixos.usbguard = {
+    services.usbguard = {
+      implicitPolicyTarget = "block";
+      IPCAllowedGroups = [ "usbguard" ];
+      dbus.enable = true;
     };
+
+    users.groups.usbguard = { };
+  };
 
   flake.modules.homeManager.usbguard =
     { pkgs, ... }:

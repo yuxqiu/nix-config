@@ -53,15 +53,23 @@
           '';
           gc-cache = "${pkgs.bleachbit}/bin/bleachbit";
 
-          nr = ''
-            if [ $# -eq 0 ]; then
-              echo "Usage: nr <flake-output-name>"
-              echo "Example: nr yuxqiu-cedrus"
-              return 1
-            fi
+          os-update = ''
             ${pkgs.flake-edit}/bin/flake-edit follow
             nix-update-git -u . --rules all
-            nh os switch . -H "$1" -u
+            nix flake update
+          '';
+          os-switch = ''
+            if [ $# -eq 0 ] || [ $# -gt 2 ]; then
+              echo "Usage: os-switch <flake-output-name> [user@host]"
+              echo "Example: os-switch yuxqiu-cedrus"
+              echo "Example: os-switch snowflake-dracaena root@<ip>"
+              return 1
+            fi
+            if [ $# -eq 1 ]; then
+              nh os switch . -H "$1"
+            else
+              nixos-rebuild switch --flake ".#$1" --build-host "$2" --target-host "$2"
+            fi
           '';
           hm-news = ''
             if [ $# -eq 0 ]; then

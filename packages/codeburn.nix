@@ -50,7 +50,27 @@ buildNpmPackage rec {
       --replace-fail \
         "cd dash && npm ci --no-audit --no-fund --silent && npm run build" \
         "cd dash && npm run build"
-  '';
+
+    # Never phone home on its own. Each automatic network call is cut at the
+    # source; --replace-fail breaks the build if upstream moves these lines,
+    # instead of the fetch silently coming back. Explicit network commands
+    # (quota, sync, update, plugin install, menubar, import --sync, LAN
+    # share/devices discovery) are left alone.
+    #   - LiteLLM prices: price from the bundled snapshot only
+    #     (upstream's test-only CODEBURN_PRICING_SNAPSHOT_ONLY escape hatch).
+    substituteInPlace src/models.ts \
+      --replace-fail "process.env['CODEBURN_PRICING_SNAPSHOT_ONLY']" "true"
+    #   - Frankfurter FX rates: use a cached rate or fall back to USD.
+    substituteInPlace src/currency.ts \
+      --replace-fail "process.env['CODEBURN_FX_NO_FETCH']" "true"
+    #   - cursor.com usage export (same as CODEBURN_CURSOR_SYNC=0).
+    substituteInPlace src/cursor-sync.ts \
+      --replace-fail \
+        "if (process.env['CODEBURN_CURSOR_SYNC'] === '0') return false" \
+        "return false"
+    #   - Vercel AI Gateway report, fetched whenever AI_GATEWAY_API_KEY is set.
+    substituteInPlace src/providers/vercel-gateway.ts \
+      --replace-fail "if (!key) return []" "if (true) return []"  '';
 
   # Install the dashboard's dependencies from the vendored cache. The cache is
   # copied out of the store because npm needs write access to it, and

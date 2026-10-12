@@ -1,8 +1,4 @@
 { inputs, ... }:
-let
-  hister_address = "127.0.0.1";
-  hister_port = "4433";
-in
 {
   flake.modules.homeManager.hister =
     { config, ... }:
@@ -18,8 +14,6 @@ in
             open_results_on_new_tab = true;
           };
           server = {
-            address = "${hister_address}:${hister_port}";
-            base_url = "https://${config.my.networking.publicHost}:${hister_port}";
             database = "db.sqlite3";
           };
           indexer = {
@@ -72,14 +66,4 @@ in
         };
       };
     };
-
-  flake.modules.nixos.hister = {
-    services.tailscale.serve = {
-      services.hister = {
-        endpoints = {
-          "https:${hister_port}" = "http://${hister_address}:${hister_port}";
-        };
-      };
-    };
-  };
 }

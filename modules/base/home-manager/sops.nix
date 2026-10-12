@@ -2,9 +2,78 @@
   flake.modules.homeManager.base =
     { pkgs, ... }:
     let
+      # Runs on the remote host, inside a `nix shell` providing sops,
+      # ssh-to-age and neovim: `run.sh <edit|updatekeys> <key> <file>`.
+      remoteRun = pkgs.writeText "sops-remote-run.sh" ''
+        set -euo pipefail
+        cd "$(dirname "$0")"
+        mode="$1"
+        key_path="$2"
+        file="$3"
+        ssh_to_age_bin="$(command -v ssh-to-age)"
+        if [ -r "$key_path" ]; then
+          SOPS_AGE_KEY="$("$ssh_to_age_bin" -private-key -i "$key_path")"
+        else
+          SOPS_AGE_KEY="$(sudo "$ssh_to_age_bin" -private-key -i "$key_path")"
+        fi
+        export SOPS_AGE_KEY
+        case "$mode" in
+          edit) EDITOR="nvim" sops "$file" ;;
+          updatekeys) sops updatekeys "$file" ;;
+        esac
+      '';
+
+      # A key written as `[user@]host:/path` lives on that host. Its private
+      # half never leaves it: the encrypted file is copied over, sops runs
+      # there, and the result is copied back.
+      remoteLib = ''
+        is_remote() {
+          case "$1" in
+            *:*) return 0 ;;
+            *) return 1 ;;
+          esac
+        }
+
+        # Remote arguments are quoted with printf %q, so expanding them on
+        # this side before ssh sends them is intended.
+        # shellcheck disable=SC2029
+        # Prints the SSH public key of a local or remote private key path.
+        read_pub() {
+          if is_remote "$1"; then
+            ssh "''${1%%:*}" cat "$(printf "%q" "''${1#*:}.pub")"
+          else
+            if [ ! -f "$1.pub" ]; then
+              echo "Missing SSH public key: $1.pub" >&2
+              return 1
+            fi
+            cat "$1.pub"
+          fi
+        }
+
+        # remote_sops <edit|updatekeys> <host:key> <local file> <path on host> [.sops.yaml]
+        # shellcheck disable=SC2029,SC2064
+        remote_sops() {
+          local mode="$1" spec="$2" local_file="$3" rel="$4" sops_yaml="''${5:-}"
+          local host="''${spec%%:*}" key="''${spec#*:}" rdir
+          rdir="$(ssh "$host" mktemp -d)"
+          trap "ssh $(printf "%q" "$host") rm -rf $(printf "%q" "$rdir")" EXIT
+          ssh "$host" mkdir -p "$(printf "%q" "$rdir/$(dirname "$rel")")"
+          scp -q ${remoteRun} "$host:$rdir/run.sh"
+          scp -q "$local_file" "$host:$rdir/$rel"
+          if [ -n "$sops_yaml" ]; then
+            scp -q "$sops_yaml" "$host:$rdir/.sops.yaml"
+          fi
+          ssh -t "$host" "$(printf "%q " nix shell nixpkgs#sops nixpkgs#ssh-to-age nixpkgs#neovim \
+            -c bash "$rdir/run.sh" "$mode" "$key" "$rel")"
+          scp -q "$host:$rdir/$rel" "$local_file"
+        }
+      '';
+
       sops-update = pkgs.writeShellApplication {
         name = "sops-update";
         runtimeInputs = with pkgs; [
+          coreutils
+          openssh
           ssh-to-age
           neovim
           sops
@@ -12,8 +81,11 @@
         text = ''
           set -euo pipefail
 
+          ${remoteLib}
+
           usage() {
             echo "Usage: sops-update <key> <file>" >&2
+            echo "  <key>: a local key path, or [user@]host:/path for a key on that host" >&2
             exit 1
           }
 
@@ -24,6 +96,11 @@
           key_path="$1"
           file="$2"
           ssh_to_age_bin="$(command -v ssh-to-age)"
+
+          if is_remote "$key_path"; then
+            remote_sops edit "$key_path" "$file" "$(basename "$file")"
+            exit 0
+          fi
 
           if [ -r "$key_path" ]; then
             age_key="$("$ssh_to_age_bin" -private-key -i "$key_path")"
@@ -41,6 +118,7 @@
         runtimeInputs = with pkgs; [
           coreutils
           git
+          openssh
           ssh-to-age
           gnugrep
           gawk
@@ -50,8 +128,11 @@
         text = ''
             set -euo pipefail
 
+            ${remoteLib}
+
             usage() {
               echo "Usage: sops-update-key <mode> <decrypt_key> <key> <file>" >&2
+              echo "Keys are local paths, or [user@]host:/path for a key on that host" >&2
               echo "Modes: add, remove" >&2
               echo "  <decrypt_key>: a key you currently hold, used to perform the update" >&2
               echo "  add:    <key> is the new key to add" >&2
@@ -104,28 +185,24 @@
               exit 1
             fi
 
+            file_abs="$(realpath "$file")"
+            file_rel="$(realpath --relative-to="$sops_root" "$file")"
+
             cd "$sops_root"
 
             sops_yaml="$sops_root/.sops.yaml"
 
-            decrypt_key_pub_path="$decrypt_key_path.pub"
-            if [ ! -f "$decrypt_key_pub_path" ]; then
-              echo "Missing SSH public key: $decrypt_key_pub_path" >&2
-              exit 1
-            fi
-
-            target_key_pub_path="$key_path.pub"
-            target_key_name="$(basename "$key_path")"
+            target_key_name="$(basename "''${key_path#*:}")"
             target_key_name="$(printf "%s" "$target_key_name" | sed 's/\.pub$//')"
-            if [ ! -f "$target_key_pub_path" ]; then
-              echo "Missing SSH public key: $target_key_pub_path" >&2
-              exit 1
-            fi
 
-            decrypt_key="$(cat "$decrypt_key_pub_path" | "$ssh_to_age_bin")"
-            target_key="$(cat "$target_key_pub_path" | "$ssh_to_age_bin")"
+            decrypt_key="$(read_pub "$decrypt_key_path" | "$ssh_to_age_bin")"
+            target_key="$(read_pub "$key_path" | "$ssh_to_age_bin")"
 
-            if [ -r "$decrypt_key_path" ]; then
+            # A remote decrypt key is converted on its own host by remote_sops.
+            identity=""
+            if is_remote "$decrypt_key_path"; then
+              true
+            elif [ -r "$decrypt_key_path" ]; then
               identity="$("$ssh_to_age_bin" -private-key -i "$decrypt_key_path")"
             else
               identity="$(sudo "$ssh_to_age_bin" -private-key -i "$decrypt_key_path")"
@@ -224,8 +301,12 @@
 
           mv "$tmp" "$sops_yaml"
 
-          SOPS_AGE_KEY="$identity" \
-            sops updatekeys "$file"
+          if is_remote "$decrypt_key_path"; then
+            remote_sops updatekeys "$decrypt_key_path" "$file_abs" "$file_rel" "$sops_yaml"
+          else
+            SOPS_AGE_KEY="$identity" \
+              sops updatekeys "$file"
+          fi
         '';
       };
     in
