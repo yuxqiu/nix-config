@@ -52,36 +52,6 @@
             gc-nix
           '';
           gc-cache = "${pkgs.bleachbit}/bin/bleachbit";
-
-          os-update = ''
-            ${pkgs.flake-edit}/bin/flake-edit follow
-            nix-update-git -u . --rules all
-            nix flake update
-          '';
-          os-switch = ''
-            if [ $# -eq 0 ] || [ $# -gt 2 ]; then
-              echo "Usage: os-switch <flake-output-name> [user@host]"
-              echo "Example: os-switch yuxqiu-cedrus"
-              echo "Example: os-switch snowflake-dracaena root@<ip>"
-              return 1
-            fi
-            if [ $# -eq 1 ]; then
-              nh os switch . -H "$1"
-            else
-              # Logging in as root needs no sudo on the target.
-              local elevation=auto
-              [[ "$2" == root@* ]] && elevation=none
-              nh os switch . -H "$1" --build-host "$2" --target-host "$2" -e "$elevation"
-            fi
-          '';
-          hm-news = ''
-            if [ $# -eq 0 ]; then
-              echo "Usage: hm-news <hostname>"
-              echo "Example: hm-news yuxqiu-cedrus"
-              return 1
-            fi
-            nix build .#nixosConfigurations."$1".config.home-manager.users."$USER".news.json.output --no-link --print-out-paths 2>/dev/null | xargs cat | ${pkgs.jq}/bin/jq -r '.entries | reverse | .[] | "---\nTime: \(.time)\n\(.message)"' | ''${PAGER:-${pkgs.less}/bin/less -R}
-          '';
         }
         // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
           jdks = "/usr/libexec/java_home -V";

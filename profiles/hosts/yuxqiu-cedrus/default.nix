@@ -207,6 +207,7 @@
         config.flake.modules.homeManager.nix-update
         config.flake.modules.homeManager.hydra-check
         config.flake.modules.homeManager.nh
+        config.flake.modules.homeManager.os
         config.flake.modules.homeManager.direnv
         config.flake.modules.homeManager.any-nix-shell
 
