@@ -118,6 +118,7 @@
         # desktop
         config.flake.modules.homeManager.firefox
         config.flake.modules.homeManager.captive-browser
+        config.flake.modules.homeManager.disktree
         config.flake.modules.homeManager.ghostty
         config.flake.modules.homeManager.dms
         config.flake.modules.homeManager.nautilus

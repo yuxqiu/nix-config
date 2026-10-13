@@ -8,13 +8,13 @@
 
 stdenv.mkDerivation rec {
   pname = "opencode-queue";
-  version = "0.18.1";
+  version = "2.0.2";
 
   src = fetchFromGitHub {
     owner = "mirsella";
     repo = "opencode-queue";
     rev = "v${version}";
-    hash = "sha256-6s+eQ5Rhsgn9ssBJmIqYGVYzkMTr5r+FgTR9fRSeWHo=";
+    hash = "sha256-1IwHSgTedWDjRbv0dACtD01GM6NiBSn/98ARQQnYOW4=";
   };
 
   passthru.nodeModules = stdenv.mkDerivation {
@@ -27,6 +27,8 @@ stdenv.mkDerivation rec {
     ];
 
     dontBuild = true;
+    # fixupPhase's patchShebangs would inject store paths, forbidden in a FOD
+    dontFixup = true;
 
     installPhase = ''
       mkdir $out
@@ -37,7 +39,7 @@ stdenv.mkDerivation rec {
 
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
-    outputHash = "sha256-ZnyfMav+RupjnV0dar8ZrkFX2XLvKqLbFHgewxr48tg=";
+    outputHash = "sha256-XkIvUIknx/7OFBrQPI+4IJh85m5eSFr+F/5uZy65PcA=";
   };
 
   nativeBuildInputs = [ bun ];
