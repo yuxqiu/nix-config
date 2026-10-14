@@ -13,6 +13,7 @@
             analytics.enabled = false;
             web_search = "live";
             tui = {
+              keymap.chat.next_permission_mode = "ctrl-tab";
               status_line = [
                 "model-with-reasoning"
                 "context-used"

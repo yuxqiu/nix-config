@@ -73,10 +73,12 @@
 
           case "''${1:-}" in
             "")
-              # shellcheck disable=SC2086
+              rendered_news="$(mktemp)"
+              trap 'rm -f "$rendered_news"' EXIT
               entries | jq -r '.[]
-                | "* \(.time | sub("T"; " ") | sub("\\+00:00$"; "")) [\(if .read then "read" else "unread" end)]\n\n  \(.message | gsub("\n"; "\n  "))\n"' \
-                | ''${PAGER:-less -R}
+                | "* \(.time | sub("T"; " ") | sub("\\+00:00$"; "")) [\(if .read then "read" else "unread" end)]\n\n  \(.message | gsub("\n"; "\n  "))\n"' > "$rendered_news"
+              # shellcheck disable=SC2086
+              ''${PAGER:-less -R} < "$rendered_news"
               { cat "$read_ids"; jq -r '.entries[].id' "$news"; } | sort -u > "$read_ids.new"
               mv -f "$read_ids.new" "$read_ids"
               ;;

@@ -167,7 +167,7 @@
     }
   ],
   "currentThemeName": "custom",
-  "customThemeFile": "/nix/store/pjpxq9gaiyjgxf3bv9j6jh8lz14qwydv-source/themes/catppuccin/theme.json",
+  "customThemeFile": "/nix/store/p2vnkkh9jfgmj5mj7xn2k18061bvsdjn-source/themes/catppuccin/theme.json",
   "registryThemeVariants": {
     "catppuccin": {
       "dark": {
@@ -260,6 +260,7 @@
   "runUserMatugenTemplates": false,
   "popupTransparency": 0.8,
   "dmsWindowsFloatingSeeded": ["niri", "niri"],
+  "m3ElevationEnabled": true,
   "barElevationEnabled": false,
   "blurEnabled": true,
   "blurBorderSeeded": true,
@@ -352,18 +353,20 @@
       "w": 2
     },
     {
+      "col": 0,
       "enabled": true,
-      "footer": true,
       "h": 1,
       "id": "runningApps",
+      "row": 5,
+      "small": true,
       "w": 4
     },
     {
+      "col": 7,
       "enabled": true,
-      "footer": true,
-      "footerEnd": true,
       "h": 1,
       "id": "edit",
+      "row": 5,
       "small": true,
       "w": 1
     }
@@ -550,6 +553,7 @@
         }
       ],
       "clickThrough": false,
+      "dot": false,
       "enabled": true,
       "followInterfaceStyle": true,
       "fontScale": 1,
@@ -559,6 +563,7 @@
       "id": "default",
       "innerPadding": 4,
       "island": true,
+      "islandAlongOffset": 0,
       "islandBatteryStyle": "solid",
       "islandHomeCompactTight": true,
       "islandHomeLayout": [
@@ -593,9 +598,10 @@
       ],
       "islandHomeStatusContent": "battery",
       "islandInteractionMode": "hybrid",
+      "islandNotch": false,
       "islandOuterGap": 0,
       "islandPalette": "dim",
-      "islandReserveThickness": 24,
+      "islandReserveThickness": 30,
       "islandRouteControlCenter": "follow",
       "islandRouteLauncher": "follow",
       "leftWidgets": [
@@ -641,6 +647,7 @@
       "showOnWindowsOpen": true,
       "spacing": 0,
       "squareCorners": false,
+      "surfaceColor": "default",
       "transparency": 0.8,
       "visible": true,
       "widgetFollowInterfaceStyle": false,
@@ -862,5 +869,5 @@
     }
   },
   "frameMode": "separate",
-  "configVersion": 38
+  "configVersion": 42
 }
