@@ -37,6 +37,21 @@
         };
       };
 
+      # Quickfix buffers are listed by default, so bufferline shows every
+      # quickfix window (vimtex errors, :grep, LSP references) as an
+      # unnamed tab. Unlist them; the split itself is unaffected.
+      autoCmd = [
+        {
+          event = [ "FileType" ];
+          pattern = [ "qf" ];
+          callback.__raw = ''
+            function()
+              vim.bo.buflisted = false
+            end
+          '';
+        }
+      ];
+
       keymaps = [
         {
           mode = "n";

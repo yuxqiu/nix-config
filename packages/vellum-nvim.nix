@@ -1,11 +1,24 @@
 {
   lib,
+  stdenv,
   vimUtils,
   buildNpmPackage,
   fetchFromGitHub,
   nodejs,
-  chromium,
+  playwright-driver,
 }:
+
+let
+  # chrome-headless-shell instead of the full `chromium`: the latter still
+  # phones home (GCM, component updater, account checks, DoH probes) despite
+  # puppeteer's --disable-background-networking. The shell has none of those
+  # services, so the only network traffic left is remote markdown images.
+  headless-shell =
+    let
+      arch = if stdenv.hostPlatform.isAarch64 then "linux-arm64" else "linux64";
+    in
+    "${playwright-driver.components.chromium-headless-shell}/chrome-headless-shell-${arch}/chrome-headless-shell";
+in
 
 vimUtils.buildVimPlugin rec {
   pname = "vellum.nvim";
@@ -32,12 +45,12 @@ vimUtils.buildVimPlugin rec {
     '';
   };
 
-  # Use nixpkgs node and Chromium instead of PATH and puppeteer's download.
+  # Use nixpkgs node and headless Chromium instead of PATH and puppeteer's download.
   postPatch = ''
     substituteInPlace lua/vellum/browser.lua lua/vellum/health.lua \
       --replace-fail "'node'" "'${lib.getExe nodejs}'"
     substituteInPlace render/browser.mjs \
-      --replace-fail "headless: 'shell'," "headless: 'shell', executablePath: '${lib.getExe chromium}',"
+      --replace-fail "headless: 'shell'," "headless: 'shell', executablePath: '${headless-shell}',"
   '';
 
   postInstall = ''
