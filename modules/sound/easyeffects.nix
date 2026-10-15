@@ -3,6 +3,7 @@
     services.easyeffects = {
       enable = true;
       preset = "noise-reduction";
+      settings.StreamInputs.listenToMic = false;
       extraPresets = {
         "noise-reduction" = {
           input = {
