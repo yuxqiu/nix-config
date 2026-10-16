@@ -167,7 +167,7 @@
     }
   ],
   "currentThemeName": "custom",
-  "customThemeFile": "/nix/store/p2vnkkh9jfgmj5mj7xn2k18061bvsdjn-source/themes/catppuccin/theme.json",
+  "customThemeFile": "/nix/store/lh0zsqv0235wnp1g9h38z69bzi2qghcq-source/themes/catppuccin/theme.json",
   "registryThemeVariants": {
     "catppuccin": {
       "dark": {
@@ -798,9 +798,9 @@
         "showAnalogNumbers": true,
         "showAnalogSeconds": true,
         "showDate": true,
-        "style": "analog",
+        "style": "overlap",
         "syncPositionAcrossScreens": true,
-        "transparency": 0.8
+        "transparency": 0
       },
       "enabled": true,
       "id": "dw_clock_primary",
