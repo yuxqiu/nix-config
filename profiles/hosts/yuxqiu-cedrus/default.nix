@@ -79,7 +79,7 @@
         config.flake.modules.nixos.weylus
 
         # dev
-        config.flake.modules.nixos.geminicommit
+        config.flake.modules.nixos.commit
         config.flake.modules.nixos.paseo
         config.flake.modules.nixos.nix-ld
         config.flake.modules.nixos.man
