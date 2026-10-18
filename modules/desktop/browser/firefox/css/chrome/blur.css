@@ -44,3 +44,13 @@ body {
     {
     display: none !important;
 }
+
+/* Keep the content-area backdrop just shy of opaque. Firefox reports opaque
+ * chrome backgrounds to the compositor as the window's opaque region, but
+ * doesn't subtract the expanded sidebar overlaying it, so niri skips blurring
+ * there and the sidebar renders over black until the next full repaint. */
+.browserContainer {
+    background: color-mix(in srgb,
+            var(--tabpanel-background-color) 99%,
+            transparent) !important;
+}

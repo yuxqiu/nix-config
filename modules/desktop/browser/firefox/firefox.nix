@@ -13,7 +13,6 @@
           hash = "sha256-oo3/j53+vDh0Y+uCMPFUGEc4bDr7uD4CzagEuQX5PM8=";
         }
       }/user.js";
-      userOverrides = builtins.readFile ./user-override.js;
 
       firefox-mod-blur = pkgs.fetchFromGitHub {
         owner = "datguypiko";
@@ -53,22 +52,12 @@
         profiles.${profileName} = {
           isDefault = true;
 
-          # stylix: prevent auto disabling extensions installed inside firefox
-          # https://github.com/nix-community/home-manager/issues/6398#issuecomment-2958982664
-          settings = {
-            extensions = {
-              autoDisableScopes = 0;
-              update.autoUpdateDefault = false;
-              update.enabled = false;
-            };
-          };
           extensions = {
             force = true;
           };
 
-          # user.js
+          # user.js (overrides live in ./prefs.nix)
           preConfig = arkenfoxUserJs;
-          extraConfig = userOverrides;
 
           # userChrome and userContent
           inherit userChrome;
@@ -229,7 +218,6 @@
           window-rule = {
             match._props."app-id" = "firefox";
             background-effect.blur = true;
-            opacity = 0.99999;
           };
         }
 
