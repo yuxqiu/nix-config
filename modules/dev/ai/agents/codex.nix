@@ -1,7 +1,9 @@
 {
   flake.modules.homeManager.codex =
-    { config, ... }:
+    { config, pkgs, ... }:
     {
+      home.packages = [ pkgs.bubblewrap ];
+
       programs = {
         codex = {
           enable = true;
@@ -11,6 +13,8 @@
           mutableSettings = true;
           settings = {
             analytics.enabled = false;
+            # Updates are managed by Nix.
+            check_for_update_on_startup = false;
             web_search = "live";
             tui = {
               keymap.chat.next_permission_mode = "ctrl-tab";

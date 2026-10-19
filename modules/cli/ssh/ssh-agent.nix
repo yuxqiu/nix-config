@@ -75,7 +75,7 @@
           window-rule = {
             match._props."app-id" = "ssh-askpass";
             background-effect.blur = true;
-            opacity = 0.8;
+            opacity = config.stylix.opacity.popups;
           };
         }
       ];

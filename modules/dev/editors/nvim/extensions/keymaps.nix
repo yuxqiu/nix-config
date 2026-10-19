@@ -176,6 +176,54 @@
         options.noremap = true;
       }
 
+      # Paste: prefer native commands to preserve register types and counts.
+      # :put always inserts whole lines, even for characterwise yanks.
+      {
+        mode = "n";
+        key = "<leader>pj";
+        action.__raw = ''
+          function()
+            return "<Cmd>put " .. vim.v.register .. "<CR>"
+          end
+        '';
+        options.expr = true;
+        options.desc = "Paste on line below";
+      }
+      {
+        mode = "n";
+        key = "<leader>pk";
+        action.__raw = ''
+          function()
+            return "<Cmd>put! " .. vim.v.register .. "<CR>"
+          end
+        '';
+        options.expr = true;
+        options.desc = "Paste on line above";
+      }
+      {
+        mode = "n";
+        key = "<leader>p]";
+        action = "]p";
+        options.desc = "Paste after, match current indent";
+      }
+      {
+        mode = "n";
+        key = "<leader>p[";
+        action = "[p";
+        options.desc = "Paste before, match current indent";
+      }
+      {
+        mode = "n";
+        key = "<leader>p=";
+        action = "p`[v`]='[";
+        options.desc = "Paste after and reindent";
+      }
+      {
+        mode = "n";
+        key = "<leader>pv";
+        action = "'[V']";
+        options.desc = "Select last pasted/changed lines";
+      }
       # Jump list navigation (back/forward like Zed)
       {
         mode = "n";

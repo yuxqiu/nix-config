@@ -45,6 +45,11 @@
             icon = "󰅂";
           }
           {
+            __unkeyed-1 = "<leader>p";
+            group = "paste";
+            icon = "󰅌";
+          }
+          {
             __unkeyed-1 = "<leader>Q";
             group = "macro";
             icon = "󰑁";

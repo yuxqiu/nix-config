@@ -1,6 +1,11 @@
 {
   flake.modules.homeManager.niri =
-    { pkgs, lib, ... }:
+    {
+      config,
+      pkgs,
+      lib,
+      ...
+    }:
     {
       xdg.portal = {
         extraPortals = [
@@ -35,7 +40,7 @@
           window-rule = {
             match._props."app-id" = "gcr-prompter";
             background-effect.blur = true;
-            opacity = 0.8;
+            opacity = config.stylix.opacity.popups;
           };
         }
       ];

@@ -1,6 +1,7 @@
 {
   flake.modules.homeManager.opensnitch =
     {
+      config,
       pkgs,
       lib,
       ...
@@ -22,7 +23,7 @@
           window-rule = {
             match._props."app-id" = "opensnitch_ui";
             background-effect.blur = true;
-            opacity = 0.8;
+            opacity = config.stylix.opacity.popups;
           };
         }
 
