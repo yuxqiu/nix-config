@@ -167,7 +167,7 @@
     }
   ],
   "currentThemeName": "custom",
-  "customThemeFile": "/nix/store/lh0zsqv0235wnp1g9h38z69bzi2qghcq-source/themes/catppuccin/theme.json",
+  "customThemeFile": "/nix/store/1piksrnv8ws1msp4i4w366n2xln8lqg3-source/themes/catppuccin/theme.json",
   "registryThemeVariants": {
     "catppuccin": {
       "dark": {
@@ -232,10 +232,10 @@
       "showTrash": false,
       "trashFileManager": "default",
       "trashCustomCommand": "",
-      "magnification": false,
+      "magnification": true,
       "magnificationScale": 130,
       "magnificationProfile": "parabolic",
-      "magnificationExpand": false,
+      "magnificationExpand": true,
       "order": [],
       "widgets": [
         {
@@ -398,43 +398,47 @@
       "type": "regex"
     }
   ],
-  "dankLauncherV2Size": "micro",
-  "dankLauncherV2ShowFooter": false,
+  "niriOverviewLauncherStyle": "full",
+  "dankLauncherV2Size": "compact",
+  "dankLauncherV2ShowFooter": true,
   "dankLauncherV2UnloadOnClose": true,
   "dankLauncherV2IncludeFilesInAll": true,
   "dankLauncherV2IncludeFoldersInAll": true,
   "launcherStyle": "spotlight",
+  "spotlightBarShowModeChips": false,
+  "dashTabPosition": "auto",
   "dashTabs": [
     {
-      "enabled": true,
-      "id": "overview"
+      "id": "overview",
+      "enabled": true
     },
     {
-      "enabled": true,
-      "id": "media"
+      "id": "media",
+      "enabled": true
     },
     {
-      "enabled": false,
-      "id": "wallpaper"
+      "id": "wallpaper",
+      "enabled": false
     },
     {
-      "enabled": true,
-      "id": "weather"
+      "id": "weather",
+      "enabled": true
     },
     {
-      "enabled": true,
-      "id": "settings"
+      "id": "wellbeing",
+      "enabled": true
+    },
+    {
+      "id": "notifications",
+      "enabled": false
     }
   ],
   "dashCards": [
     {
+      "col": 0,
       "h": 1,
       "id": "user",
-      "w": 3
-    },
-    {
-      "h": 1,
-      "id": "clock",
+      "row": 0,
       "w": 3
     },
     {
@@ -443,29 +447,46 @@
       "w": 1
     },
     {
+      "col": 0,
       "h": 3,
       "id": "notifications",
+      "row": 1,
       "w": 3
     },
     {
+      "col": 3,
       "h": 3,
       "id": "calendar",
+      "row": 1,
       "w": 3
     },
     {
+      "col": 0,
       "h": 1,
       "id": "sysmon",
+      "row": 4,
       "w": 3
     },
     {
+      "col": 3,
       "h": 1,
       "id": "network",
+      "row": 4,
       "w": 2
     },
     {
+      "col": 5,
       "h": 1,
       "id": "battery",
+      "row": 4,
       "w": 1
+    },
+    {
+      "col": 3,
+      "h": 1,
+      "id": "wellbeing",
+      "row": 0,
+      "w": 3
     }
   ],
   "dashOptions": {
@@ -476,7 +497,8 @@
       "lyrics": false
     },
     "notifications": {
-      "panelColumns": 3
+      "panelColumns": 3,
+      "panelRows": 4
     },
     "user": {
       "hostname": false
@@ -550,6 +572,10 @@
           "enabled": true,
           "id": "spacer",
           "size": 20
+        },
+        {
+          "id": "weather",
+          "enabled": true
         }
       ],
       "clickThrough": false,
@@ -565,35 +591,48 @@
       "island": true,
       "islandAlongOffset": 0,
       "islandBatteryStyle": "solid",
+      "islandFloating": false,
       "islandHomeCompactTight": true,
       "islandHomeLayout": [
         {
-          "enabled": true,
-          "id": "media"
+          "id": "media",
+          "enabled": true
         },
         {
-          "enabled": true,
-          "id": "clock"
+          "id": "clock",
+          "enabled": true
         },
         {
-          "enabled": true,
-          "id": "weather"
+          "id": "weather",
+          "enabled": false
         },
         {
-          "enabled": true,
-          "id": "status"
+          "id": "status",
+          "enabled": true
         },
         {
-          "enabled": false,
-          "id": "volume"
+          "id": "volume",
+          "enabled": false
         },
         {
-          "enabled": false,
-          "id": "brightness"
+          "id": "brightness",
+          "enabled": false
         },
         {
-          "enabled": true,
-          "id": "notifications"
+          "id": "notifications",
+          "enabled": false
+        },
+        {
+          "id": "workspaces",
+          "enabled": false
+        },
+        {
+          "id": "privacy",
+          "enabled": true
+        },
+        {
+          "id": "tray",
+          "enabled": false
         }
       ],
       "islandHomeStatusContent": "battery",
@@ -601,9 +640,12 @@
       "islandNotch": false,
       "islandOuterGap": 0,
       "islandPalette": "dim",
+      "islandPlacement": "free",
       "islandReserveThickness": 30,
+      "islandRouteClipboard": "follow",
       "islandRouteControlCenter": "follow",
       "islandRouteLauncher": "follow",
+      "islandRouteNotificationCenter": "island",
       "leftWidgets": [
         "launcherButton",
         {
@@ -654,7 +696,8 @@
       "widgetOutlineEnabled": false,
       "widgetPadding": 12,
       "widgetStyle": "pills",
-      "widgetTransparency": 0.3
+      "widgetTransparency": 0.3,
+      "islandRouteWeather": "follow"
     },
     {
       "autoHide": false,

@@ -22,17 +22,20 @@
       # (see `opencode models`).
       opencodecommit = pkgs.writeShellApplication {
         name = "opencodecommit";
-        runtimeInputs = [ pkgs.git ];
+        runtimeInputs = [
+          pkgs.git
+          pkgs.gnugrep
+          pkgs.jq
+        ];
         text = ''
           if git diff --cached --quiet; then
             echo "opencodecommit: nothing staged" >&2
             exit 1
           fi
 
-          # Zen's free tier rejects custom/tool-less agents, so use the
-          # built-in read-only `plan` agent and also deny its shell, web and
-          # subagent tools.
-          export OPENCODE_CONFIG_CONTENT='{"agent":{"plan":{"permission":{"bash":"deny","webfetch":"deny","websearch":"deny","task":"deny"}}}}'
+          # Keep the built-in read-only agent and deny shell, web and subagents.
+          # A private server is required for this per-invocation config to apply.
+          export OPENCODE_CONFIG_CONTENT='{"agents":{"plan":{"permissions":[{"action":"shell","resource":"*","effect":"deny"},{"action":"webfetch","resource":"*","effect":"deny"},{"action":"websearch","resource":"*","effect":"deny"},{"action":"subagent","resource":"*","effect":"deny"}]}}}'
 
           prompt="Write a git commit message for the staged diff on stdin.
           Use Conventional Commits (type(scope): summary), imperative mood,
@@ -45,13 +48,27 @@
           if [ -n "''${OPENCODECOMMIT_MODEL:-}" ]; then
             models=("$OPENCODECOMMIT_MODEL")
           else
-            mapfile -t models < <(opencode models opencode --refresh 2>/dev/null | grep -- '-free$')
+            model_list=$(opencode models --standalone)
+            mapfile -t models < <(printf '%s\n' "$model_list" | grep '^opencode/.*-free$')
+          fi
+
+          if [ "''${#models[@]}" -eq 0 ]; then
+            echo "opencodecommit: no free OpenCode models available; set OPENCODECOMMIT_MODEL=provider/model" >&2
+            exit 1
           fi
 
           diff=$(git diff --cached)
           for model in "''${models[@]}"; do
-            if msg=$(printf '%s\n' "$diff" | opencode run --pure --agent plan -m "$model" "$prompt") && [ -n "$msg" ]; then
-              exec git commit -e -m "$msg"
+            echo "opencodecommit: using $model" >&2
+            if msg=$(printf '%s\n' "$diff" | opencode run --standalone --format json --agent plan -m "$model" "$prompt" |
+              jq -ers '[.[] | select(.type == "text") | .part.text] | join("\n") | select(test("\\S"))'); then
+              if git commit -e -m "$msg"; then
+                exit 0
+              else
+                status=$?
+                printf '\nopencodecommit: commit failed; generated message:\n%s\n' "$msg" >&2
+                exit "$status"
+              fi
             fi
             echo "opencodecommit: $model failed" >&2
           done
