@@ -157,6 +157,7 @@
         config.flake.modules.homeManager.hunk
         config.flake.modules.homeManager.mcp
         config.flake.modules.homeManager.skills
+        config.flake.modules.homeManager.pstack
         config.flake.modules.homeManager.agents-md
         config.flake.modules.homeManager.antigravity
         config.flake.modules.homeManager.claude
