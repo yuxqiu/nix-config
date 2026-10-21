@@ -202,8 +202,8 @@
       "itemSpacing": 4,
       "margin": 0,
       "bottomGap": 0,
-      "transparency": 1,
-      "followInterfaceStyle": true,
+      "transparency": 0.4,
+      "followInterfaceStyle": false,
       "autoHide": true,
       "smartAutoHide": false,
       "useOverlayLayer": false,
@@ -398,6 +398,7 @@
       "type": "regex"
     }
   ],
+  "launcherEnterAction": "focus",
   "niriOverviewLauncherStyle": "full",
   "dankLauncherV2Size": "compact",
   "dankLauncherV2ShowFooter": true,
@@ -409,28 +410,28 @@
   "dashTabPosition": "auto",
   "dashTabs": [
     {
-      "id": "overview",
-      "enabled": true
+      "enabled": true,
+      "id": "overview"
     },
     {
-      "id": "media",
-      "enabled": true
+      "enabled": true,
+      "id": "media"
     },
     {
-      "id": "wallpaper",
-      "enabled": false
+      "enabled": false,
+      "id": "wallpaper"
     },
     {
-      "id": "weather",
-      "enabled": true
+      "enabled": true,
+      "id": "weather"
     },
     {
-      "id": "wellbeing",
-      "enabled": true
+      "enabled": true,
+      "id": "wellbeing"
     },
     {
-      "id": "notifications",
-      "enabled": false
+      "enabled": false,
+      "id": "notifications"
     }
   ],
   "dashCards": [
@@ -574,8 +575,8 @@
           "size": 20
         },
         {
-          "id": "weather",
-          "enabled": true
+          "enabled": true,
+          "id": "weather"
         }
       ],
       "clickThrough": false,
@@ -595,44 +596,44 @@
       "islandHomeCompactTight": true,
       "islandHomeLayout": [
         {
-          "id": "media",
-          "enabled": true
+          "enabled": true,
+          "id": "media"
         },
         {
-          "id": "clock",
-          "enabled": true
+          "enabled": true,
+          "id": "clock"
         },
         {
-          "id": "weather",
-          "enabled": false
+          "enabled": false,
+          "id": "weather"
         },
         {
-          "id": "status",
-          "enabled": true
+          "enabled": true,
+          "id": "status"
         },
         {
-          "id": "volume",
-          "enabled": false
+          "enabled": false,
+          "id": "volume"
         },
         {
-          "id": "brightness",
-          "enabled": false
+          "enabled": false,
+          "id": "brightness"
         },
         {
-          "id": "notifications",
-          "enabled": false
+          "enabled": false,
+          "id": "notifications"
         },
         {
-          "id": "workspaces",
-          "enabled": false
+          "enabled": false,
+          "id": "workspaces"
         },
         {
-          "id": "privacy",
-          "enabled": true
+          "enabled": true,
+          "id": "privacy"
         },
         {
-          "id": "tray",
-          "enabled": false
+          "enabled": false,
+          "id": "tray"
         }
       ],
       "islandHomeStatusContent": "battery",
@@ -646,6 +647,7 @@
       "islandRouteControlCenter": "follow",
       "islandRouteLauncher": "follow",
       "islandRouteNotificationCenter": "island",
+      "islandRouteWeather": "follow",
       "leftWidgets": [
         "launcherButton",
         {
@@ -696,8 +698,7 @@
       "widgetOutlineEnabled": false,
       "widgetPadding": 12,
       "widgetStyle": "pills",
-      "widgetTransparency": 0.3,
-      "islandRouteWeather": "follow"
+      "widgetTransparency": 0.3
     },
     {
       "autoHide": false,

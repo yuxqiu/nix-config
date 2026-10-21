@@ -79,7 +79,7 @@
       environment.etc."nixos/configuration.nix".text = ''
         # This file intentionally left minimal.
         # The real system config is managed by the nix-config flake.
-        # To rebuild: nixos yuxqiu-cedrus
+        # To rebuild: nixos cedrus
         { ... }:
         {
           imports = [ ./hardware-configuration.nix ];

@@ -1,0 +1,2 @@
+# Preserve existing module and attribute-path style.
+disabled = ["manual_inherit_from", "useless_parens", "empty_pattern", "repeated_keys"]

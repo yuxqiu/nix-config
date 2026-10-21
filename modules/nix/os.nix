@@ -25,8 +25,8 @@
         text = ''
           if [ $# -eq 0 ] || [ $# -gt 2 ]; then
             echo "Usage: os-switch <flake-output-name> [user@host]"
-            echo "Example: os-switch yuxqiu-cedrus"
-            echo "Example: os-switch snowflake-dracaena root@<ip>"
+            echo "Example: os-switch cedrus"
+            echo "Example: os-switch dracaena root@<ip>"
             exit 1
           fi
           if [ $# -eq 1 ]; then

@@ -86,6 +86,8 @@
     };
 
   flake.modules.nixos.nautilus = {
+    services.gnome.sushi.enable = true;
+
     # Trash, network browsing, and other GIO virtual filesystems
     services.gvfs.enable = true;
   };

@@ -1,19 +1,26 @@
 {
   config.flake.modules.homeManager.ssh =
-    { pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     {
       programs.ssh = {
         enable = true;
 
-        # base config
-        settings."*" = {
-          forwardAgent = false;
-          addKeysToAgent = "no";
-          compression = false;
-          serverAliveInterval = 300;
-          serverAliveCountMax = 3;
-          hashKnownHosts = true;
-          userKnownHostsFile = "~/.ssh/known_hosts";
+        settings = lib.mapAttrs (_: hostName: { HostName = hostName; }) config.my.tailnetHosts // {
+          # base config
+          "*" = {
+            forwardAgent = false;
+            addKeysToAgent = "no";
+            compression = false;
+            serverAliveInterval = 300;
+            serverAliveCountMax = 3;
+            hashKnownHosts = true;
+            userKnownHostsFile = "~/.ssh/known_hosts";
+          };
         };
 
         includes = [ "config.d/*" ];

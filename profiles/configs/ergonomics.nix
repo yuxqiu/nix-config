@@ -94,7 +94,27 @@ in
           )
         ) nixosConfigs;
       in
-      hmChecks // nixosChecks
+      hmChecks
+      // nixosChecks
+      // {
+        formatting = pkgs.runCommand "check-formatting" { nativeBuildInputs = [ pkgs.nixfmt ]; } ''
+          cd ${self}
+          find . -type f -name '*.nix' -print0 | xargs -0 nixfmt --check
+          touch "$out"
+        '';
+
+        deadnix = pkgs.runCommand "check-deadnix" { nativeBuildInputs = [ pkgs.deadnix ]; } ''
+          cd ${self}
+          deadnix --fail --no-lambda-arg --no-lambda-pattern-names .
+          touch "$out"
+        '';
+
+        statix = pkgs.runCommand "check-statix" { nativeBuildInputs = [ pkgs.statix ]; } ''
+          cd ${self}
+          statix check .
+          touch "$out"
+        '';
+      }
     );
 
     formatter = lib.genAttrs config.systems (system: (mkPkgs system).nixfmt-tree);

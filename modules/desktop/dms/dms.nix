@@ -21,7 +21,6 @@
         inputs.dms.homeModules.dank-material-shell
         inputs.dms-plugin-registry.homeModules.default
         inputs.danksearch.homeModules.dsearch
-        inputs.dankcalendar.homeModules.dank-calendar
       ];
 
       programs.dank-material-shell = {
@@ -43,17 +42,12 @@
         };
       };
 
-      programs.dank-calendar = {
-        enable = true;
-        systemd.enable = true;
-      };
-
       programs.dsearch.enable = true;
 
       # Restart dms service when settings or plugins are changed
       systemd.user.services.dms.Unit.X-Restart-Triggers = [
-        config.xdg.configFile."DankMaterialShell/settings.json".source
-        config.xdg.configFile."DankMaterialShell/plugin_settings.json".source
+        config.xdg.configFile."dms/settings.json".source
+        config.xdg.configFile."dms/plugin_settings.json".source
       ]
       ++ lib.mapAttrsToList (_: plugin: plugin.src) (
         lib.filterAttrs (_: plugin: plugin.enable) config.programs.dank-material-shell.plugins
