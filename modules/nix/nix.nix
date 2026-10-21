@@ -6,7 +6,7 @@
       # Manage nixpkgs channel used by
       # nix-shell
       channels = {
-        nixpkgs = inputs.nixpkgs;
+        inherit (inputs) nixpkgs;
       };
     };
   };

@@ -24,7 +24,7 @@
 
   config.nixpkgs = {
     config.allowUnfree = true;
-    config.allowUnfreePredicate = (pkg: true);
+    config.allowUnfreePredicate = pkg: true;
     overlays = [
       inputs.nix-vscode-extensions.overlays.default
     ];

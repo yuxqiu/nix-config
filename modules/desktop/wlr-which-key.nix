@@ -1,5 +1,4 @@
-{ ... }:
-{
+_: {
   flake.modules.homeManager.wlr-which-key = {
     programs.wlr-which-key.enable = true;
 

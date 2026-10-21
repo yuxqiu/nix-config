@@ -1,5 +1,4 @@
-{ ... }:
-{
+_: {
   flake.modules.homeManager.hunk = { pkgs, ... }: {
     home.packages = with pkgs; [ hunk ];
 
