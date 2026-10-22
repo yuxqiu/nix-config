@@ -38,8 +38,10 @@
           export OPENCODE_CONFIG_CONTENT='{"agents":{"plan":{"permissions":[{"action":"shell","resource":"*","effect":"deny"},{"action":"webfetch","resource":"*","effect":"deny"},{"action":"websearch","resource":"*","effect":"deny"},{"action":"subagent","resource":"*","effect":"deny"}]}}}'
 
           prompt="Write a git commit message for the staged diff on stdin.
-          Use Conventional Commits (type(scope): summary), imperative mood,
-          subject at most 72 characters. Add a short body only if the change
+          Use Conventional Commits (type(scope): summary), imperative mood.
+          Follow git line-length conventions: subject at most 72 characters
+          (aim for 50), then a blank line before any body, with body lines
+          hard-wrapped at 72 characters. Add a short body only if the change
           needs explaining. Match the style of these recent commits:
           $(git log --format=%s -n 10 2>/dev/null || true)
 
@@ -60,8 +62,10 @@
           diff=$(git diff --cached)
           for model in "''${models[@]}"; do
             echo "opencodecommit: using $model" >&2
+            # Each text block is a separate event; a model may draft the
+            # message, call a tool, then repeat it. Keep only the last block.
             if msg=$(printf '%s\n' "$diff" | opencode run --standalone --format json --agent plan -m "$model" "$prompt" |
-              jq -ers '[.[] | select(.type == "text") | .part.text] | join("\n") | select(test("\\S"))'); then
+              jq -ers '[.[] | select(.type == "text") | .part.text] | last | select(. != null and test("\\S"))'); then
               if git commit -e -m "$msg"; then
                 exit 0
               else
