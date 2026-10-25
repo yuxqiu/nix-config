@@ -82,6 +82,12 @@
             background-effect.blur = true;
           };
         }
+        {
+          window-rule = {
+            match._props."app-id" = "^org\\.gnome\\.NautilusPreviewer$";
+            open-floating = true;
+          };
+        }
       ];
     };
 

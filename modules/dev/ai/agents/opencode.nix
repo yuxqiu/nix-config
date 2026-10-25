@@ -15,15 +15,15 @@
         enable = true;
         enableMcpIntegration = true;
         package = pkgs.opencode;
+        mutableSettings = true;
         settings = {
           autoupdate = false;
           plugins = [
             "file://${goalPlugin}/lib/opencode-goal-plugin"
           ];
         };
-        tui = {
+        cli = {
           attention = {
-            enabled = true;
             notifications = true;
             sound = false;
           };

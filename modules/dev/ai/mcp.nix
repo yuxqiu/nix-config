@@ -4,6 +4,7 @@
       enable = true;
     };
 
-    home.packages = with pkgs; [ mcp-nixos ];
+    # TODO: enable once mcp-nixos -> >=3.1.0
+    # home.packages = with pkgs; [ mcp-nixos ];
   };
 }
