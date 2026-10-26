@@ -120,7 +120,7 @@
     # Only for its NixOS module; the package comes from nixpkgs, so keep the
     # tag in step with nixpkgs' paseo version.
     paseo = {
-      url = "github:getpaseo/paseo?ref=v0.13.0";
+      url = "github:getpaseo/paseo?ref=v0.13.2";
       flake = false;
     };
     edgepad = {
