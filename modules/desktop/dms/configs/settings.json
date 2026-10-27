@@ -167,7 +167,7 @@
     }
   ],
   "currentThemeName": "custom",
-  "customThemeFile": "/nix/store/1piksrnv8ws1msp4i4w366n2xln8lqg3-source/themes/catppuccin/theme.json",
+  "customThemeFile": "/nix/store/1gpbnybljb6bnzb7dd4423jcclhqpvmy-source/themes/catppuccin/theme.json",
   "registryThemeVariants": {
     "catppuccin": {
       "dark": {
@@ -680,6 +680,10 @@
         {
           "enabled": true,
           "id": "dankPomodoroTimer"
+        },
+        {
+          "id": "smartTimer",
+          "enabled": true
         },
         {
           "enabled": true,

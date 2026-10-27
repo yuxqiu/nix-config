@@ -85,6 +85,8 @@
       "Mod+Shift+T".reset-window-height = [ ];
       "Mod+F".fullscreen-window = [ ];
       "Mod+Shift+F".maximize-column = [ ];
+      "Mod+G".toggle-window-floating = [ ];
+      "Mod+Shift+G".switch-focus-between-floating-and-tiling = [ ];
 
       "Mod+C".center-column = [ ];
 

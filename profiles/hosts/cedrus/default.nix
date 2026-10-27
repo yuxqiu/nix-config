@@ -129,8 +129,6 @@
         config.flake.modules.homeManager.hister
         config.flake.modules.homeManager.idescriptor
         config.flake.modules.homeManager.loupe
-        config.flake.modules.homeManager.pinta
-        config.flake.modules.homeManager.rnote
         config.flake.modules.homeManager.niri
         config.flake.modules.homeManager.obs
         config.flake.modules.homeManager.slack

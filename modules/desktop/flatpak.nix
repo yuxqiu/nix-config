@@ -29,6 +29,9 @@
           "net.sapples.LiveCaptions"
           "io.frama.tractor.carburetor"
           "org.gnome.gitlab.YaLTeR.VideoTrimmer"
+          "org.gnome.Snapshot"
+          "com.github.PintaProject.Pinta"
+          "com.github.flxzt.rnote"
         ];
 
         overrides = {

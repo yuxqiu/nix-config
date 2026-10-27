@@ -47,12 +47,9 @@
             _props.hotkey-overlay-title = "Toggle Sidebar Floating";
             spawn-sh = "niri-sidebar toggle-window";
           };
-          "Mod+S" = {
+          "Mod+Shift+A" = {
             _props.hotkey-overlay-title = "Toggle Sidebar Visibility";
             spawn-sh = "niri-sidebar toggle-visibility";
-          };
-          "Mod+Shift+A" = {
-            switch-focus-between-floating-and-tiling = [ ];
           };
         };
 
