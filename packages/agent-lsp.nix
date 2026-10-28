@@ -6,13 +6,13 @@
 
 buildGoModule rec {
   pname = "agent-lsp";
-  version = "0.23.2";
+  version = "0.23.5";
 
   src = fetchFromGitHub {
     owner = "blackwell-systems";
     repo = "agent-lsp";
     rev = "v${version}";
-    hash = "sha256-ncpCYUQbvKpJsrkAjMUEw+DX1RoZ/5E7WyIMFxdFiyw=";
+    hash = "sha256-3xbTets43vqCR+tsQqL/BR4FcDfV0Wfglxa+ULn8EyQ=";
   };
 
   vendorHash = "sha256-aBokNk3GGCkMX5UYotiQHzWRKfHF6Tc0EA4hIj5XIKg=";

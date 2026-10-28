@@ -113,14 +113,14 @@
       inputs.flake-utils.inputs.systems.follows = "systems";
     };
     hister = {
-      url = "github:asciimoo/hister?ref=v0.20.0";
+      url = "github:asciimoo/hister?ref=v0.21.0";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
     };
     # Only for its NixOS module; the package comes from nixpkgs, so keep the
     # tag in step with nixpkgs' paseo version.
     paseo = {
-      url = "github:getpaseo/paseo?ref=v0.13.2";
+      url = "github:getpaseo/paseo?ref=v0.14.0-beta.1";
       flake = false;
     };
     edgepad = {

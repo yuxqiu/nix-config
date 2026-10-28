@@ -167,7 +167,7 @@
     }
   ],
   "currentThemeName": "custom",
-  "customThemeFile": "/nix/store/1gpbnybljb6bnzb7dd4423jcclhqpvmy-source/themes/catppuccin/theme.json",
+  "customThemeFile": "/nix/store/qw4k455gppybz2hvxb65mk0c48292mch-source/themes/catppuccin/theme.json",
   "registryThemeVariants": {
     "catppuccin": {
       "dark": {
@@ -198,8 +198,8 @@
       "taskbarAlign": "center",
       "widgetExpansion": "popout",
       "iconSize": 40,
-      "spacing": 4,
-      "itemSpacing": 4,
+      "spacing": 8,
+      "itemSpacing": 8,
       "margin": 0,
       "bottomGap": 0,
       "transparency": 0.4,
@@ -260,6 +260,8 @@
   "runUserMatugenTemplates": false,
   "popupTransparency": 0.8,
   "dmsWindowsFloatingSeeded": ["niri", "niri"],
+  "density": "comfortable",
+  "interfaceStyle": "expressive",
   "m3ElevationEnabled": true,
   "barElevationEnabled": false,
   "blurEnabled": true,
@@ -682,8 +684,8 @@
           "id": "dankPomodoroTimer"
         },
         {
-          "id": "smartTimer",
-          "enabled": true
+          "enabled": true,
+          "id": "smartTimer"
         },
         {
           "enabled": true,
@@ -702,7 +704,9 @@
       "widgetOutlineEnabled": false,
       "widgetPadding": 12,
       "widgetStyle": "pills",
-      "widgetTransparency": 0.3
+      "widgetTransparency": 0.3,
+      "islandCompactThickness": 38,
+      "islandSatelliteGap": 12
     },
     {
       "autoHide": false,
@@ -822,7 +826,9 @@
       "widgetFollowInterfaceStyle": false,
       "widgetOutlineEnabled": false,
       "widgetPadding": 12,
-      "widgetTransparency": 0.3
+      "widgetTransparency": 0.3,
+      "islandCompactThickness": 38,
+      "islandSatelliteGap": 12
     }
   ],
   "desktopWidgetInstances": [

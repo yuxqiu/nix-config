@@ -21,7 +21,6 @@
             directories = {
               path = "~/Documents/notes";
               filetypes = [ "md" ];
-              excludes = [ "*secret*" ];
             };
           };
           hotkeys.web = {

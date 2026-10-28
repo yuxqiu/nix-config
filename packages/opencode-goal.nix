@@ -8,13 +8,13 @@
 
 stdenv.mkDerivation rec {
   pname = "opencode-goal";
-  version = "0.1.72";
+  version = "0.1.84";
 
   src = fetchFromGitHub {
     owner = "prevalentWare";
     repo = "opencode-goal-plugin";
     rev = "v${version}";
-    hash = "sha256-HLeJJx8HrX3bFVL3mw51v3jM0PW5DlukRZZKMiLDbN8=";
+    hash = "sha256-DXffNDPc9VFZhTyDGplizyB//6ev1OFFkiKmNsIjIjg=";
   };
 
   passthru.nodeModules = stdenv.mkDerivation {
@@ -34,7 +34,7 @@ stdenv.mkDerivation rec {
     '';
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
-    outputHash = "sha256-Lu584+pPrmXhSQbCLqJgOwkDjTa35UIEXKw9SWy6cV8=";
+    outputHash = "sha256-96lMN+fRSUYIjZPPlVr//cZOC0yuDlwKY4C0d9rI0U4=";
   };
 
   nativeBuildInputs = [ bun ];
