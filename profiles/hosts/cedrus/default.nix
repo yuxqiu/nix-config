@@ -162,6 +162,7 @@
         config.flake.modules.homeManager.codex
         config.flake.modules.homeManager.devin
         config.flake.modules.homeManager.opencode
+        config.flake.modules.homeManager.paseo
 
         # dev
         config.flake.modules.homeManager.editorconfig

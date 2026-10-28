@@ -84,14 +84,5 @@
         _props.hotkey-overlay-title = "Open a Terminal: ghostty";
         spawn-sh = "ghostty +new-window";
       };
-
-      wayland.windowManager.niri.settings._children = lib.mkAfter [
-        {
-          window-rule = {
-            match._props."app-id" = "com.mitchellh.ghostty";
-            background-effect.blur = true;
-          };
-        }
-      ];
     };
 }

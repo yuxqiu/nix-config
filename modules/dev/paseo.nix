@@ -1,5 +1,11 @@
 { inputs, ... }:
 {
+  flake.modules.homeManager.paseo =
+    { pkgs, ... }:
+    {
+      home.packages = [ pkgs.paseo-desktop ];
+    };
+
   flake.modules.nixos.paseo =
     {
       config,
