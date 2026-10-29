@@ -8,3 +8,11 @@
 #context-sep-navigation {
     display: none !important;
 }
+
+/* Translucent menus, blurred by niri's `popups` window rule. Drop the shadow
+ * margin so the popup surface is just the rounded rectangle niri blurs. */
+menupopup {
+    --panel-background-color: color-mix(in srgb, Menu 60%, transparent) !important;
+    --panel-box-shadow: none !important;
+    --panel-box-shadow-margin: 0px !important;
+}

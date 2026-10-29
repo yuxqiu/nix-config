@@ -80,6 +80,11 @@
           window-rule = {
             match._props."app-id" = "^org\\.gnome\\.Nautilus$";
             background-effect.blur = true;
+            # matches libadwaita's popover radius
+            popups = {
+              geometry-corner-radius = 15;
+              background-effect.blur = true;
+            };
           };
         }
         {

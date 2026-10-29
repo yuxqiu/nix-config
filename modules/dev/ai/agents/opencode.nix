@@ -4,7 +4,6 @@
     { pkgs, ... }:
     let
       opencodeQueue = pkgs.callPackage (inputs.self + /packages/opencode-queue.nix) { };
-      goalPlugin = pkgs.callPackage (inputs.self + /packages/opencode-goal.nix) { };
     in
     {
       # Other Interesting Plugins
@@ -18,9 +17,6 @@
         mutableSettings = true;
         settings = {
           autoupdate = false;
-          plugins = [
-            "file://${goalPlugin}/lib/opencode-goal-plugin"
-          ];
         };
         cli = {
           attention = {

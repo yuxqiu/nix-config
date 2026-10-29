@@ -1,6 +1,6 @@
 {
   flake.modules.homeManager.loupe =
-    { pkgs, ... }:
+    { lib, pkgs, ... }:
     {
       home.packages = with pkgs; [
         loupe
@@ -15,5 +15,18 @@
         "image/tiff" = [ "org.gnome.Loupe.desktop" ];
         "image/svg+xml" = [ "org.gnome.Loupe.desktop" ];
       };
+
+      wayland.windowManager.niri.settings._children = lib.mkAfter [
+        {
+          window-rule = {
+            match._props."app-id" = "^org\\.gnome\\.Loupe$";
+            # matches libadwaita's popover radius
+            popups = {
+              geometry-corner-radius = 15;
+              background-effect.blur = true;
+            };
+          };
+        }
+      ];
     };
 }
