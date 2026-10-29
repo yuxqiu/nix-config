@@ -24,6 +24,8 @@
             match._props."app-id" = "opensnitch_ui";
             background-effect.blur = true;
             opacity = config.stylix.opacity.popups;
+            # menu translucency comes from modules/desktop/style/qt.nix
+            popups.background-effect.blur = true;
           };
         }
 

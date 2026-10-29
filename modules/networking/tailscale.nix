@@ -47,9 +47,14 @@
               endpointCmds = lib.mapAttrsToList (
                 listener: target:
                 let
-                  parts = lib.splitString ":" listener;
-                  proto = lib.head parts;
-                  port = lib.last parts;
+                  match = builtins.match "(https|http|tcp):([0-9]+)" listener;
+                  parts =
+                    if match == null then
+                      throw "tailscale serve: endpoint key `${listener}` of `${name}` must be `<https|http|tcp>:<port>`"
+                    else
+                      match;
+                  proto = builtins.elemAt parts 0;
+                  port = builtins.elemAt parts 1;
                 in
                 "tailscale serve --bg --${proto} ${port} ${target}"
               ) serviceCfg.endpoints;
