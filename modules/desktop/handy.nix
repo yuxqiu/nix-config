@@ -75,6 +75,22 @@
         pkgs.dotool
       ];
 
+      # Keep Handy's in-app "Launch at startup" off: it pins the store path in
+      # ~/.config/autostart/Handy.desktop, so it never follows updates.
+      systemd.user.services.handy = {
+        Unit = {
+          Description = "Handy speech-to-text";
+          PartOf = [ "graphical-session.target" ];
+          After = [ "graphical-session.target" ];
+        };
+        Service = {
+          ExecStart = "${handy}/bin/handy";
+          Restart = "on-failure";
+          RestartSec = 5;
+        };
+        Install.WantedBy = [ "graphical-session.target" ];
+      };
+
       wayland.windowManager.niri.settings.binds."Mod+D" = {
         spawn-sh = "${handy-stt}/bin/handy-stt";
       };

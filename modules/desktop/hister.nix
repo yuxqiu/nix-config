@@ -49,11 +49,6 @@
           };
         };
         SearchEngines = {
-          # search engine provided by the extension defaults to 127.0.0.1
-          # so we need to remove it
-          Remove = [
-            "Hister"
-          ];
           Add = [
             {
               Name = "hister";
