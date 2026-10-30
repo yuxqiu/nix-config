@@ -2,7 +2,7 @@ let
   agentsMd = ''
     ### Session Start
 
-    Read in this exact order:
+    Read in this exact order (skip any that don't exist):
     1. `README.md`
     2. `docs/HANDOFF.md`
     3. latest entry in `docs/SESSION_LOG.md`
@@ -11,7 +11,7 @@ let
 
     ### During Work
 
-    - Keep `docs/HANDOFF.md` aligned with current status and next actions.
+    - Keep `docs/HANDOFF.md` aligned with current status and next actions. On multi-step tasks, update it after each completed sub-task so a cut-off session can resume.
     - Record durable decisions in `docs/DECISIONS.md`.
     - Keep operational command changes in `docs/RUNBOOK.md`.
 
@@ -23,6 +23,18 @@ let
       - top 3 next actions
       - blockers (if any)
     - Append a new timestamped entry to `docs/SESSION_LOG.md`.
+
+    ### Operating Rules
+
+    - If a tool is missing, get it with `nix shell nixpkgs#<pkg>` rather than working around it.
+    - Prefer failing loudly (explicit errors, assertions, checks) over silent fallbacks or workarounds.
+    - When the user rejects an approach, don't retry a variant of it; ask what direction they want.
+    - When removing a feature or tool, remove it completely (packages, config, references, docs), not just disable it.
+
+    ### Factual Accuracy
+
+    - For non-obvious technical claims, check primary sources (papers, source code, release notes) before asserting. Cite where you checked; mark anything unverified as `[unverified]`.
+    - When corrected, fix the wrong claim everywhere it appears (notes, slides, speaker notes, docs).
 
     ### Karpathy Guidelines
 
@@ -46,6 +58,8 @@ let
     - No "flexibility" or "configurability" that wasn't requested.
     - No error handling for impossible scenarios.
     - If you write 200 lines and it could be 50, rewrite it.
+    - Before introducing a new abstraction (schedules, hooks, extra interface fields, custom parsers), propose it in 2-3 sentences and wait for approval.
+    - Use the standard library or well-established packages over hand-rolled equivalents (e.g. argument parsing, serialization).
 
     Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
