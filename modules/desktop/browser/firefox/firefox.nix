@@ -1,8 +1,21 @@
 {
   flake.modules.homeManager.firefox =
-    { pkgs, lib, ... }:
+    {
+      config,
+      pkgs,
+      lib,
+      ...
+    }:
     let
       profileName = "default";
+
+      # Tint menus with stylix's popup opacity, like GTK and Qt menus.
+      menupopupCss = builtins.readFile ./css/chrome/menupopup.css;
+      popupOpacity = toString (builtins.floor (config.stylix.opacity.popups * 100 + 0.5));
+      menupopup =
+        assert lib.assertMsg (lib.hasInfix "@popupOpacity@" menupopupCss)
+          "firefox.nix: @popupOpacity@ placeholder missing from menupopup.css";
+        builtins.replaceStrings [ "@popupOpacity@" ] [ popupOpacity ] menupopupCss;
 
       # Prepare user.js
       arkenfoxUserJs = builtins.readFile "${
@@ -28,7 +41,7 @@
         (builtins.readFile ./css/chrome/control.css)
         (builtins.readFile ./css/chrome/findbar.css)
         (builtins.readFile ./css/chrome/liquid-fox.css)
-        (builtins.readFile ./css/chrome/menupopup.css)
+        menupopup
         (builtins.readFile ./css/chrome/search.css)
         (builtins.readFile "${firefox-mod-blur}/EXTRA MODS/Privacy mods/Blur Username in main menu/privacy_blur_email_in_main_menu.css")
         (builtins.readFile "${firefox-mod-blur}/EXTRA MODS/Compact extensions menu/Style 1/With no settings wheel icon/cleaner_extensions_menu.css")
@@ -198,6 +211,14 @@
 
       # stylix
       stylix.targets.firefox.profileNames = [ profileName ];
+
+      # Before 161, chrome backdrop-filter can't see remote browser content, so a
+      # translucent search popup would be tinted but not blurred over web pages
+      # (bug 2079476). css/chrome/search-translucent.css (tested on Nightly
+      # 161.0a1) stays out of userChrome until then.
+      warnings =
+        lib.optional (lib.versionAtLeast config.programs.firefox.package.version "161")
+          "firefox.nix: Firefox 161 can blur chrome over web pages (bug 2079476). Merge css/chrome/search-translucent.css into search.css (swap the two var(--bg2) backgrounds, add the selected-row rule), give search.css the @popupOpacity@ substitution menupopup.css gets, delete search-translucent.css, check it blurs, then remove this warning.";
 
       xdg.mimeApps = {
         associations.added = {

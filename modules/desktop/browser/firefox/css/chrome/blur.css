@@ -35,6 +35,21 @@ body {
     outline: none !important;
 }
 
+/* Sidebar panels (history, bookmarks, ...) sit on an opaque #sidebar-box. Its
+ * border would only outline the panel against the same glass, so drop it */
+#sidebar-box {
+    background-color: transparent !important;
+    border: none !important;
+}
+
+/* The revamped panels are chrome pages with their own body, so the tint above
+ * would stack on the window's; keep only the window's */
+@-moz-document url-prefix("chrome://browser/content/sidebar/") {
+    body {
+        background-color: transparent !important;
+    }
+}
+
 /* Hide some splitters */
 #sidebar-splitter,
 /* bottom splitter */

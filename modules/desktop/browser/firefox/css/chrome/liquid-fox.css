@@ -88,8 +88,9 @@
 /* ============================================
    Shared liquid panel mixin (outline pseudo-element)
    ============================================ */
-.browserContainer::after,
-.sidebar-browser-stack::after {
+/* Mod: no outline on .sidebar-browser-stack; blur.css makes the sidebar panel
+ * the same glass as the tab strip, so an outline there reads as a seam. */
+.browserContainer::after {
     content: "" !important;
     position: absolute !important;
     inset: 0 !important;
@@ -106,8 +107,7 @@
 
 /* --- Dark mode: subtler outline + brighter backdrop --- */
 @media (prefers-color-scheme: dark) {
-    .browserContainer::after,
-    .sidebar-browser-stack::after {
+    .browserContainer::after {
         background: var(--liquid-border-gradient-dark) border-box !important;
     }
 
@@ -164,7 +164,8 @@
         position: relative !important;
         border-radius: var(--liquid-radius) !important;
         overflow: hidden !important;
-        box-shadow: var(--liquid-shadow) !important;
+        /* Mod: no --liquid-shadow; its white edge reads as a seam on the
+         * glass sidebar panel (see blur.css) */
     }
 
     /* --- Toolbar spacing: small gap below address bar --- */

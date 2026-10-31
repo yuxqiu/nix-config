@@ -1,0 +1,15 @@
+/* Translucent search popup, so search.css's backdrop-filter shows through.
+   Not in userChrome yet: before Firefox 161, chrome backdrop-filter can't see
+   remote browser content (bug 2079476); firefox.nix warns at 161.
+   Then merge it into search.css rather than loading it separately, so the
+   overrides don't depend on load order; @popupOpacity@ needs firefox.nix's
+   substitution. */
+#navigator-toolbox #urlbar[popover-open] .urlbar-background,
+#urlbar[popover-open] .urlbarView {
+    background-color: color-mix(in srgb, var(--bg2) @popupOpacity@%, transparent) !important;
+}
+
+/* The selected row is painted with the opaque system highlight */
+#urlbar[popover-open] .urlbarView-row[selected] {
+    background-color: color-mix(in srgb, SelectedItem 50%, transparent) !important;
+}
