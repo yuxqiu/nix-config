@@ -18,3 +18,13 @@ menupopup {
     --panel-box-shadow: none !important;
     --panel-box-shadow-margin: 0px !important;
 }
+
+/* Arrow panels (downloads, extensions, app menu) are popup surfaces too, and
+ * niri's `popups` rule gives every popup one corner radius. Without this, niri
+ * blurs the shadow margin around them as a 6px-rounded rectangle that doesn't
+ * match their 24px corners. */
+panel[type="arrow"] {
+    --panel-box-shadow: none !important;
+    --panel-box-shadow-margin: 0px !important;
+    --panel-border-radius: 6px !important;
+}

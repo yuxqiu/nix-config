@@ -239,7 +239,8 @@
           window-rule = {
             match._props."app-id" = "firefox";
             background-effect.blur = true;
-            # matches Firefox's default menupopup --panel-border-radius
+            # matches Firefox's default menupopup --panel-border-radius, and
+            # arrow panels' radius set in menupopup.css
             popups = {
               geometry-corner-radius = 6;
               background-effect.blur = true;
