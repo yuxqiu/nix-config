@@ -62,9 +62,28 @@
           diff=$(git diff --cached)
           for model in "''${models[@]}"; do
             echo "opencodecommit: using $model" >&2
+            run_status=0
+            out=$(printf '%s\n' "$diff" | opencode run --standalone --format json --agent plan -m "$model" "$prompt") || run_status=$?
+
+            err_type=$(printf '%s\n' "$out" | jq -rs 'map(select(.type == "error"))[0].error.type // empty')
+            if [ -n "$err_type" ]; then
+              err_msg=$(printf '%s\n' "$out" | jq -rs 'map(select(.type == "error"))[0].error.message')
+              echo "opencodecommit: $model: $err_type: $err_msg" >&2
+              # The free quota is per account, so every other free model fails too.
+              if [ "$err_type" = "provider.free-limit" ]; then
+                echo "opencodecommit: free quota exhausted; set OPENCODECOMMIT_MODEL=provider/model" >&2
+                exit 1
+              fi
+              continue
+            fi
+            if [ "$run_status" -ne 0 ]; then
+              echo "opencodecommit: $model: opencode run exited with $run_status" >&2
+              continue
+            fi
+
             # Each text block is a separate event; a model may draft the
             # message, call a tool, then repeat it. Keep only the last block.
-            if msg=$(printf '%s\n' "$diff" | opencode run --standalone --format json --agent plan -m "$model" "$prompt" |
+            if msg=$(printf '%s\n' "$out" |
               jq -ers '[.[] | select(.type == "text") | .part.text] | last | select(. != null and test("\\S"))'); then
               if git commit -e -m "$msg"; then
                 exit 0
