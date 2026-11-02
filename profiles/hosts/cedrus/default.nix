@@ -57,6 +57,7 @@
         config.flake.modules.nixos.fprintd
         config.flake.modules.nixos.udev
         config.flake.modules.nixos.printing
+        config.flake.modules.nixos.accessibility
 
         # gaming
         config.flake.modules.nixos.steam

@@ -1,9 +1,20 @@
 {
   flake.modules.homeManager.wayscriber =
-    { pkgs, ... }:
+    { lib, pkgs, ... }:
+    let
+      # Read nixpkgs' package source (not its output) to avoid IFD.
+      packageFile = lib.head (lib.splitString ":" pkgs.wayscriber.meta.position);
+    in
     {
       home.packages = with pkgs; [ wayscriber ];
 
+      warnings = lib.optional (lib.hasInfix ".desktop" (builtins.readFile packageFile)) ''
+        wayscriber.nix: nixpkgs' wayscriber (${packageFile}) now mentions a .desktop file.
+        If it installs upstream's packaging/wayscriber.desktop, remove the custom
+        xdg.desktopEntries.wayscriber and this warning.
+      '';
+
+      # Pinned nixpkgs installs only bin/; upstream ships packaging/wayscriber.desktop.
       xdg.desktopEntries.wayscriber = {
         name = "Wayscriber";
         comment = "Live overlay for drawing, annotating, and screenshots (Wayland whiteboard)";
