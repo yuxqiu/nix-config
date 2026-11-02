@@ -8,13 +8,13 @@
 
 stdenv.mkDerivation rec {
   pname = "opencode-queue";
-  version = "2.0.2";
+  version = "2.1.0";
 
   src = fetchFromGitHub {
     owner = "mirsella";
     repo = "opencode-queue";
     rev = "v${version}";
-    hash = "sha256-1IwHSgTedWDjRbv0dACtD01GM6NiBSn/98ARQQnYOW4=";
+    hash = "sha256-DYHYlg+YUs3lud+QwRcpw6EDuvEDw2Vr0fNwP6mUNfw=";
   };
 
   passthru.nodeModules = stdenv.mkDerivation {

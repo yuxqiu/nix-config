@@ -25,7 +25,6 @@
         screen
         sqlite
         strace
-        tealdeer
         tokei
         tree
         typos

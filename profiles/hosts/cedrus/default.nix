@@ -104,6 +104,7 @@
 
         # cli
         config.flake.modules.homeManager.fzf
+        config.flake.modules.homeManager.tldr
         config.flake.modules.homeManager.session
         config.flake.modules.homeManager.bash
         config.flake.modules.homeManager.zsh
