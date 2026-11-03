@@ -8,34 +8,16 @@
 
   flake.modules.nixos.paseo =
     {
-      config,
       lib,
       pkgs,
       ...
     }:
     let
       # Git config for everything agents run, layered over the user's own via
-      # GIT_CONFIG_* (highest precedence short of `-c`). Agents never touch the
-      # user's SSH agent: GitHub goes over HTTPS with the token below, and
-      # commits are left unsigned for the user to re-sign on review.
+      # GIT_CONFIG_* (highest precedence short of `-c`). The user's signing key
+      # lives only in their SSH agent, so agent commits are left unsigned for
+      # the user to re-sign on review.
       agentGitConfig = [
-        [
-          "url.https://github.com/.insteadOf"
-          "git@github.com:"
-        ]
-        [
-          "url.https://github.com/.insteadOf"
-          "ssh://git@github.com/"
-        ]
-        # An empty helper resets any inherited ones.
-        [
-          "credential.https://github.com.helper"
-          ""
-        ]
-        [
-          "credential.https://github.com.helper"
-          "!${lib.getExe pkgs.gh} auth git-credential"
-        ]
         [
           "commit.gpgSign"
           "false"
@@ -80,10 +62,5 @@
       # Agents and Paseo itself call `gh` (PRs, CI); the daemon's PATH
       # includes the system profile.
       environment.systemPackages = [ pkgs.gh ];
-
-      # `GH_TOKEN=github_pat_...`: a fine-grained token for this host, limited
-      # to the repos agents may push to. Used by git (above) and `gh`.
-      sops.secrets."paseo-github.env".restartUnits = [ "paseo.service" ];
-      systemd.services.paseo.serviceConfig.EnvironmentFile = config.sops.secrets."paseo-github.env".path;
     };
 }

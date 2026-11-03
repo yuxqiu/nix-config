@@ -22,13 +22,13 @@ in
 
 vimUtils.buildVimPlugin rec {
   pname = "vellum.nvim";
-  version = "0.2.0";
+  version = "0.2.1";
 
   src = fetchFromGitHub {
     owner = "blackhat-7";
     repo = "vellum.nvim";
     rev = "v${version}";
-    hash = "sha256-LZOKPiy9tpCEe84ZrbKKfdhBjqrTSsmSeVAjBbrqMFM=";
+    hash = "sha256-lZgtwOd3eCKBby+XJSYAV5gRMjskmYBgAU31FEnWRrA=";
   };
 
   # What the upstream build.lua does with `npm ci`.

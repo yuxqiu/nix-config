@@ -6,13 +6,13 @@
 
 vimUtils.buildVimPlugin rec {
   pname = "sshfs-nvim";
-  version = "2.1.0";
+  version = "2.1.1";
 
   src = fetchFromGitHub {
     owner = "uhs-robert";
     repo = "sshfs.nvim";
     rev = "v${version}";
-    hash = "sha256-cmowUXOrkn2xAqdvpllyoPVMMGGjeaAH7nUoL1ojRag=";
+    hash = "sha256-DxV1nVB+OqpFOFAn8MtH4pJc6TCboSD5cQnK+oz9d6g=";
   };
 
   meta = {

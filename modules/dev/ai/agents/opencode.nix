@@ -1,11 +1,26 @@
 { inputs, ... }:
 {
   flake.modules.homeManager.opencode =
-    { pkgs, ... }:
+    {
+      lib,
+      pkgs,
+      mv,
+      ...
+    }:
     let
       opencodeQueue = pkgs.callPackage (inputs.self + /packages/opencode-queue.nix) { };
+      # nixpkgs' opencode 2.2.5 node_modules hash was computed with bun 1.4.2
+      # (NixOS/nixpkgs#581607); bun 1.4.4 (NixOS/nixpkgs#577354) landed after
+      # and changes the output, so the FOD fails. Pin the last good version.
+      brokenNodeModulesHash = "sha256-xfOVcw1+waLVNhFDwzOtzxrUSQEogvn88YomydOlhwc=";
+      upstreamFixed = pkgs.opencode.node_modules.outputHash != brokenNodeModulesHash;
     in
     {
+      warnings = lib.optional upstreamFixed ''
+        nixpkgs' opencode (${pkgs.opencode.version}) node_modules hash changed from the one broken by bun 1.4.4.
+        Try dropping the multiverse pin `mv.versions.opencode."2.2.1"` in modules/dev/ai/agents/opencode.nix.
+      '';
+
       # Other Interesting Plugins
       # - opencode-background-agents (seems a bit overkill)
       # - open-ralph-wiggum
@@ -13,7 +28,7 @@
       programs.opencode = {
         enable = true;
         enableMcpIntegration = true;
-        package = pkgs.opencode;
+        package = mv.versions.opencode."2.2.1";
         mutableSettings = true;
         settings = {
           autoupdate = false;
