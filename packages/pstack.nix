@@ -14,13 +14,13 @@ let
 in
 stdenvNoCC.mkDerivation rec {
   pname = "pstack";
-  version = "0.9.120";
+  version = "0.9.128";
 
   src = fetchFromGitHub {
     owner = "michael-denyer";
     repo = "pstack-claude";
     rev = "v${version}";
-    hash = "sha256-AZ4C7yXWAdym1cg9k00wf9hhBVF0NzjuHKOC+iCBUkQ=";
+    hash = "sha256-2BsTyHsrEXO3aJ4w8TSJOLnEc8IOTjjaUx5WdnDtJQ0=";
   };
 
   nativeBuildInputs = [ bun ];
@@ -32,7 +32,7 @@ stdenvNoCC.mkDerivation rec {
     ln -s ${commander} "$scripts/node_modules/commander"
 
     # Nix supplies dependencies at build time; these entrypoints need no installer.
-    for entry in watch-pr/watch-pr watch-pr/ship-pr orch/orch.ts; do
+    for entry in watch-pr/watch-pr watch-pr/ship-pr; do
       substituteInPlace "$scripts/$entry" \
         --replace-fail 'import { ensureDependenciesInstalled } from "../bootstrap.ts";' "" \
         --replace-fail 'ensureDependenciesInstalled();' ""

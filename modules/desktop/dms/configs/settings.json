@@ -167,7 +167,7 @@
     }
   ],
   "currentThemeName": "custom",
-  "customThemeFile": "/nix/store/qw4k455gppybz2hvxb65mk0c48292mch-source/themes/catppuccin/theme.json",
+  "customThemeFile": "/nix/store/bq3ky57kkspl5ggymprckc4ccllykrf4-source/themes/catppuccin/theme.json",
   "registryThemeVariants": {
     "catppuccin": {
       "dark": {
@@ -176,7 +176,7 @@
       }
     }
   },
-  "radiusStrength": 38,
+  "radiusStrength": 50,
   "clockFormat": "24h",
   "showSeconds": true,
   "animationDuration": 500,
@@ -195,6 +195,7 @@
       "showOnLastDisplay": true,
       "position": 1,
       "mode": "compact",
+      "middleClickAction": "close",
       "taskbarAlign": "center",
       "widgetExpansion": "popout",
       "iconSize": 40,
@@ -548,6 +549,7 @@
     }
   ],
   "osdAlwaysShowValue": true,
+  "osdInputMethodEnabled": false,
   "osdPowerProfileEnabled": true,
   "displayShowDisconnected": true,
   "barConfigs": [
@@ -594,6 +596,7 @@
       "island": true,
       "islandAlongOffset": 0,
       "islandBatteryStyle": "solid",
+      "islandCompactThickness": 38,
       "islandFloating": false,
       "islandHomeCompactTight": true,
       "islandHomeLayout": [
@@ -650,6 +653,7 @@
       "islandRouteLauncher": "follow",
       "islandRouteNotificationCenter": "island",
       "islandRouteWeather": "follow",
+      "islandSatelliteGap": 12,
       "leftWidgets": [
         "launcherButton",
         {
@@ -704,9 +708,7 @@
       "widgetOutlineEnabled": false,
       "widgetPadding": 12,
       "widgetStyle": "pills",
-      "widgetTransparency": 0.3,
-      "islandCompactThickness": 38,
-      "islandSatelliteGap": 12
+      "widgetTransparency": 0.3
     },
     {
       "autoHide": false,
@@ -744,6 +746,7 @@
       "id": "dot1790353160209",
       "innerPadding": 4,
       "island": false,
+      "islandCompactThickness": 38,
       "islandHomeCompactTight": true,
       "islandHomeLayout": [
         {
@@ -778,6 +781,7 @@
       "islandOuterGap": 0,
       "islandPalette": "dim",
       "islandReserveThickness": 24,
+      "islandSatelliteGap": 12,
       "leftWidgets": [
         "launcherButton",
         {
@@ -826,9 +830,7 @@
       "widgetFollowInterfaceStyle": false,
       "widgetOutlineEnabled": false,
       "widgetPadding": 12,
-      "widgetTransparency": 0.3,
-      "islandCompactThickness": 38,
-      "islandSatelliteGap": 12
+      "widgetTransparency": 0.3
     }
   ],
   "desktopWidgetInstances": [
