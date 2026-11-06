@@ -25,7 +25,7 @@ nixos-rebuild switch --flake .#<host>
 ## Hosts
 
 - `cedrus`: desktop, NixOS + [niri](https://github.com/YaLTeR/niri) +
-  [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell).
+  [DankMaterialShell](https://github.com/duxlabs-dev/dux-shell).
 - `dracaena`: headless cloud server, aarch64, provisioned
   declaratively via [disko](https://github.com/nix-community/disko) +
   [nixos-anywhere](https://github.com/nix-community/nixos-anywhere).

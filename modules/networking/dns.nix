@@ -16,8 +16,12 @@
       systemd.services.systemd-resolved-domain-conf = {
         enable = true;
         description = "Create global DNS domain override for systemd-resolved";
+        # resolved is ordered before sysinit.target (DefaultDependencies=no);
+        # default deps here (After=basic.target) would form an ordering cycle.
+        unitConfig.DefaultDependencies = false;
+        after = [ "local-fs.target" ];
         before = [ "systemd-resolved.service" ];
-        wantedBy = [ "multi-user.target" ];
+        wantedBy = [ "systemd-resolved.service" ];
         serviceConfig = {
           Type = "oneshot";
           RemainAfterExit = true;
