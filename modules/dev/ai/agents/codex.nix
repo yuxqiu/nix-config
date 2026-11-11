@@ -1,13 +1,27 @@
 {
   flake.modules.homeManager.codex =
-    { config, pkgs, ... }:
     {
+      config,
+      lib,
+      pkgs,
+      mv,
+      ...
+    }:
+    {
+      warnings = lib.optional (pkgs.codex.version != "0.167.0") ''
+        codex.nix: nixpkgs' codex is now ${pkgs.codex.version} (0.167.0 failed to build).
+        If it builds, drop the multiverse pin `mv.versions.codex."0.166.0"` and this warning.
+      '';
+
       home.packages = [ pkgs.bubblewrap ];
 
       programs = {
         codex = {
           enable = true;
           enableMcpIntegration = true;
+          # nixpkgs' codex 0.167.0 fails to build; pin the last good version.
+          # The warning above fires when nixpkgs moves on.
+          package = mv.versions.codex."0.166.0";
           # Codex writes trust_level entries into config.toml when a directory
           # is trusted in the TUI, so keep it writable and merge settings in.
           mutableSettings = true;

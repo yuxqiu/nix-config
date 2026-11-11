@@ -18,13 +18,13 @@
 
 buildNpmPackage rec {
   pname = "codeburn";
-  version = "0.9.27";
+  version = "0.9.28";
 
   src = fetchFromGitHub {
     owner = "getagentseal";
     repo = "codeburn";
     rev = "v${version}";
-    hash = "sha256-P00axAx78eVa6O2P+5F0aqooPCtX9G1phg3ZgEDFNPE=";
+    hash = "sha256-NwLg4QIaabmf5YiGsE+N9PNx3TuW6RZV+Yyj1/anr1Y=";
   };
 
   nodejs = nodejs_22;
@@ -37,10 +37,10 @@ buildNpmPackage rec {
   dashDeps = fetchNpmDeps {
     name = "codeburn-${version}-dash-npm-deps";
     src = "${src}/dash";
-    hash = "sha256-V9osI+k/rYyAFLfk/dvgLYqHZX9HBn5CO48T44qkiXo=";
+    hash = "sha256-buwy6Tsmd1FmHwOYZI5LJbU+W3jEvm9tDZkth3G7AKE=";
   };
 
-  npmDepsHash = "sha256-dz5S3Sajk3QllMDGQu1GO2ws6IAq5dYN3HqDyJI5ryM=";
+  npmDepsHash = "sha256-F/d/xn3COOdM0lpog66bo7xJT4GBwZbHKsyrKuKCdgY=";
 
   postPatch = ''
     # dash/node_modules is provisioned offline in preBuild — drop the

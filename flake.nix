@@ -3,7 +3,7 @@
 
   inputs = {
     # Common
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     systems.url = "github:nix-systems/triplet";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
@@ -120,11 +120,11 @@
     # Only for its NixOS module; the package comes from nixpkgs, so keep the
     # tag in step with nixpkgs' paseo version.
     paseo = {
-      url = "github:getpaseo/paseo?ref=v0.15.2";
+      url = "github:getpaseo/paseo?ref=v0.16.0-beta.1";
       flake = false;
     };
     edgepad = {
-      url = "github:assembledev/edgepad?ref=v0.3.0";
+      url = "github:assembledev/edgepad?ref=v0.4.0";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.rust-overlay.follows = "rust-overlay";
     };
@@ -132,6 +132,14 @@
       url = "github:yuxqiu/quillway?ref=v0.1.8";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.rust-overlay.follows = "rust-overlay";
+    };
+    lig = {
+      url = "github:KevenGoncalves/lig?ref=v1.2.1";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    headup = {
+      url = "github:yuxqiu/headup?ref=v0.1.0";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 

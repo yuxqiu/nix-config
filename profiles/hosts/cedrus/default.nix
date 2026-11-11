@@ -106,6 +106,7 @@
         # cli
         config.flake.modules.homeManager.fzf
         config.flake.modules.homeManager.tldr
+        config.flake.modules.homeManager.lig
         config.flake.modules.homeManager.session
         config.flake.modules.homeManager.bash
         config.flake.modules.homeManager.zsh
@@ -128,6 +129,7 @@
         config.flake.modules.homeManager.xcompose
         config.flake.modules.homeManager.flatpak
         config.flake.modules.homeManager.handy
+        config.flake.modules.homeManager.headup
         config.flake.modules.homeManager.hister
         config.flake.modules.homeManager.idescriptor
         config.flake.modules.homeManager.loupe

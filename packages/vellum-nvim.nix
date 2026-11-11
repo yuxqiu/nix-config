@@ -22,13 +22,13 @@ in
 
 vimUtils.buildVimPlugin rec {
   pname = "vellum.nvim";
-  version = "0.2.1";
+  version = "0.5.0";
 
   src = fetchFromGitHub {
     owner = "blackhat-7";
     repo = "vellum.nvim";
     rev = "v${version}";
-    hash = "sha256-lZgtwOd3eCKBby+XJSYAV5gRMjskmYBgAU31FEnWRrA=";
+    hash = "sha256-LKFHxe+n/Rugg5hTsRjKtu+f8Yr9cPOPgLoOcin+HBk=";
   };
 
   # What the upstream build.lua does with `npm ci`.
@@ -36,7 +36,7 @@ vimUtils.buildVimPlugin rec {
     pname = "vellum-render";
     inherit version;
     src = "${src}/render";
-    npmDepsHash = "sha256-Zcitez2/UGHu4Reux1XwTBwLMzyMDg17Ywa6QXWGTYQ=";
+    npmDepsHash = "sha256-E7Sx+xAcIJ+rkSoNx86wzGrMW58qBprnRhrTq6KFA+0=";
     dontNpmBuild = true;
     env.PUPPETEER_SKIP_DOWNLOAD = "1";
     installPhase = ''
