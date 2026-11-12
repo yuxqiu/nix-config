@@ -216,9 +216,7 @@
       # translucent search popup would be tinted but not blurred over web pages
       # (bug 2079476). css/chrome/search-translucent.css (tested on Nightly
       # 161.0a1) stays out of userChrome until then.
-      warnings =
-        lib.optional (lib.versionAtLeast config.programs.firefox.package.version "161")
-          "firefox.nix: Firefox 161 can blur chrome over web pages (bug 2079476). Merge css/chrome/search-translucent.css into search.css (swap the two var(--bg2) backgrounds, add the selected-row rule), give search.css the @popupOpacity@ substitution menupopup.css gets, delete search-translucent.css, check it blurs, then remove this warning.";
+      warnings = lib.optional (lib.versionAtLeast config.programs.firefox.package.version "161") "firefox.nix: Firefox 161 can blur chrome over web pages (bug 2079476). Merge css/chrome/search-translucent.css into search.css (swap the two var(--bg2) backgrounds, add the selected-row rule), give search.css the @popupOpacity@ substitution menupopup.css gets, delete search-translucent.css, check it blurs, then remove this warning.";
 
       xdg.mimeApps = {
         associations.added = {
