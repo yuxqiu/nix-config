@@ -120,7 +120,7 @@
     # Only for its NixOS module; the package comes from nixpkgs, so keep the
     # tag in step with nixpkgs' paseo version.
     paseo = {
-      url = "github:getpaseo/paseo?ref=v0.16.0-beta.2";
+      url = "github:getpaseo/paseo?ref=v0.16.0";
       flake = false;
     };
     edgepad = {
@@ -134,11 +134,11 @@
       inputs.rust-overlay.follows = "rust-overlay";
     };
     lig = {
-      url = "github:KevenGoncalves/lig?ref=v1.3.0";
+      url = "github:KevenGoncalves/lig?ref=v1.4.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     headup = {
-      url = "github:yuxqiu/headup?ref=v0.4.0";
+      url = "github:yuxqiu/headup?ref=v0.4.6";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

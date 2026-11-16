@@ -8,6 +8,10 @@
     {
       imports = [ inputs.lig.homeModules.default ];
 
+      # Lig's history owns Ctrl+R; an empty command stops fzf binding it
+      # (fzf's Ctrl+T and Alt+C stay).
+      programs.fzf.historyWidget.command = "";
+
       programs.lig = {
         enable = true;
         settings = {
