@@ -26,11 +26,6 @@
         };
       };
 
-      home.packages = [
-        # for gnome-keyring prompt to show
-        # - https://github.com/nix-community/home-manager/issues/1454
-        pkgs.gcr_4
-      ];
       services.gnome-keyring.enable = true;
 
       wayland.windowManager.niri.enable = true;
@@ -46,9 +41,7 @@
       ];
     };
 
-  flake.modules.nixos.niri =
-    { pkgs, ... }:
-    {
-      programs.niri.enable = true;
-    };
+  flake.modules.nixos.niri = {
+    programs.niri.enable = true;
+  };
 }

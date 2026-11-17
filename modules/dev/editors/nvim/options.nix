@@ -51,15 +51,6 @@
           vim.o.shada = ""
         end,
       })
-
-      local function change_font_size(delta)
-        local guifont = vim.o.guifont
-        if guifont == "" then return end
-        local size = tonumber(guifont:match(":h(%d+)$")) or 12
-        local new_size = math.max(6, size + delta)
-        local base = guifont:gsub(":h%d+$", "")
-        vim.o.guifont = base .. ":h" .. new_size
-      end
     '';
 
     # Delete undo files not touched in 90 days

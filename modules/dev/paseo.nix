@@ -29,7 +29,10 @@
       ];
     in
     {
-      # nixpkgs packages paseo but ships no module; upstream's defaults to pkgs.paseo.
+      # nixpkgs packages paseo but ships no module (NixOS/nixpkgs#587943 adds
+      # one); upstream's defaults to pkgs.paseo. Once nixpkgs has it, evaluation
+      # fails with services.paseo "already declared": switch to nixpkgs' module
+      # then, and drop the `paseo` flake input.
       imports = [ "${inputs.paseo}/nix/module.nix" ];
 
       services.paseo = {

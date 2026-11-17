@@ -1,15 +1,8 @@
 { inputs, ... }:
 {
-  flake.modules.nixos.fprintd =
-    { pkgs, ... }:
-    {
-      imports = [ inputs.fingerprint-lid-guard.nixosModules.default ];
+  flake.modules.nixos.fprintd = {
+    imports = [ inputs.fingerprint-lid-guard.nixosModules.default ];
 
-      services.fprintd.enable = true;
-
-      environment.systemPackages = with pkgs; [
-        libfprint
-        fprintd
-      ];
-    };
+    services.fprintd.enable = true;
+  };
 }

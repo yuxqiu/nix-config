@@ -8,11 +8,9 @@
           pkgs.vimPlugins.nvim-treesitter-parsers.vim
           pkgs.vimPlugins.nvim-treesitter-parsers.vimdoc
         ];
-        settings = {
-          highlight.enable = true;
-          indent.enable = true;
-          folding.enable = true;
-        };
+        # Folding is set up in fold.nix.
+        highlight.enable = true;
+        indent.enable = true;
       };
     };
 }

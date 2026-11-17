@@ -17,11 +17,6 @@
 
             # Rounded-corner classic-ui theme
             fcitx5-mellow-themes
-
-            # Optional: GTK support for better integration in GTK apps
-            fcitx5-gtk
-
-            qt6Packages.fcitx5-configtool
           ];
 
           # Optional: If you're on Wayland, enable this to use the Wayland frontend

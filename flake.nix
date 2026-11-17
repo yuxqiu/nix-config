@@ -25,9 +25,6 @@
     stylix = {
       url = "github:nix-community/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
-      # stylix uses nix-systems/default which includes x86_64-darwin.
-      # Its modules use self' which forces perSystem evaluation for all
-      # systems, failing on nixpkgs 26.11+ (dropped x86_64-darwin).
       inputs.flake-parts.follows = "flake-parts";
       inputs.systems.follows = "systems";
     };
@@ -120,7 +117,7 @@
     # Only for its NixOS module; the package comes from nixpkgs, so keep the
     # tag in step with nixpkgs' paseo version.
     paseo = {
-      url = "github:getpaseo/paseo?ref=v0.16.0";
+      url = "github:getpaseo/paseo?ref=v0.16.1";
       flake = false;
     };
     edgepad = {
@@ -138,7 +135,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     headup = {
-      url = "github:yuxqiu/headup?ref=v0.4.6";
+      url = "github:yuxqiu/headup?ref=v0.5.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

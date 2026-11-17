@@ -1,20 +1,11 @@
 {
   flake.modules.homeManager.zsh =
-    {
-      config,
-      lib,
-      pkgs,
-      ...
-    }:
+    { lib, pkgs, ... }:
     {
       programs.zsh = {
         enable = true;
         autosuggestion.enable = true;
         syntaxHighlighting.enable = true;
-
-        initContent = ''
-          fpath+=("${config.home.profileDirectory}/share/zsh/site-functions" /run/current-system/sw/share/zsh/site-functions /run/current-system/sw/share/zsh/vendor-completions)
-        '';
 
         # Enable Oh My Zsh
         oh-my-zsh = {

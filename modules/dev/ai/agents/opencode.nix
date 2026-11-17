@@ -2,6 +2,7 @@
 {
   flake.modules.homeManager.opencode =
     {
+      config,
       pkgs,
       ...
     }:
@@ -17,9 +18,8 @@
         enable = true;
         enableMcpIntegration = true;
         mutableSettings = true;
-        settings = {
-          autoupdate = false;
-        };
+        settings.autoupdate = false;
+        context = config.my.agents-md.content;
         cli = {
           attention = {
             notifications = true;
@@ -34,7 +34,5 @@
         "${opencodeQueue}/lib/opencode-queue/index.js";
 
       programs.agent-skills.targets.opencode.enable = true;
-
-      my.agents-md.destinations.opencode = ".config/opencode/AGENTS.md";
     };
 }

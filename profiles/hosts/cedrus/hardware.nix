@@ -52,14 +52,5 @@
         vpl-gpu-rt
         intel-compute-runtime
       ];
-
-      # touchpad quirks, without overrides can only click but cannot move
-      environment.etc."libinput/local-overrides.quirks".text = ''
-        [Lenovo ThinkBook 16 G8+ IPH touchpad]
-        MatchName=*GXTP5100*
-        MatchDMIModalias=dmi:*svnLENOVO:*pvrThinkBook16G8+IPH*:*
-        MatchUdevType=touchpad
-        AttrInputProp=+INPUT_PROP_PRESSUREPAD
-      '';
     };
 }

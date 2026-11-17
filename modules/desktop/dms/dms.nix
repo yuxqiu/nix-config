@@ -25,17 +25,10 @@
 
       programs.dank-material-shell = {
         enable = true;
-        systemd = {
-          enable = true;
-          restartIfChanged = true;
-        };
+        systemd.enable = true;
 
-        enableSystemMonitoring = true;
-        enableVPN = true;
         enableDynamicTheming = false;
-        enableAudioWavelength = true;
         enableCalendarEvents = false;
-        enableClipboardPaste = true;
 
         settings = builtins.fromJSON (builtins.readFile ./configs/settings.json) // {
           customThemeFile = "${inputs.dms-plugin-registry}/themes/catppuccin/theme.json";

@@ -43,8 +43,8 @@
             "stdio"
           ])
         ];
-        jsoncss = [
-          (entry "json" "vscode-json-language-server" [ "--stdio" ])
+        json = [ (entry "json" "vscode-json-language-server" [ "--stdio" ]) ];
+        css = [
           (entry "css" "vscode-css-language-server" [ "--stdio" ])
           (entry "scss" "vscode-css-language-server" [ "--stdio" ])
         ];
@@ -52,7 +52,9 @@
       };
 
       lspArgs = lib.flatten (
-        lib.mapAttrsToList (name: entries: lib.optionals (config.my.dev.languages ? name) entries) langLsp
+        lib.mapAttrsToList (
+          name: entries: lib.optionals (config.my.dev.languages ? ${name}) entries
+        ) langLsp
       );
     in
     {

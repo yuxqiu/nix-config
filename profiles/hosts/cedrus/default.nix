@@ -66,7 +66,6 @@
         config.flake.modules.nixos.docker
 
         # desktop
-        config.flake.modules.nixos.display-manager
         config.flake.modules.nixos.pipewire
         config.flake.modules.nixos.dms
         config.flake.modules.nixos.niri

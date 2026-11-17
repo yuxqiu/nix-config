@@ -6,7 +6,6 @@
       # https://github.com/nix-community/home-manager/issues/6398#issuecomment-2958982664
       "extensions.autoDisableScopes" = 0;
       "extensions.update.autoUpdateDefault" = false;
-      "extensions.update.enabled" = false;
 
       # 0102: startup page: 0=blank, 1=home, 2=last visited page, 3=resume previous session
       "browser.startup.page" = 1;
@@ -70,10 +69,7 @@
 
       # disable "you haven't started Firefox in a while." message
       # https://support.mozilla.org/en-US/questions/1231948
-      "browser.disableResetPrompt" = false;
-
-      # disable default browser check
-      "browser.shell.checkDefaultBrowser" = false;
+      "browser.disableResetPrompt" = true;
 
       # disable health report
       "datareporting.healthreport.service.enabled" = false;
@@ -85,17 +81,11 @@
       "toolkit.telemetry.cachedClientID" = "";
       "toolkit.telemetry.cachedProfileGroupID" = "";
 
-      # hide "More from Mozilla" in Settings
-      "browser.preferences.moreFromMozilla" = false;
-
       # disable fullscreen delay and notice
       "full-screen-api.transition-duration.enter" = "0 0";
       "full-screen-api.transition-duration.leave" = "0 0";
       "full-screen-api.warning.delay" = -1;
       "full-screen-api.warning.timeout" = 0;
-
-      # disable welcome notices
-      "browser.aboutwelcome.enabled" = false;
 
       # open PDFs inline
       # [1] https://support.mozilla.org/en-US/questions/1387228
@@ -104,12 +94,6 @@
       # prevent password truncation when submitting form data
       # [1] https://www.ghacks.net/2020/05/18/firefox-77-wont-truncate-text-exceeding-max-length-to-address-password-pasting-issues/
       "editor.truncate_user_pastes" = false;
-
-      # disable Form Autofill (stored data is not secure, uses a JSON file)
-      # [1] https://wiki.mozilla.org/Firefox/Features/Form_Autofill
-      "extensions.formautofill.addresses.enabled" = false;
-      "extensions.formautofill.creditCards.enabled" = false;
-      "browser.formfill.enable" = false;
 
       # software that continually reports what default browser you are using
       # [WARNING] Breaks "Make Default..." button in Preferences [1]

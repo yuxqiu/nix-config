@@ -54,7 +54,7 @@ in
               name = appName;
               runtimeInputs = [ pkgs.nix ];
               text = ''
-                exec nixos-rebuild switch --flake "${flakeRef}#${name}" --use-remote-sudo "$@"
+                exec nixos-rebuild switch --flake "${flakeRef}#${name}" --elevate=sudo "$@"
               '';
             };
           in

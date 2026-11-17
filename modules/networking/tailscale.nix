@@ -150,7 +150,6 @@
         services.tailscale = {
           disableUpstreamLogging = true;
           extraUpFlags = [ "--ssh" ];
-          extraDaemonFlags = [ "--no-logs-no-support" ];
         };
 
         services.tailscale.serve.enable = true;

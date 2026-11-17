@@ -7,10 +7,6 @@
 {
   options.nixpkgs = {
     config = {
-      allowUnfreePredicate = lib.mkOption {
-        type = lib.types.functionTo lib.types.bool;
-        default = _: false;
-      };
       allowUnfree = lib.mkOption {
         type = lib.types.bool;
         default = false;
@@ -24,7 +20,6 @@
 
   config.nixpkgs = {
     config.allowUnfree = true;
-    config.allowUnfreePredicate = pkg: true;
     overlays = [
       inputs.nix-vscode-extensions.overlays.default
     ];

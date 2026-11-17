@@ -159,15 +159,7 @@
         git-cliff
         git-crypt
         git-lfs
-        (pkgs.symlinkJoin {
-          name = "git-fame";
-          paths = [ pkgs.git-fame ];
-          buildInputs = [ pkgs.makeWrapper ];
-          postBuild = ''
-            wrapProgram $out/bin/git-fame \
-              --prefix LD_LIBRARY_PATH : ${pkgs.lib.makeLibraryPath [ pkgs.openssl ]}
-          '';
-        })
+        git-fame
         mergiraf
         onefetch
       ];

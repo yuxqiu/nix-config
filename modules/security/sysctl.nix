@@ -18,7 +18,7 @@
       "fs.suid_dumpable" = 0; # No core dumps from SUID programs
 
       # ── ASLR (tiny overhead, major security benefit) ──
-      "kernel.randomize_va_space" = 2; # Full ASLR (Linux default is 1)
+      "kernel.randomize_va_space" = 2; # Full ASLR, incl. brk (also the kernel default without CONFIG_COMPAT_BRK)
 
       # ── Core dumps ──
       "kernel.core_pattern" = "|/bin/false"; # Prevent core dump files (NOT default)
@@ -27,7 +27,7 @@
       "kernel.sysrq" = 0; # Disable SysRq key
 
       # ── Ptrace (minimal overhead) ──
-      "kernel.yama.ptrace_scope" = 1; # Restrict ptrace to parent only (default is 0)
+      "kernel.yama.ptrace_scope" = 1; # Restrict ptrace to descendants (also Yama's default, YAMA_SCOPE_RELATIONAL)
 
       # ── Network: redirects (NOT default) ──
       "net.ipv4.conf.all.send_redirects" = 0;

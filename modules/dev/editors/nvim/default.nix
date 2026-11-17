@@ -22,10 +22,7 @@
         luaLoader.enable = true;
         performance.byteCompileLua.enable = true;
 
-        globals = {
-          loaded_ruby_provider = 0;
-          loaded_perl_provider = 0;
-        };
+        withRuby = false;
 
         # Set leader key before lz.n.load runs (in extraConfigLuaPre),
         # so that <leader> in lazy-loaded keymaps expands to <space>.

@@ -29,26 +29,20 @@
       };
     };
 
-    programs.nixvim.extraConfigLua = ''
-      local gitsigns_inline_diff = false
-    '';
-
     programs.nixvim.keymaps = [
       {
         key = "<leader>gi";
+        # The closure holds the toggle state.
         action.__raw = ''
-          function()
-            gitsigns_inline_diff = not gitsigns_inline_diff
-            if gitsigns_inline_diff then
-              require("gitsigns").toggle_linehl(true)
-              require("gitsigns").toggle_deleted(true)
-              require("gitsigns").toggle_word_diff(true)
-            else
-              require("gitsigns").toggle_linehl(false)
-              require("gitsigns").toggle_deleted(false)
-              require("gitsigns").toggle_word_diff(false)
+          (function()
+            local inline_diff = false
+            return function()
+              inline_diff = not inline_diff
+              require("gitsigns").toggle_linehl(inline_diff)
+              require("gitsigns").toggle_deleted(inline_diff)
+              require("gitsigns").toggle_word_diff(inline_diff)
             end
-          end
+          end)()
         '';
         options.desc = "Toggle inline git diff";
       }

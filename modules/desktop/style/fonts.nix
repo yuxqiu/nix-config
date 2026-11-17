@@ -39,7 +39,7 @@
             "DejaVu Sans Mono"
             "Noto Sans Mono CJK SC"
           ];
-          emoji = [ "Noto Color Emoji" ];
+          # emoji: stylix sets [ "Noto Color Emoji" ]; the list isn't deduplicated.
         };
       };
     };

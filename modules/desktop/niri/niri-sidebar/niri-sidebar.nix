@@ -1,10 +1,7 @@
-{ inputs, ... }:
 {
   flake.modules.homeManager.niri =
     { pkgs, lib, ... }:
     let
-      niri-sidebar = pkgs.callPackage (inputs.self + /packages/niri-sidebar.nix) { };
-
       niri-sidebar-config = pkgs.writeText "config.toml" ''
         [geometry]
         width = 550
@@ -30,7 +27,7 @@
 
       niri-sidebar-wrapped = pkgs.symlinkJoin {
         name = "niri-sidebar-wrapped";
-        paths = [ niri-sidebar ];
+        paths = [ pkgs.niri-sidebar ];
         buildInputs = [ pkgs.makeWrapper ];
         postBuild = ''
           wrapProgram "$out/bin/niri-sidebar" \
