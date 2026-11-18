@@ -9,13 +9,36 @@
     let
       profileName = "default";
 
-      # Tint menus with stylix's popup opacity, like GTK and Qt menus.
+      # Menus are tinted with stylix's popup opacity, like GTK and Qt menus.
+      # Their corner radius is shared with niri's `popups` blur rule below;
+      # 6 is Firefox's default menupopup --panel-border-radius.
+      popupRadius = 6;
+      menupopupSubstitutions = {
+        "@popupOpacity@" = toString (builtins.floor (config.stylix.opacity.popups * 100 + 0.5));
+        "@popupRadius@" = toString popupRadius;
+      };
       menupopupCss = builtins.readFile ./css/chrome/menupopup.css;
-      popupOpacity = toString (builtins.floor (config.stylix.opacity.popups * 100 + 0.5));
       menupopup =
-        assert lib.assertMsg (lib.hasInfix "@popupOpacity@" menupopupCss)
-          "firefox.nix: @popupOpacity@ placeholder missing from menupopup.css";
-        builtins.replaceStrings [ "@popupOpacity@" ] [ popupOpacity ] menupopupCss;
+        assert lib.all (
+          placeholder:
+          lib.assertMsg (lib.hasInfix placeholder menupopupCss)
+            "firefox.nix: ${placeholder} placeholder missing from menupopup.css"
+        ) (lib.attrNames menupopupSubstitutions);
+        builtins.replaceStrings (lib.attrNames menupopupSubstitutions) (lib.attrValues menupopupSubstitutions) menupopupCss;
+
+      # --device-pixel: one device pixel in CSS px, for CSS that must land on
+      # the device pixel grid. Gecko lays out in 60 app units per CSS px and
+      # rounds the app units per device pixel to an integer N, so
+      # devicePixelRatio is 60/N (60/34 at a 1.75 output scale) and a device
+      # pixel is N/60 CSS px (nsDeviceContext::SetDPI). userChrome can't use
+      # Firefox's env(hairline) and CSS can't invert `resolution`, so each N
+      # gets a media range around 60/N, halfway to its neighbours. N from 15
+      # to 120 covers scales 4 to 0.5.
+      devicePixelCss = lib.concatMapStrings (n: ''
+        @media (min-resolution: ${toString (60.0 / (n + 0.5))}dppx) and (max-resolution: ${toString (60.0 / (n - 0.5))}dppx) {
+          :root { --device-pixel: calc(${toString n}px / 60); }
+        }
+      '') (lib.range 15 120);
 
       # Prepare user.js
       arkenfoxUserJs = builtins.readFile "${
@@ -36,6 +59,8 @@
 
       # Prepare userChrome.css
       userChrome = builtins.concatStringsSep "\n" [
+        (builtins.readFile ./css/chrome/tokens.css)
+        devicePixelCss
         (builtins.readFile ./css/chrome/blur.css)
         (builtins.readFile ./css/chrome/container.css)
         (builtins.readFile ./css/chrome/control.css)
@@ -237,10 +262,9 @@
           window-rule = {
             match._props."app-id" = "firefox";
             background-effect.blur = true;
-            # matches Firefox's default menupopup --panel-border-radius, and
-            # arrow panels' radius set in menupopup.css
+            # the radius menupopup.css gives menus and arrow panels
             popups = {
-              geometry-corner-radius = 6;
+              geometry-corner-radius = popupRadius;
               background-effect.blur = true;
             };
           };

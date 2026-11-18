@@ -1,0 +1,17 @@
+/* Shared design tokens for the gwfox-derived parts (findbar.css, search.css).
+   Loaded first so every file reads one definition. Values are gwfox's Linux
+   ones (gwfox/chrome/userChrome.css). */
+:root {
+    --bg2: light-dark(#fff, #36363a);
+    --bs1: 0 5px 15px rgba(0, 0, 0, 0.2), 0 0 0 0.5px rgba(0, 0, 0, 0.15);
+    --br1: 6px;
+    --br2: 8px;
+    --button-hover-bgcolor: light-dark(
+        rgba(70, 70, 70, 0.1),
+        rgba(170, 170, 170, 0.2)
+    ) !important;
+    --button-active-bgcolor: light-dark(
+        rgba(70, 70, 70, 0.15),
+        rgba(170, 170, 170, 0.3)
+    ) !important;
+}

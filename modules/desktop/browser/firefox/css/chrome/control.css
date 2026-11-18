@@ -1,29 +1,14 @@
-/* Copied from chrome/ShyFox/shy-controls.css */
-#main-window:is(
-    [sizemode="fullscreen"],
-    [titlepreface*="‍"]:not([customizing])
-) {
-    --window-control-wdt: 0px !important; /* <                             */
-    --buttonbox-left-hgt: 0px !important; /* <         !DUPLICATE!         */
-    --buttonbox-right-hgt: 0px !important; /* <                             */
-    --nav-rgt-btnbx-margin: 0px !important; /* <   This code block must be   */
-    --nav-rgt-btnbx-button: 0px !important; /* <      identical to the       */
-    --nav-lft-btnbx-margin: 0px !important; /* <      code block below       */
-    --nav-lft-btnbx-button: 0px !important; /* <                             */
-    .titlebar-buttonbox-container {
-        display: none !important;
-    } /* < vvvvvvvvvvvvvvvvvvvvvvvvvvv */
-}
-
+/* Hide the window control buttons and the space reserved for them, in every
+   window state. Adapted from ShyFox's chrome/ShyFox/shy-controls.css. */
 #main-window {
-    --window-control-wdt: 0px !important; /* < ^^^^^^^^^^^^^^^^^^^^^^^^^^^ */
-    --buttonbox-left-hgt: 0px !important; /* <                             */
-    --buttonbox-right-hgt: 0px !important; /* <         !DUPLICATE!         */
-    --nav-rgt-btnbx-margin: 0px !important; /* <                             */
-    --nav-rgt-btnbx-button: 0px !important; /* <   This code block must be   */
-    --nav-lft-btnbx-margin: 0px !important; /* <      identical to the       */
-    --nav-lft-btnbx-button: 0px !important; /* <      code block above       */
+    --window-control-wdt: 0px !important;
+    --buttonbox-left-hgt: 0px !important;
+    --buttonbox-right-hgt: 0px !important;
+    --nav-rgt-btnbx-margin: 0px !important;
+    --nav-rgt-btnbx-button: 0px !important;
+    --nav-lft-btnbx-margin: 0px !important;
+    --nav-lft-btnbx-button: 0px !important;
     .titlebar-buttonbox-container {
         display: none !important;
-    } /* <                             */
+    }
 }

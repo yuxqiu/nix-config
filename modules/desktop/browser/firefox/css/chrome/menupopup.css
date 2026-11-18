@@ -9,22 +9,21 @@
     display: none !important;
 }
 
-/* Translucent menus, blurred by niri's `popups` window rule. The dark Menu
- * color tints the blur so light pages don't wash the menu out; firefox.nix
- * substitutes its opacity from stylix.opacity.popups. Drop the shadow margin so
- * the popup surface is just the rounded rectangle niri blurs. */
-menupopup {
-    --panel-background-color: color-mix(in srgb, Menu @popupOpacity@%, transparent) !important;
-    --panel-box-shadow: none !important;
-    --panel-box-shadow-margin: 0px !important;
-}
-
-/* Arrow panels (downloads, extensions, app menu) are popup surfaces too, and
- * niri's `popups` rule gives every popup one corner radius. Without this, niri
- * blurs the shadow margin around them as a 6px-rounded rectangle that doesn't
- * match their 24px corners. */
+/* Menus and arrow panels (downloads, extensions, app menu) are popup surfaces
+ * that niri's `popups` window rule blurs as one rounded rectangle. Drop their
+ * shadow margin so the surface is just that rectangle, and give them niri's
+ * corner radius; firefox.nix substitutes @popupRadius@ from the same value it
+ * gives niri. */
+menupopup,
 panel[type="arrow"] {
     --panel-box-shadow: none !important;
     --panel-box-shadow-margin: 0px !important;
-    --panel-border-radius: 6px !important;
+    --panel-border-radius: @popupRadius@px !important;
+}
+
+/* Translucent menus. The dark Menu color tints the blur so light pages don't
+ * wash the menu out; firefox.nix substitutes its opacity from
+ * stylix.opacity.popups. */
+menupopup {
+    --panel-background-color: color-mix(in srgb, Menu @popupOpacity@%, transparent) !important;
 }

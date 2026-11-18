@@ -23,22 +23,29 @@
         name = "os-switch";
         runtimeInputs = [ pkgs.nh ];
         text = ''
-          if [ $# -eq 0 ] || [ $# -gt 2 ]; then
-            echo "Usage: os-switch <flake-output-name> [user@host]"
+          if [ $# -eq 0 ] || [[ "$1" == -* ]]; then
+            echo "Usage: os-switch <flake-output-name> [user@host] [nh os switch flags...]"
             echo "Example: os-switch cedrus"
+            echo "Example: os-switch cedrus --ask -- --show-trace"
             echo "Example: os-switch dracaena root@<ip>"
             exit 1
           fi
-          if [ $# -eq 1 ]; then
-            nh os switch . -H "$1"
+          host="$1"
+          shift
+          # A second argument not starting with "-" is the remote target;
+          # everything after it goes to `nh os switch` unchanged.
+          if [ $# -eq 0 ] || [[ "$1" == -* ]]; then
+            nh os switch . -H "$host" "$@"
             # From PATH, not runtimeInputs: the profile now points at the new
             # generation, whose hm-news carries the new news.
             hm-news --notify
           else
+            target="$1"
+            shift
             # Logging in as root needs no sudo on the target.
             elevation=auto
-            [[ "$2" == root@* ]] && elevation=none
-            nh os switch . -H "$1" --build-host "$2" --target-host "$2" -e "$elevation"
+            [[ "$target" == root@* ]] && elevation=none
+            nh os switch . -H "$host" --build-host "$target" --target-host "$target" -e "$elevation" "$@"
           fi
         '';
       };

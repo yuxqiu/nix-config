@@ -1,6 +1,6 @@
-/* --- Restore pre-157 background and shortcut tile colors --- */
-/* (157 uses near-black #131215 for the page and #252428 for tiles in dark) */
 @-moz-document url("about:home"), url("about:newtab") {
+    /* --- Restore pre-157 background and shortcut tile colors --- */
+    /* (157 uses near-black #131215 for the page and #252428 for tiles in dark) */
     :root {
         --newtab-background-color: light-dark(#F9F9FB, #2B2A33) !important;
         /* also the tile's hover background */
@@ -13,19 +13,13 @@
             rgba(66, 65, 77, 0.85)
         ) !important;
     }
-}
 
-/* --- Hide small pin icon on shortcuts --- */
-@-moz-document url("about:home"), url("about:newtab") {
+    /* --- Hide small pin icon on shortcuts --- */
     .top-site-inner .icon-pin-small {
         display: none !important;
     }
-}
 
-/*  Remove text from homepage/newtab website shortcuts. */
-/*  Check if pinned by using context menu.              */
-@-moz-document url("about:home"),
-url("about:newtab") {
+    /* --- Remove text from shortcuts (check pinning via the context menu) --- */
     .top-site-outer {
         vertical-align: middle !important;
     }

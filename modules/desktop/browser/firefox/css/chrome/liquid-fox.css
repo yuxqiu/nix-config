@@ -23,6 +23,23 @@
         0 0.5px 0 0 rgba(255, 255, 255, 0.35), 0 1px 3px rgba(0, 0, 0, 0.04),
         0 3px 11px rgba(0, 0, 0, 0.06);
 
+    /* Mod: one home for values the layouts below share. */
+    /* The whole window keeps this padding at its bottom; content frames add
+       the rest of --liquid-padding below themselves. */
+    --liquid-window-padding-bottom: 2px;
+    --liquid-frame-margin-bottom: calc(
+        var(--liquid-padding) - var(--liquid-window-padding-bottom)
+    );
+    /* Sidebar icon strip and splitter (horizontal tabs). */
+    --liquid-strip-background: light-dark(
+        rgba(255, 255, 255, 0.35),
+        rgba(0, 0, 0, 0.12)
+    );
+    /* Tab groups: fill and edge as a share of the group color. */
+    --liquid-group-tint: 10%;
+    --liquid-group-edge: 15%;
+    --liquid-group-hover-background: rgba(0, 0, 0, 0.06);
+
     /* Mod: Remove all the gradients */
     /*--liquid-window-tint: linear-gradient(
         176deg,
@@ -43,6 +60,23 @@
         rgba(255, 255, 255, 0.1) 50%,
         rgba(255, 255, 255, 0) 100%
     );*/
+}
+
+/* Mod: stronger tab group tint in dark mode, for every layout. */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --liquid-group-tint: 20%;
+        --liquid-group-edge: 25%;
+    }
+}
+
+/* Mod: tab group text color, for every layout. Declared on tab-group, where
+   --tab-group-color is defined. */
+tab-group {
+    --liquid-group-text-color: light-dark(
+        var(--tab-group-color),
+        var(--tab-group-color-invert)
+    );
 }
 
 /* ============================================
@@ -145,9 +179,9 @@
 :root:not([windowtype="Toolkit:PictureInPicture"], [inDOMFullscreen]):has(
         sidebar-main #tabbrowser-tabs
     ) {
-    /* --- 2px bottom padding on whole window --- */
+    /* --- Bottom padding on whole window --- */
     #browser {
-        padding-bottom: 2px !important;
+        padding-bottom: var(--liquid-window-padding-bottom) !important;
     }
 
     /* --- Web content frame --- */
@@ -156,7 +190,7 @@
         border-radius: var(--liquid-radius) !important;
         overflow: hidden !important;
         box-shadow: var(--liquid-shadow) !important;
-        margin: 0 var(--liquid-padding) calc(var(--liquid-padding) - 2px) 0 !important;
+        margin: 0 var(--liquid-padding) var(--liquid-frame-margin-bottom) 0 !important;
     }
 
     /* --- Sidebar panels (AI, bookmarks, history, etc.) --- */
@@ -197,12 +231,12 @@
         flex-direction: column !important;
         background-color: color-mix(
             in srgb,
-            var(--tab-group-color) 10%,
+            var(--tab-group-color) var(--liquid-group-tint),
             transparent
         ) !important;
         border-radius: var(--liquid-radius-small) !important;
         outline: 1px solid
-            color-mix(in srgb, var(--tab-group-color) 15%, transparent) !important;
+            color-mix(in srgb, var(--tab-group-color) var(--liquid-group-edge), transparent) !important;
         outline-offset: -1px !important;
         padding: 0 !important;
         margin: 2px 8px !important;
@@ -225,10 +259,7 @@
     /* Label: plain text, no own shape -- container handles visuals */
     .tab-group-label {
         background-color: transparent !important;
-        color: light-dark(
-            var(--tab-group-color),
-            var(--tab-group-color-invert)
-        ) !important;
+        color: var(--liquid-group-text-color) !important;
         border-radius: 0 !important;
         max-width: none !important;
         width: 100% !important;
@@ -243,10 +274,7 @@
 
     /* Overflow count (+1, +2): explicit color since --tab-group-line-color is transparent */
     .tab-group-overflow-count {
-        color: light-dark(
-            var(--tab-group-color),
-            var(--tab-group-color-invert)
-        ) !important;
+        color: var(--liquid-group-text-color) !important;
     }
 
     /* Subtle hover highlight on group label */
@@ -260,7 +288,7 @@
 
     tab-group[collapsed]:not([movingtabgroup])
         .tab-group-label-hover-highlight:hover {
-        background: rgba(0, 0, 0, 0.06) !important;
+        background: var(--liquid-group-hover-background) !important;
     }
 
     /* Tabs within groups: tight spacing, bottom breathing room */
@@ -270,19 +298,6 @@
 
     tab-group > .tabbrowser-tab:last-of-type {
         margin-bottom: 3px !important;
-    }
-
-    /* --- Dark mode: stronger group tint --- */
-    @media (prefers-color-scheme: dark) {
-        tab-group {
-            background-color: color-mix(
-                in srgb,
-                var(--tab-group-color) 20%,
-                transparent
-            ) !important;
-            outline: 1px solid
-                color-mix(in srgb, var(--tab-group-color) 25%, transparent) !important;
-        }
     }
 }
 
@@ -310,7 +325,7 @@
         outline: none !important;
         border-inline: none !important;
         border-block: 1px solid
-            color-mix(in srgb, var(--tab-group-color) 15%, transparent) !important;
+            color-mix(in srgb, var(--tab-group-color) var(--liquid-group-edge), transparent) !important;
         max-width: 100% !important;
         overflow: hidden !important;
     }
@@ -363,23 +378,20 @@
 
     /* --- Window bottom padding (same trick as vertical tabs) --- */
     #browser {
-        padding-bottom: 2px !important;
+        padding-bottom: var(--liquid-window-padding-bottom) !important;
     }
 
     /* --- Sidebar icon strip: layout + background --- */
     sidebar-main {
-        margin-inline-start: 8px !important;
-        margin-bottom: calc(var(--liquid-padding) - 2px) !important;
+        margin-inline-start: var(--liquid-padding) !important;
+        margin-bottom: var(--liquid-frame-margin-bottom) !important;
         border-radius: 0 0 0 var(--liquid-radius) !important;
-        background: light-dark(
-            rgba(255, 255, 255, 0.35),
-            rgba(0, 0, 0, 0.12)
-        ) !important;
+        background: var(--liquid-strip-background) !important;
     }
 
     /* --- Sidebar panels (bookmarks, history, etc.): flush, no frills --- */
     #sidebar-box {
-        margin: 0 0 calc(var(--liquid-padding) - 2px) 0 !important;
+        margin: 0 0 var(--liquid-frame-margin-bottom) 0 !important;
         padding: 0 !important;
     }
 
@@ -400,11 +412,8 @@
         border: none !important;
         width: 4px !important;
         min-width: 4px !important;
-        background: light-dark(
-            rgba(255, 255, 255, 0.35),
-            rgba(0, 0, 0, 0.12)
-        ) !important;
-        margin-bottom: calc(var(--liquid-padding) - 2px) !important;
+        background: var(--liquid-strip-background) !important;
+        margin-bottom: var(--liquid-frame-margin-bottom) !important;
     }
 
     /* Restore blue resize highlight on hover/drag */
@@ -423,7 +432,7 @@
     /* --- Content area: rounded bottom corners + side/bottom margin + shadow --- */
     .browserContainer {
         position: relative !important;
-        margin: 0 var(--liquid-padding) calc(var(--liquid-padding) - 2px)
+        margin: 0 var(--liquid-padding) var(--liquid-frame-margin-bottom)
             var(--liquid-padding) !important;
         border-radius: 0 0 var(--liquid-radius) var(--liquid-radius) !important;
         overflow: hidden !important;
@@ -447,13 +456,13 @@
         align-items: stretch !important;
         background-color: color-mix(
             in srgb,
-            var(--tab-group-color) 10%,
+            var(--tab-group-color) var(--liquid-group-tint),
             transparent
         ) !important;
         border-radius: 0 !important;
         border-block: none !important;
         border-inline: 1px solid
-            color-mix(in srgb, var(--tab-group-color) 15%, transparent) !important;
+            color-mix(in srgb, var(--tab-group-color) var(--liquid-group-edge), transparent) !important;
         padding: 0 !important;
         margin: 0 2px !important;
         --tab-group-line-color: transparent !important;
@@ -463,10 +472,7 @@
     /* Label */
     .tab-group-label {
         background-color: transparent !important;
-        color: light-dark(
-            var(--tab-group-color),
-            var(--tab-group-color-invert)
-        ) !important;
+        color: var(--liquid-group-text-color) !important;
         border: none !important;
         font-weight: normal !important;
         outline: none !important;
@@ -476,10 +482,7 @@
 
     /* Overflow count (+1, +2) */
     .tab-group-overflow-count {
-        color: light-dark(
-            var(--tab-group-color),
-            var(--tab-group-color-invert)
-        ) !important;
+        color: var(--liquid-group-text-color) !important;
         padding-inline: 6px !important;
     }
 
@@ -491,23 +494,7 @@
 
     tab-group[collapsed]:not([movingtabgroup])
         .tab-group-label-hover-highlight:hover {
-        background: rgba(0, 0, 0, 0.06) !important;
-    }
-
-    /* --- Dark mode: stronger group tint --- */
-    @media (prefers-color-scheme: dark) {
-        tab-group {
-            background-color: color-mix(
-                in srgb,
-                var(--tab-group-color) 20%,
-                transparent
-            ) !important;
-            border-inline-color: color-mix(
-                in srgb,
-                var(--tab-group-color) 25%,
-                transparent
-            ) !important;
-        }
+        background: var(--liquid-group-hover-background) !important;
     }
 }
 

@@ -167,7 +167,7 @@
     }
   ],
   "currentThemeName": "custom",
-  "customThemeFile": "/nix/store/bq3ky57kkspl5ggymprckc4ccllykrf4-source/themes/catppuccin/theme.json",
+  "customThemeFile": "/nix/store/8jrf4k6bpkwfb0gk55mlf91n9ghd210c-source/themes/catppuccin/theme.json",
   "registryThemeVariants": {
     "catppuccin": {
       "dark": {
@@ -179,7 +179,6 @@
   "radiusStrength": 50,
   "clockFormat": "24h",
   "showSeconds": true,
-  "animationDuration": 500,
   "blurBorderEnabled": true,
   "blurBorderOpacity": 0.5,
   "greeterEnableFprint": true,
@@ -209,10 +208,12 @@
       "smartAutoHide": false,
       "useOverlayLayer": false,
       "editOnRightClick": false,
+      "showEditWidgetsInContextMenu": true,
       "showOnFullscreen": false,
       "openOnOverview": false,
       "groupByApp": false,
       "separatePinnedAndRunningApps": false,
+      "showRunningApps": true,
       "restoreSpecialWorkspaceOnClick": false,
       "isolateDisplays": false,
       "indicatorStyle": "circle",
@@ -535,6 +536,7 @@
   "lockBeforeSuspend": true,
   "runDmsMatugenTemplates": false,
   "matugenTemplateNeovim": true,
+  "modalDarkenBackground": false,
   "enableFprint": true,
   "maxFprintTries": 3,
   "notificationCompactMode": true,
@@ -663,10 +665,10 @@
         },
         {
           "enabled": true,
-          "focusedWindowCompactMode": false,
           "focusedWindowShowIcon": true,
           "focusedWindowSize": 1,
-          "id": "focusedWindow"
+          "id": "focusedWindow",
+          "focusedWindowShowAppName": true
         }
       ],
       "maximizeWidgetIcons": false,
@@ -791,10 +793,10 @@
         },
         {
           "enabled": true,
-          "focusedWindowCompactMode": false,
           "focusedWindowShowIcon": true,
           "focusedWindowSize": 1,
-          "id": "focusedWindow"
+          "id": "focusedWindow",
+          "focusedWindowShowAppName": true
         }
       ],
       "maximizeWidgetIcons": false,
@@ -925,5 +927,5 @@
     }
   },
   "frameMode": "separate",
-  "configVersion": 42
+  "configVersion": 45
 }

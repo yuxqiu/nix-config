@@ -22,7 +22,6 @@
         description = "yuxqiu";
         extraGroups = [
           "wheel"
-          "input"
           "docker"
           "i2c"
           "networkmanager"

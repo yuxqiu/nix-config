@@ -22,5 +22,12 @@
           };
         });
       };
+
+      # Stylus and multi-touch go through /dev/uinput. Grant it to the active
+      # local session via logind's uaccess ACL instead of programs.weylus.users,
+      # whose uinput group would also cover the user's SSH and inactive sessions.
+      services.udev.extraRules = ''
+        SUBSYSTEM=="misc", KERNEL=="uinput", TAG+="uaccess", OPTIONS+="static_node=uinput"
+      '';
     };
 }

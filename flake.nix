@@ -96,11 +96,6 @@
       url = "github:duxlabs-dev/dux-search";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    xremap = {
-      url = "github:xremap/nix-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-parts.follows = "flake-parts";
-    };
     fingerprint-lid-guard = {
       url = "github:TimP4w/nix-fingerprint-lid-guard";
     };
@@ -117,7 +112,7 @@
     # Only for its NixOS module; the package comes from nixpkgs, so keep the
     # tag in step with nixpkgs' paseo version.
     paseo = {
-      url = "github:getpaseo/paseo?ref=v0.16.1";
+      url = "github:getpaseo/paseo?ref=v0.16.2";
       flake = false;
     };
     edgepad = {

@@ -12,8 +12,7 @@
     in
     {
       services.xremap = {
-        userName = "yuxqiu";
-        config.modmap = [
+        settings.modmap = [
           {
             name = "internal-keyboard-remaps";
             device.only = [ "AT Translated Set 2 keyboard" ];
