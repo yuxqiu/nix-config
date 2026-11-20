@@ -1,4 +1,3 @@
-{ inputs, ... }:
 let
   port = 6767;
 in
@@ -20,16 +19,18 @@ in
       };
     };
 
-  # Paseo's orchestration skills (what the UI's "Install" would copy), matched
-  # to the pinned Paseo. Skills are global to the user, so only here, where
-  # agents only ever run through Paseo.
-  flake.modules.homeManager.dracaena = {
-    programs.agent-skills = {
-      sources.paseo = {
-        path = inputs.paseo;
-        subdir = "skills";
+  # Paseo's orchestration skills (what the UI's "Install" would copy), from the
+  # source of the packaged Paseo so they match the daemon. Skills are global to
+  # the user, so only here, where agents only ever run through Paseo.
+  flake.modules.homeManager.dracaena =
+    { pkgs, ... }:
+    {
+      programs.agent-skills = {
+        sources.paseo = {
+          path = pkgs.paseo.src;
+          subdir = "skills";
+        };
+        skills.enableAll = [ "paseo" ];
       };
-      skills.enableAll = [ "paseo" ];
     };
-  };
 }
