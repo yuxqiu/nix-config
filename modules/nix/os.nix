@@ -110,6 +110,7 @@
       home.packages = [
         os-update
         os-switch
+        (pkgs.callPackage (inputs.self + /packages/os-install.nix) { })
         hm-news
       ];
     };

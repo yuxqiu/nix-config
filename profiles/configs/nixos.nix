@@ -59,37 +59,45 @@
     default = { };
   };
 
-  config.flake.nixosConfigurations = lib.mapAttrs (
-    name: cfg:
+  config.flake.nixosConfigurations =
     let
-      mv = inputs.multiverse.lib.mkMultiverse {
-        inherit (cfg) system;
-        config.allowUnfree = true;
-      };
+      hardwareConfig = name: ../hosts + "/${name}/_hardware-configuration.nix";
     in
-    inputs.nixpkgs.lib.nixosSystem {
-      inherit (cfg) system;
-      specialArgs = {
-        inherit inputs mv;
-      };
-      modules =
-        cfg.modules
-        ++ [
-          { system.stateVersion = cfg.stateVersion; }
-        ]
-        ++ (lib.optional (cfg.homeManager != null) {
-          home-manager.users.${cfg.homeManager.username} = {
-            imports = cfg.homeManager.modules;
-            home.stateVersion = cfg.homeManager.stateVersion;
-          };
-          home-manager.extraSpecialArgs = { inherit mv; };
-          home-manager.sharedModules = [
-            {
-              nixpkgs.config = config.nixpkgs.config;
-              nixpkgs.overlays = config.nixpkgs.overlays;
-            }
-          ];
-        });
-    }
-  ) config.configurations.nixos;
+    lib.mapAttrs (
+      name: cfg:
+      let
+        mv = inputs.multiverse.lib.mkMultiverse {
+          inherit (cfg) system;
+          config.allowUnfree = true;
+        };
+      in
+      inputs.nixpkgs.lib.nixosSystem {
+        inherit (cfg) system;
+        specialArgs = {
+          inherit inputs mv;
+        };
+        modules =
+          cfg.modules
+          ++ [
+            { system.stateVersion = cfg.stateVersion; }
+          ]
+          # Generated hardware config (nixos-generate-config, written by
+          # os-install). It is a NixOS module, not a flake-parts one, so its name
+          # starts with "_" for import-tree to skip it and it is imported here.
+          ++ lib.optional (builtins.pathExists (hardwareConfig name)) (hardwareConfig name)
+          ++ (lib.optional (cfg.homeManager != null) {
+            home-manager.users.${cfg.homeManager.username} = {
+              imports = cfg.homeManager.modules;
+              home.stateVersion = cfg.homeManager.stateVersion;
+            };
+            home-manager.extraSpecialArgs = { inherit mv; };
+            home-manager.sharedModules = [
+              {
+                nixpkgs.config = config.nixpkgs.config;
+                nixpkgs.overlays = config.nixpkgs.overlays;
+              }
+            ];
+          });
+      }
+    ) config.configurations.nixos;
 }

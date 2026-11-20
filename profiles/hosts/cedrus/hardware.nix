@@ -1,33 +1,7 @@
 {
   flake.modules.nixos.cedrus =
-    { pkgs, modulesPath, ... }:
+    { pkgs, ... }:
     {
-      imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
-
-      boot.initrd.availableKernelModules = [
-        "xhci_pci"
-        "thunderbolt"
-        "nvme"
-        "usb_storage"
-        "sd_mod"
-        "rtsx_pci_sdmmc"
-      ];
-      boot.kernelModules = [ "kvm-intel" ];
-
-      fileSystems."/" = {
-        device = "/dev/disk/by-uuid/142862d6-6393-4cf8-92e1-1e61a9cea266";
-        fsType = "ext4";
-      };
-
-      fileSystems."/boot" = {
-        device = "/dev/disk/by-uuid/EC63-2A5C";
-        fsType = "vfat";
-        options = [
-          "fmask=0077"
-          "dmask=0077"
-        ];
-      };
-
       boot.loader = {
         efi.canTouchEfiVariables = true;
         systemd-boot = {

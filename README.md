@@ -22,6 +22,27 @@ so adding a file is enough to wire it in.
 nixos-rebuild switch --flake .#<host>
 ```
 
+## Setting up a machine
+
+Secrets use [sops-nix](https://github.com/Mic92/sops-nix) with
+post-quantum age keys. Each host generates its own key on first
+activation; an admin key kept in Proton Pass grants it access.
+
+1. Add `profiles/hosts/<host>/` and a `.sops.yaml` rule for
+   `profiles/hosts/<host>/secrets/<host>.yaml` listing only the admin key,
+   then create the file with `sops-update admin <file>`. `git add` them.
+2. Install:
+   - **Remote, wipe and install:** `os-install <host> root@<ip>`
+     (nixos-anywhere; writes `_hardware-configuration.nix` on first use).
+   - **Already running NixOS:** copy its `hardware-configuration.nix` to
+     `_hardware-configuration.nix`, then
+     `sudo nixos-rebuild switch --flake .#<host> --extra-experimental-features 'nix-command flakes'`.
+3. Grant the new key and redeploy:
+   `sops-update-key add admin <user>@<host>:/var/lib/sops-nix/key.txt <file>`,
+   then `os-switch <host> [<user>@<host>]`.
+
+Until step 3, everything except services that read secrets works.
+
 ## Hosts
 
 - `cedrus`: desktop, NixOS + [niri](https://github.com/YaLTeR/niri) +

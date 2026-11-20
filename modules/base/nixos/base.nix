@@ -58,6 +58,9 @@
       environment.systemPackages = with pkgs; [
         bottom
         dig
+        # `os-switch <host> <target>` (nh) diffs the new system against the
+        # target's current one, which needs dix >= 3.0.0 on the target.
+        dix
         duf
         fastfetch
         jq
