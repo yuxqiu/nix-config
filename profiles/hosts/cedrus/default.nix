@@ -34,7 +34,6 @@
         config.flake.modules.nixos.firewall
         config.flake.modules.nixos.opensnitch
         config.flake.modules.nixos.tailscale
-        # config.flake.modules.nixos.xray
 
         # security
         config.flake.modules.nixos.polkit
@@ -203,7 +202,6 @@
         config.flake.modules.homeManager.proton-vpn
         config.flake.modules.homeManager.usbguard
         config.flake.modules.homeManager.bluetooth
-        # config.flake.modules.homeManager.xray
 
         # nix
         config.flake.modules.homeManager.nix

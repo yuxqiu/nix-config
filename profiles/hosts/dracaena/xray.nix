@@ -1,6 +1,11 @@
 {
   flake.modules.nixos.dracaena =
-    { config, inputs, ... }:
+    {
+      config,
+      inputs,
+      pkgs,
+      ...
+    }:
     let
       local = import "${inputs.nix-secrets}/dracaena.nix";
     in
@@ -10,6 +15,7 @@
         enable = true;
         settingsFile = config.sops.secrets."xray.json".path;
       };
+      environment.systemPackages = [ pkgs.xray ];
 
       security.acme = {
         acceptTerms = true;

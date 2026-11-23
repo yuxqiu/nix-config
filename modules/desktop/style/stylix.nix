@@ -2,9 +2,22 @@
 
 {
   flake.modules.homeManager.stylix =
-    { pkgs, ... }:
+    {
+      lib,
+      options,
+      pkgs,
+      ...
+    }:
+    let
+      stylixHasWaypromptTarget = options.stylix.targets ? wayprompt;
+    in
     {
       imports = [ inputs.stylix.homeModules.stylix ];
+
+      # Home Manager removed programs.wayprompt, but stylix's wayprompt target
+      # still defines it, which fails Home Manager's removed-option assertion.
+      stylix.targets = lib.optionalAttrs stylixHasWaypromptTarget { wayprompt.enable = false; };
+      warnings = lib.optional (!stylixHasWaypromptTarget) "modules/desktop/style/stylix.nix: stylix dropped its wayprompt target. Remove the stylix.targets.wayprompt override, the stylixHasWaypromptTarget binding, and this warning.";
 
       stylix = {
         enable = true;
