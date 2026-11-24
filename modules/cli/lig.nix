@@ -17,6 +17,9 @@
         settings = {
           # The stylix monospace font is a Nerd Font; skip lig's fc-list probe.
           ui.icons = "nerd";
+          # niri's Mod is Alt and Mod+R switches column width, so the default
+          # Alt+R never reaches the terminal.
+          keys.folder_history = [ "ctrl-alt-r" ];
           # Stylix palette, but keep the terminal's own background (and its
           # opacity/blur), as in fzf.nix.
           colors = {
