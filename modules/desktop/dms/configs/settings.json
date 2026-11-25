@@ -62,16 +62,6 @@
         "shape": "round",
         "syncPositionAcrossScreens": true
       },
-      "enabled": false,
-      "id": "lock_power",
-      "widgetType": "lockPower"
-    },
-    {
-      "config": {
-        "displayPreferences": ["all"],
-        "shape": "round",
-        "syncPositionAcrossScreens": true
-      },
       "enabled": true,
       "id": "lw_1791223195433_z113i8r2u",
       "name": "Power",
@@ -141,16 +131,6 @@
         "shape": "round",
         "syncPositionAcrossScreens": true
       },
-      "enabled": false,
-      "id": "lock_power",
-      "widgetType": "lockPower"
-    },
-    {
-      "config": {
-        "displayPreferences": ["all"],
-        "shape": "round",
-        "syncPositionAcrossScreens": true
-      },
       "enabled": true,
       "id": "lw_1791223195433_z113i8r2u",
       "name": "Power",
@@ -167,7 +147,7 @@
     }
   ],
   "currentThemeName": "custom",
-  "customThemeFile": "/nix/store/8jrf4k6bpkwfb0gk55mlf91n9ghd210c-source/themes/catppuccin/theme.json",
+  "customThemeFile": "/nix/store/s1kr94cff8dkzg7d56jrr49fa7jd5d7q-source/themes/catppuccin/theme.json",
   "registryThemeVariants": {
     "catppuccin": {
       "dark": {
@@ -183,6 +163,7 @@
   "blurBorderOpacity": 0.5,
   "greeterEnableFprint": true,
   "weatherEnabled": false,
+  "lockScreenShowPowerActions": true,
   "lockScreenShowWeather": false,
   "powerActionHoldDuration": 1,
   "dockConfigs": [
@@ -264,10 +245,12 @@
   "dmsWindowsFloatingSeeded": ["niri", "niri"],
   "density": "comfortable",
   "interfaceStyle": "expressive",
+  "screenCornersEnabled": false,
   "m3ElevationEnabled": true,
   "barElevationEnabled": false,
   "blurEnabled": true,
   "blurBorderSeeded": true,
+  "controlCenterColumns": 8,
   "controlCenterWidgets": [
     {
       "enabled": true,
@@ -402,7 +385,7 @@
       "type": "regex"
     }
   ],
-  "launcherEnterAction": "focus",
+  "launcherEnterAction": "launch",
   "niriOverviewLauncherStyle": "full",
   "dankLauncherV2Size": "compact",
   "dankLauncherV2ShowFooter": true,
@@ -470,14 +453,47 @@
       "h": 1,
       "id": "sysmon",
       "row": 4,
-      "w": 3
+      "w": 3,
+      "instanceId": "sysmon-4",
+      "config": {
+        "layout": "bars",
+        "style": "icon",
+        "metrics": [
+          {
+            "device": "cpu",
+            "vals": ["usage", "temp"],
+            "graph": false,
+            "on": true
+          },
+          {
+            "device": "memory",
+            "vals": ["used"],
+            "graph": false,
+            "on": true
+          }
+        ]
+      }
     },
     {
       "col": 3,
       "h": 1,
-      "id": "network",
+      "id": "sysmon",
       "row": 4,
-      "w": 2
+      "w": 2,
+      "instanceId": "network-5",
+      "config": {
+        "layout": "tiles",
+        "style": "icon",
+        "graphInterval": 300,
+        "metrics": [
+          {
+            "device": "net",
+            "vals": ["down", "up"],
+            "graph": true,
+            "on": true
+          }
+        ]
+      }
     },
     {
       "col": 5,
@@ -509,6 +525,13 @@
       "hostname": false
     }
   },
+  "wellbeingBreaksEnabled": true,
+  "wellbeingBreakInterval": 60,
+  "wellbeingBreakDuration": 60,
+  "wellbeingBreaksBeforeLong": 1,
+  "wellbeingLongBreakDuration": 15,
+  "wellbeingBreakWarning": 15,
+  "wellbeingBreakPauseMedia": true,
   "networkPreference": "wifi",
   "cursorSettings": {
     "dwl": {
@@ -661,14 +684,22 @@
         {
           "enabled": true,
           "id": "workspaceSwitcher",
-          "workspaceOccupiedColorMode": "default"
+          "workspaceOccupiedColorMode": "default",
+          "workspaceIndicatorStyle": "pills",
+          "workspaceIndicatorCompact": false,
+          "workspaceIndicatorRoundness": -1,
+          "showWorkspaceIndex": false,
+          "showWorkspaceName": false,
+          "showWorkspaceApps": false,
+          "showOccupiedWorkspacesOnly": true,
+          "showSpecialWorkspaces": false
         },
         {
           "enabled": true,
+          "focusedWindowShowAppName": true,
           "focusedWindowShowIcon": true,
           "focusedWindowSize": 1,
-          "id": "focusedWindow",
-          "focusedWindowShowAppName": true
+          "id": "focusedWindow"
         }
       ],
       "maximizeWidgetIcons": false,
@@ -710,7 +741,11 @@
       "widgetOutlineEnabled": false,
       "widgetPadding": 12,
       "widgetStyle": "pills",
-      "widgetTransparency": 0.3
+      "widgetTransparency": 0.3,
+      "islandDashTabs": false,
+      "islandExcludedSources": [],
+      "islandNotificationPopups": false,
+      "hoverPopouts": false
     },
     {
       "autoHide": false,
@@ -793,10 +828,10 @@
         },
         {
           "enabled": true,
+          "focusedWindowShowAppName": true,
           "focusedWindowShowIcon": true,
           "focusedWindowSize": 1,
-          "id": "focusedWindow",
-          "focusedWindowShowAppName": true
+          "id": "focusedWindow"
         }
       ],
       "maximizeWidgetIcons": false,
@@ -882,24 +917,41 @@
           "valid": true
         },
         "displayPreferences": ["all"],
-        "gpuPciId": "",
         "graphInterval": 60,
-        "layoutMode": "auto",
-        "showCpu": true,
-        "showCpuGraph": true,
-        "showCpuTemp": true,
-        "showDisk": true,
-        "showGpuTemp": false,
         "showHeader": true,
-        "showMemory": true,
-        "showMemoryGraph": true,
-        "showNetwork": true,
-        "showNetworkGraph": true,
         "showTopProcesses": true,
         "syncPositionAcrossScreens": true,
         "topProcessCount": 3,
         "topProcessSortBy": "cpu",
-        "transparency": 0.8
+        "transparency": 0.8,
+        "metrics": [
+          {
+            "device": "cpu",
+            "vals": ["usage", "temp"],
+            "graph": true,
+            "on": true
+          },
+          {
+            "device": "memory",
+            "vals": ["used"],
+            "graph": true,
+            "on": true
+          },
+          {
+            "device": "net",
+            "vals": ["down", "up"],
+            "graph": true,
+            "on": true
+          },
+          {
+            "device": "disk",
+            "vals": ["read", "write", "space"],
+            "graph": true,
+            "on": true
+          }
+        ],
+        "layout": "tiles",
+        "style": "icon"
       },
       "enabled": true,
       "id": "dw_sysmon_primary",
@@ -927,5 +979,5 @@
     }
   },
   "frameMode": "separate",
-  "configVersion": 45
+  "configVersion": 48
 }

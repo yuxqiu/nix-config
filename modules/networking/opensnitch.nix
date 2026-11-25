@@ -40,5 +40,10 @@
 
   flake.modules.nixos.opensnitch = {
     services.opensnitch.enable = true;
+
+    # Connections no rule matches are denied whenever no UI answers (before
+    # login, or after the UI is stopped or replaced by another process
+    # serving its socket), instead of allowed.
+    services.opensnitch.settings.DefaultAction = "deny";
   };
 }
