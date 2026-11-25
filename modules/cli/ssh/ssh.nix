@@ -10,7 +10,7 @@
       programs.ssh = {
         enable = true;
 
-        settings = lib.mapAttrs (_: hostName: { HostName = hostName; }) config.my.tailnetHosts // {
+        settings = lib.mapAttrs (_: hostName: { HostName = hostName; }) config.tailnet // {
           # base config
           "*" = {
             forwardAgent = false;

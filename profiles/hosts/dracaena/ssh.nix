@@ -3,8 +3,12 @@
     { config, ... }:
     {
       services.openssh.enable = true;
+      services.openssh.settings = {
+        PasswordAuthentication = false;
+        KbdInteractiveAuthentication = false;
+      };
       users.users.root.openssh.authorizedKeys.keys = [
-        config.my.user.keys."general-ssh"
+        config.identity.keys."general-ssh"
       ];
     };
 }

@@ -10,7 +10,7 @@ If the user does not specify a host, ask which one they want to change.
 
 **Build check** (fast, no side effects):
 
-Hosts are declared under `configurations.nixos` or `configurations.homeManager` in `profiles/hosts/<host>.nix`. Pick the matching build command:
+Hosts are declared under `configurations.nixos` or `configurations.homeManager` in `profiles/hosts/<host>/default.nix`. Pick the matching build command:
 
 ```
 # NixOS host
@@ -22,8 +22,13 @@ nix build .#homeConfigurations.<host>.activationPackage --no-link --print-out-pa
 
 **Key conventions**:
 - Module files go under `modules/` and are auto-discovered by `import-tree`.
+- `globals/` holds flake-wide facts (`identity`, `tailnet`): each file declares a top-level option on `generic.base` and sets it, so every config reads `config.identity` / `config.tailnet` without importing anything. Keep it to facts about the owner and the machines.
 - Each file declares `flake.modules.homeManager.<name>` (or `systemManager`, `generic`).
-- Host config at `profiles/hosts/<host>.nix` lists which modules to include.
+- Host config at `profiles/hosts/<host>/default.nix` lists which modules to include; the other files in that directory add to `flake.modules.nixos.<host>` / `flake.modules.homeManager.<host>`, one file per module or service they configure (e.g. `git.nix`, `tailscale.nix`).
+- Including a module turns it on: modules have no `enable` switch (exception: a module replacing an upstream one keeps its option shape, e.g. `services.tailscale.serve`).
+- Host-specific values live in the host directory, set through options the module exposes (e.g. `profiles/hosts/cedrus/git.nix`). An option the host must set has no default, so forgetting it fails at evaluation.
+- Options for a tool Home Manager doesn't cover yet go under `programs.<tool>`, so a future upstream module with the same option fails evaluation and gets noticed.
+- A user profile (`profiles/users/`) defines the account and grants only `wheel`. Other groups are granted per host in their own file, with a comment on the risk accepted (e.g. `profiles/hosts/cedrus/networkmanager.nix`).
 - `pkgs` is available inside the inner `flake.modules.*` function, not the outer one — the outer function receives `{ inputs, ... }`.
 - Prefer `fetchFromGitHub` over flake inputs for non-Nix repos (no `flake.nix`). Prefer stable release tags when available, using the package's `version` in the fetch (e.g. `rev = "v${version}";` inside `mkDerivation rec { ... }`, as in `packages/codeburn.nix`) so `nix-update-git` updates the version and source hash together. Check new fetches with `nix-update-git --check <file>`.
 - Use branch tracking only when stable releases are unavailable or explicitly requested. In that case, use a standalone `let` fetch with a pinned `rev`, `hash`, and `# follow:branch <branch>`, then `inherit src;` in the derivation (e.g. `packages/unicode-highlight-nvim.nix`). The current updater's derivation rule ignores branch-follow directives on inline `src` fetches.

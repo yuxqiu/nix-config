@@ -69,7 +69,7 @@
         };
 
         signing = {
-          key = config.my.user.keys."github-sign";
+          key = config.identity.keys."github-sign";
           format = "ssh";
           signByDefault = true;
         };

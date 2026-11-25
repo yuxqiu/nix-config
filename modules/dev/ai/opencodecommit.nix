@@ -1,21 +1,7 @@
 {
-  flake.modules.nixos.commit =
-    {
-      config,
-      pkgs,
-      ...
-    }:
+  flake.modules.homeManager.opencodecommit =
+    { pkgs, ... }:
     let
-      geminicommitWithConfig = pkgs.symlinkJoin {
-        name = "geminicommit";
-        paths = [ pkgs.geminicommit ];
-        buildInputs = [ pkgs.makeWrapper ];
-        postBuild = ''
-          wrapProgram "$out/bin/geminicommit" \
-            --add-flags "--config ${config.sops.secrets."geminicommit.toml".path}"
-        '';
-      };
-
       # Generates a commit message from the staged diff with `opencode run`.
       # By default tries each free OpenCode Zen model (`opencode/*-free`)
       # until one succeeds; pin one with OPENCODECOMMIT_MODEL=provider/model
@@ -102,24 +88,6 @@
       };
     in
     {
-      users.groups.geminicommit = { };
-      users.users.geminicommit = {
-        isSystemUser = true;
-        group = "geminicommit";
-        home = "/var/lib/geminicommit";
-        createHome = true;
-        description = "geminicommit service user";
-      };
-
-      sops.secrets."geminicommit.toml" = {
-        mode = "0440";
-        owner = config.users.users.geminicommit.name;
-        group = config.users.users.geminicommit.group;
-      };
-
-      environment.systemPackages = [
-        geminicommitWithConfig
-        opencodecommit
-      ];
+      home.packages = [ opencodecommit ];
     };
 }

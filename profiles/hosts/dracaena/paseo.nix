@@ -10,7 +10,7 @@ in
       services.paseo = {
         user = "snowflake";
         inherit port;
-        hostnames = [ config.my.tailnetHosts.dracaena ];
+        hostnames = [ config.tailnet.dracaena ];
         settings.features.webUi.enabled = true;
       };
 

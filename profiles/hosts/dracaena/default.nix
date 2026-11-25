@@ -10,7 +10,6 @@
       stateVersion = "26.11";
       modules = [
         config.flake.modules.generic.base
-        config.flake.modules.generic.yuxqiu
 
         # base
         config.flake.modules.nixos.base
@@ -32,13 +31,14 @@
         # dev
         config.flake.modules.nixos.paseo
 
+        # user
+        config.flake.modules.nixos.snowflake
         config.flake.modules.nixos.dracaena
       ];
       homeManager.username = "snowflake";
       homeManager.stateVersion = "26.11";
       homeManager.modules = [
         config.flake.modules.generic.base
-        config.flake.modules.generic.yuxqiu
 
         # base
         config.flake.modules.homeManager.base-linux

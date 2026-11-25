@@ -29,10 +29,10 @@ in
         package = paseo;
         user = "yuxqiu";
         inherit port;
-        hostnames = [ config.my.tailnetHosts.cedrus ];
+        hostnames = [ config.tailnet.cedrus ];
         # The web UI is served by dracaena; let it connect to this daemon.
         settings.daemon.cors.allowedOrigins = [
-          "https://${config.my.tailnetHosts.dracaena}"
+          "https://${config.tailnet.dracaena}"
         ];
       };
 

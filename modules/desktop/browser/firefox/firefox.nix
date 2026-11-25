@@ -21,10 +21,11 @@
       menupopup =
         assert lib.all (
           placeholder:
-          lib.assertMsg (lib.hasInfix placeholder menupopupCss)
-            "firefox.nix: ${placeholder} placeholder missing from menupopup.css"
+          lib.assertMsg (lib.hasInfix placeholder menupopupCss) "firefox.nix: ${placeholder} placeholder missing from menupopup.css"
         ) (lib.attrNames menupopupSubstitutions);
-        builtins.replaceStrings (lib.attrNames menupopupSubstitutions) (lib.attrValues menupopupSubstitutions) menupopupCss;
+        builtins.replaceStrings (lib.attrNames menupopupSubstitutions)
+          (lib.attrValues menupopupSubstitutions)
+          menupopupCss;
 
       # --device-pixel: one device pixel in CSS px, for CSS that must land on
       # the device pixel grid. Gecko lays out in 60 app units per CSS px and

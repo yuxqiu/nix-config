@@ -27,7 +27,11 @@
       };
     };
 
+  # Rootless: membership in the docker group of a root daemon is root-equivalent.
   flake.modules.nixos.docker = {
-    virtualisation.docker.enable = true;
+    virtualisation.docker.rootless = {
+      enable = true;
+      setSocketVariable = true;
+    };
   };
 }

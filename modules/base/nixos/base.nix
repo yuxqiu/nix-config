@@ -23,10 +23,7 @@
             "nix-command"
             "flakes"
           ];
-          trusted-users = [
-            "root"
-            "@"
-          ];
+          trusted-users = [ "root" ];
 
           auto-optimise-store = true;
         };

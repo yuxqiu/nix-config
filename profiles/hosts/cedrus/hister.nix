@@ -13,7 +13,7 @@ in
     {
       services.hister.settings.server = {
         address = "127.0.0.1:${port}";
-        base_url = "https://${config.my.tailnetHosts.cedrus}:${port}";
+        base_url = "https://${config.tailnet.cedrus}:${port}";
       };
     };
 }

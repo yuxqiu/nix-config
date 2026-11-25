@@ -14,7 +14,7 @@
 
             tmp_key="$(mktemp --suffix=.pub)"
             trap 'rm -f "$tmp_key"' EXIT
-            printf '%s\n' '${config.my.user.keys."general-ssh"}' > "$tmp_key"
+            printf '%s\n' '${config.identity.keys."general-ssh"}' > "$tmp_key"
             exec ssh-copy-id -f -i "$tmp_key" "$@"
           '';
         })

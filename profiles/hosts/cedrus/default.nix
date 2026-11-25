@@ -10,7 +10,6 @@
       stateVersion = "26.11";
       modules = [
         config.flake.modules.generic.base
-        config.flake.modules.generic.yuxqiu
 
         # base
         config.flake.modules.nixos.base
@@ -42,6 +41,7 @@
         config.flake.modules.nixos.geoclue
         config.flake.modules.nixos.usbguard
         config.flake.modules.nixos.bt-proximity-lock
+        config.flake.modules.nixos.session-keyring
 
         # services
         config.flake.modules.nixos.time
@@ -78,7 +78,6 @@
         config.flake.modules.nixos.weylus
 
         # dev
-        config.flake.modules.nixos.commit
         config.flake.modules.nixos.paseo
         config.flake.modules.nixos.nix-ld
         config.flake.modules.nixos.man
@@ -94,7 +93,6 @@
       homeManager.stateVersion = "26.11";
       homeManager.modules = [
         config.flake.modules.generic.base
-        config.flake.modules.generic.yuxqiu
 
         # base
         config.flake.modules.homeManager.base
@@ -164,6 +162,8 @@
         config.flake.modules.homeManager.codex
         config.flake.modules.homeManager.devin
         config.flake.modules.homeManager.opencode
+        config.flake.modules.homeManager.geminicommit
+        config.flake.modules.homeManager.opencodecommit
         config.flake.modules.homeManager.paseo
 
         # dev

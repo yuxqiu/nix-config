@@ -136,6 +136,7 @@
       inputs.import-tree [
         ./modules
         ./profiles
+        ./globals
       ]
     );
 }
