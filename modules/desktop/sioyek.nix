@@ -2,6 +2,7 @@
   flake.modules.homeManager.sioyek =
     { pkgs, lib, ... }:
     {
+      persistence.directories = [ ".local/share/sioyek" ];
       programs.sioyek = {
         enable = true;
         bindings = {

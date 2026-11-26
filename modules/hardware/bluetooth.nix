@@ -1,5 +1,6 @@
 {
   flake.modules.nixos.bluetooth = {
+    persistence.directories = [ "/var/lib/bluetooth" ];
     hardware.bluetooth = {
       enable = true;
       powerOnBoot = false;

@@ -1,9 +1,20 @@
 {
   flake.modules.homeManager.zsh =
-    { lib, pkgs, ... }:
     {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
+    {
+      # zsh rewrites its history and Zsh-z its database by renaming a temp file
+      # over the old one, so both live in a kept directory, not as kept files.
+      persistence.directories = [ ".local/state/zsh" ];
       programs.zsh = {
         enable = true;
+        # Home Manager's zshrc creates this directory, which Zsh-z needs too.
+        history.path = "${config.xdg.stateHome}/zsh/history";
+        sessionVariables.ZSHZ_DATA = "${config.xdg.stateHome}/zsh/z";
         autosuggestion.enable = true;
         syntaxHighlighting.enable = true;
 

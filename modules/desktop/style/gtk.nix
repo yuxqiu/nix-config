@@ -2,6 +2,10 @@
   flake.modules.homeManager.gtk =
     { config, ... }:
     {
+      # The file manager's sidebar bookmarks, edited in the file chooser. GLib
+      # replaces the bookmarks file by rename, and GTK reads it only from this
+      # directory, so the directory is kept rather than the file.
+      persistence.directories = [ ".config/gtk-3.0" ];
       gtk = {
         enable = true;
         colorScheme = "dark";

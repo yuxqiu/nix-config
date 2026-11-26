@@ -85,6 +85,7 @@
 
     in
     {
+      persistence.directories = [ ".config/mozilla" ];
       # Enable Firefox and define profiles
       programs.firefox = {
         enable = true;

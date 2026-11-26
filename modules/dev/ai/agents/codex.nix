@@ -6,6 +6,7 @@
       ...
     }:
     {
+      persistence.directories = [ ".codex" ];
       home.packages = [ pkgs.bubblewrap ];
 
       programs = {

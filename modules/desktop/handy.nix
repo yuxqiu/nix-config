@@ -2,7 +2,18 @@
   flake.modules.homeManager.handy =
     { pkgs, ... }:
     let
-      inherit (pkgs) handy;
+      # Handy downloads models with hf-hub, which reads HF_HOME (default
+      # ~/.cache/huggingface; Handy's own portable mode does the same). Point
+      # it into Handy's data directory so the model is kept with its settings.
+      handy = pkgs.symlinkJoin {
+        name = "handy";
+        paths = [ pkgs.handy ];
+        nativeBuildInputs = [ pkgs.makeWrapper ];
+        postBuild = ''
+          wrapProgram $out/bin/handy \
+            --run 'export HF_HOME="''${HF_HOME:-$HOME/.local/share/com.pais.handy/huggingface}"'
+        '';
+      };
 
       handy-stt = pkgs.writeShellApplication {
         name = "handy-stt";
@@ -70,6 +81,9 @@
       };
     in
     {
+      # Settings (incl. onboarding and the chosen model), history, recordings
+      # and, through HF_HOME above, the downloaded model.
+      persistence.directories = [ ".local/share/com.pais.handy" ];
       home.packages = [
         handy
         pkgs.dotool

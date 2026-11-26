@@ -30,6 +30,10 @@ on its own. When copying one, check what it reads from outside itself:
   `flake.nix`.
 - Options without a default (e.g. `programs.geminicommit.configFile`): the
   module expects your config to set them.
+- `persistence.directories` / `persistence.files`: the state the module keeps
+  on hosts whose root is wiped at boot (`modules/security/impermanence.nix`;
+  see [docs/impermanence.md](docs/impermanence.md)). Without that module they do nothing;
+  drop them if you copy the module elsewhere.
 
 The modules are also exported as flake outputs (`modules.nixos.<name>`,
 `modules.homeManager.<name>`), but they assume this flake's `generic.base`,
@@ -81,8 +85,9 @@ then `nix flake update`; build-check and switch afterwards.
 ## Setting up a machine
 
 Secrets use [sops-nix](https://github.com/Mic92/sops-nix) with
-post-quantum age keys. Each host generates its own key on first
-activation; an admin key kept in Proton Pass grants it access.
+post-quantum age keys. Each host has its own key, made and granted access
+before the host first runs its config, so it decrypts its secrets from the
+first boot. An admin key kept in Proton Pass grants access.
 
 1. Describe the host:
    - `profiles/hosts/<host>/default.nix` with `configurations.nixos.<host>`
@@ -100,35 +105,27 @@ activation; an admin key kept in Proton Pass grants it access.
    listing only the admin key, then create the file with
    `sops-update admin <file>`. If the host joins the tailnet, put a Tailscale
    auth key in it as `tailscale_key` (read by the host's `tailscale.nix`, as
-   in `profiles/hosts/cedrus/tailscale.nix`). `git add`
-   everything.
+   in `profiles/hosts/cedrus/tailscale.nix`). `git add` everything.
 3. Install:
-   - **Remote, wipe and install:** `os-install <host> root@<ip>`
-     (nixos-anywhere; writes `_hardware-configuration.nix` on first use).
-   - **Already running NixOS:** copy its `hardware-configuration.nix` to
-     `_hardware-configuration.nix`, then
-     `sudo nixos-rebuild switch --flake .#<host> --extra-experimental-features 'nix-command flakes'`.
-4. Grant the new key and redeploy:
-   `sops-update-key add admin <user>@<host>:/var/lib/sops-nix/key.txt <file>`,
-   then `os-switch <host> [<user>@<host>]`.
+   - **Remote, wipe and install:** `os-install <host> root@<ip>`. It makes
+     the host's key on a tmpfs here, grants it access to the secrets file,
+     and nixos-anywhere copies it onto the new system; it also writes
+     `_hardware-configuration.nix` on first use. A reinstall replaces the
+     host's previous key; a failed install restores `.sops.yaml` and the
+     secrets file. Commit both afterwards.
+   - **Already running NixOS** (e.g. fresh from the graphical installer):
+     in a checkout of this repository on that machine, run
+     `nix --extra-experimental-features 'nix-command flakes' develop .#bootstrap`,
+     which provides the tools and prints the steps. `os-bootstrap <host>`
+     makes and grants the key, copies the hardware configuration, and lists
+     secrets still missing (such as password hashes); rerun it until it says
+     *Ready*, then run the `nixos-rebuild boot` command it prints and reboot.
 
-Until step 4, everything works except services that read secrets, so the host
-hasn't joined the tailnet yet.
+A host with impermanence (root on tmpfs) has a recommended disk layout and two
+extra setup steps: see [docs/impermanence.md](docs/impermanence.md).
 
 ## Hosts
 
-- `cedrus`: desktop, NixOS + [niri](https://github.com/YaLTeR/niri) +
-  [dux-shell](https://github.com/duxlabs-dev/dux-shell). Account
-  `yuxqiu`.
-- `dracaena`: headless cloud server, aarch64, provisioned
-  declaratively via [disko](https://github.com/nix-community/disko) +
-  [nixos-anywhere](https://github.com/nix-community/nixos-anywhere). Account
-  `snowflake` (key-only SSH, no sudo) for running coding agents.
-
-## Device Quirks
-
-Hardware/OS-specific fixes that don't belong in the Nix config itself.
-
-**Keyboard**
-- [Connecting a Sofle over Bluetooth (BT_CLR)](https://www.reddit.com/r/ErgoMechKeyboards/comments/1j4k8gy/my_nicenano_sofle_wont_connect_via_bluetooth/)
-- [Pairing a Logitech K380 via `bluetoothctl`](https://unix.stackexchange.com/questions/590221/pairing-logitech-k380-in-ubuntu-20-04)
+- `cedrus`: desktop, root on tmpfs. See [docs/cedrus.md](docs/cedrus.md).
+- `dracaena`: headless server for coding agents. See
+  [docs/dracaena.md](docs/dracaena.md).

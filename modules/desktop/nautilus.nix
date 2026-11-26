@@ -38,6 +38,10 @@
     {
       home.packages = [ pkgs.nautilus ];
 
+      # Set here rather than through the UI: dconf is not kept across reboots
+      # on hosts whose root is wiped at boot.
+      dconf.settings."org/gnome/nautilus/preferences".default-folder-viewer = "list-view";
+
       xdg.mimeApps = {
         associations.added = {
           "inode/directory" = [ "org.gnome.Nautilus.desktop" ];

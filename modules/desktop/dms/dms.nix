@@ -17,6 +17,10 @@
       };
     in
     {
+      persistence.directories = [
+        ".local/state/dms"
+        ".local/share/dankcal"
+      ];
       imports = [
         inputs.dms.homeModules.dank-material-shell
         inputs.dms-plugin-registry.homeModules.default

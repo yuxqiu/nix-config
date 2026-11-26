@@ -2,6 +2,7 @@
   flake.modules.homeManager.fcitx5 =
     { pkgs, ... }:
     {
+      persistence.directories = [ ".local/share/fcitx5" ];
       # Inspired by:
       # - https://github.com/dcunited001/ellipsis/blob/02b014b561cfe1a9e6a00e8903e694c23ebc32bf/nixos/hosts/kratos/fcitx5.nix
       i18n.inputMethod = {

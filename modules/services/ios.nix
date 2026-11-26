@@ -2,6 +2,7 @@
   flake.modules.nixos.ios =
     { pkgs, ... }:
     {
+      persistence.directories = [ "/var/lib/lockdown" ];
       services.usbmuxd.enable = true;
 
       programs.fuse.userAllowOther = true;

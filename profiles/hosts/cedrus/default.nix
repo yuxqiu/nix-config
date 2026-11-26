@@ -42,6 +42,7 @@
         config.flake.modules.nixos.usbguard
         config.flake.modules.nixos.bt-proximity-lock
         config.flake.modules.nixos.session-keyring
+        config.flake.modules.nixos.impermanence
 
         # services
         config.flake.modules.nixos.time

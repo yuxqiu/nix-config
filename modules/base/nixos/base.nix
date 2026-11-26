@@ -12,9 +12,26 @@
         inputs.home-manager.nixosModules.home-manager
       ];
 
+      # Home Manager's declared files always win. Without force, activation
+      # stops on a file it cannot back up: a foreign symlink, or a regular
+      # file whose <file>.hm-bak already exists. Any process running as the
+      # user can plant either, so a replaced file inside a kept directory
+      # would survive the boot-time re-link. With force the collision check is
+      # skipped; a foreign regular file is still moved to <file>.hm-bak
+      # (replacing an older backup) before the link is placed. mkForce, since
+      # Home Manager's xdg.*File options copy their own force (default false)
+      # into home.file and a weaker default would lose to that copy.
       home-manager = {
         useUserPackages = true;
         backupFileExtension = "hm-bak";
+        overwriteBackup = true;
+        sharedModules = [
+          {
+            options.home.file = lib.mkOption {
+              type = lib.types.attrsOf (lib.types.submodule { force = lib.mkForce true; });
+            };
+          }
+        ];
       };
 
       nix = {

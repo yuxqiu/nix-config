@@ -4,6 +4,10 @@
 }:
 {
   flake.modules.homeManager.flatpak = {
+    persistence.directories = [
+      ".var"
+      ".local/share/flatpak"
+    ];
     imports = [ inputs.nix-flatpak.homeManagerModules.nix-flatpak ];
 
     services.flatpak = {

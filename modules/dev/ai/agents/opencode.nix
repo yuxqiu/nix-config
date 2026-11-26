@@ -10,6 +10,12 @@
       opencodeQueue = pkgs.callPackage (inputs.self + /packages/opencode-queue.nix) { };
     in
     {
+      persistence.directories = [
+        ".local/share/opencode"
+        ".local/share/opencode-goal-plugin"
+        ".local/share/btw-opencode"
+        ".opencode-goal-plugin"
+      ];
       # Other Interesting Plugins
       # - opencode-background-agents (seems a bit overkill)
       # - open-ralph-wiggum

@@ -2,6 +2,7 @@
   flake.modules.homeManager.herdr =
     { config, ... }:
     {
+      persistence.directories = [ ".local/share/herdr-board" ];
       programs.herdr = {
         enable = true;
         settings = {

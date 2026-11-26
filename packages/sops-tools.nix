@@ -6,8 +6,9 @@
 #   /path/key.txt        an age identity file on this machine (sudo if needed)
 #   [user@]host:/path    an age identity file on that host; it never leaves it
 #
-# Using the admin key logs in to Proton Pass if needed and always logs out
-# when the command exits, so no session is left behind.
+# Using the admin key logs in to Proton Pass in a private session for this
+# run (its own session directory and key, no keyring needed) and always logs
+# out when the command exits, so no session is left behind.
 {
   lib,
   writeShellApplication,
@@ -82,15 +83,22 @@ let
       done
       rm -rf "$ssh_ctl_dir"
       if [ -n "$pass_used" ]; then pass-cli logout >/dev/null; fi
+      rm -rf "$pass_dir"
     }
     trap cleanup EXIT
 
     die() { echo "$*" >&2; exit 1; }
 
-    # Without the Secret Service backend, pass-cli can't open its local key
-    # ("Could not get local key from keyring: NoStorageAccess"); the same
-    # default as modules/cli/proton-pass-cli.nix.
-    export PROTON_PASS_LINUX_KEYRING="''${PROTON_PASS_LINUX_KEYRING:-dbus}"
+    # A private Proton Pass session per run: a fresh session directory on a
+    # tmpfs and a random key that exists only in this process's environment
+    # (key provider "env"), so pass-cli needs no keyring, which a fresh
+    # install may not have, and a session left by a failed logout can't be
+    # decrypted. Each run logs in anyway (pass_session_for).
+    pass_dir="$(mktemp -d -p /dev/shm sops-pass.XXXXXXXX)"
+    export PROTON_PASS_SESSION_DIR="$pass_dir"
+    export PROTON_PASS_KEY_PROVIDER=env
+    PROTON_PASS_ENCRYPTION_KEY="$(head -c 32 /dev/urandom | sha256sum | cut -d' ' -f1)"
+    export PROTON_PASS_ENCRYPTION_KEY
 
     is_remote() {
       case "$1" in

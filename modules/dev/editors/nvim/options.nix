@@ -1,5 +1,15 @@
 {
   flake.modules.homeManager.nvim = {
+    # State that features configured here read back across sessions: undo
+    # history (`undofile`), shada (recent files for telescope's oldfiles,
+    # command/search history, marks), and the data directory (resession's
+    # per-folder sessions, the recent-projects list, telescope prompt
+    # history). Logs and swap files in ~/.local/state/nvim are not kept.
+    persistence.directories = [
+      ".local/share/nvim"
+      ".local/state/nvim/undo"
+      ".local/state/nvim/shada"
+    ];
     programs.nixvim.opts = {
       encoding = "utf-8";
       hidden = true;

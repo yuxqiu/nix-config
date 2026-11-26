@@ -1,5 +1,6 @@
 {
   flake.modules.homeManager.easyeffects = {
+    persistence.directories = [ ".local/share/easyeffects" ];
     services.easyeffects = {
       enable = true;
       preset = "noise-reduction";

@@ -7,6 +7,12 @@
       ...
     }:
     {
+      persistence.directories = [
+        {
+          directory = ".local/share/keyrings";
+          mode = "0700";
+        }
+      ];
       xdg.portal = {
         extraPortals = [
           pkgs.xdg-desktop-portal-gtk

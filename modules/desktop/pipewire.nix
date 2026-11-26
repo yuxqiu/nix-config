@@ -1,5 +1,10 @@
 {
   flake.modules.nixos.pipewire = {
+    home-manager.sharedModules = [
+      {
+        persistence.directories = [ ".local/state/wireplumber" ];
+      }
+    ];
     services.pipewire = {
       enable = true;
       alsa.enable = true;

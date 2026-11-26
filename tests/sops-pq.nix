@@ -27,21 +27,35 @@ let
     esac
   '';
 
-  # Records its arguments and, like the real one, writes the hardware config.
+  # Records its arguments, keeps a copy of the --extra-files tree (deleted by
+  # os-install when it exits) and, like the real one, writes the hardware
+  # config. Fails after recording when /tmp/fail-install exists.
   fakeNixosAnywhere = pkgs.writeShellScriptBin "nixos-anywhere" ''
     printf '%s\n' "$@" > /tmp/nixos-anywhere-args
+    rm -rf /tmp/extra-files
     while [ $# -gt 0 ]; do
-      if [ "$1" = --generate-hardware-config ]; then echo "{ }" > "$3"; fi
+      case "$1" in
+        --generate-hardware-config) echo "{ }" > "$3" ;;
+        --extra-files) cp -a "$2" /tmp/extra-files ;;
+      esac
       shift
     done
+    [ ! -e /tmp/fail-install ]
   '';
-  # os-install takes `nix` from PATH; it only evaluates the host here.
+  # os-install takes `nix` from PATH: it asks for the host's key path and
+  # evaluates the host.
   fakeNix = pkgs.writeShellScriptBin "nix" ''
-    printf '%s\n' "$*" > /tmp/nix-args
+    printf '%s\n' "$*" >> /tmp/nix-args
+    case "$*" in
+      *sops.age.keyFile*) printf '%s' ${keyFile} ;;
+    esac
   '';
 
   sops-tools = pkgs.callPackage ../packages/sops-tools.nix { proton-pass-cli = fakePassCli; };
-  os-install = pkgs.callPackage ../packages/os-install.nix { nixos-anywhere = fakeNixosAnywhere; };
+  os-install = pkgs.callPackage ../packages/os-install.nix {
+    nixos-anywhere = fakeNixosAnywhere;
+    inherit sops-tools;
+  };
 
   # SOPS_EDITOR for creating a secrets file: replaces its content.
   writeGreeting = pkgs.writeShellScript "write-greeting" ''
@@ -105,8 +119,10 @@ pkgs.testers.runNixOSTest {
         return host.succeed("cat /run/secrets/greeting").strip()
 
     def pass_clean():
-        # Every run that used the admin key logged out again.
+        # Every run that used the admin key logged out again, and its private
+        # session directory is gone.
         admin.succeed("! test -e /tmp/pass-session")
+        admin.succeed("test -z \"$(ls /dev/shm | grep sops-pass)\"")
 
     start_all()
 
@@ -213,28 +229,70 @@ pkgs.testers.runNixOSTest {
         assert decrypts("/root/admin.txt", "secrets/temp.yaml")
         assert "&temp" not in sops_yaml(), "unused key left in keys"
 
-    with subtest("os-install: checks before wiping, hardware config, known_hosts"):
-        admin.succeed("mkdir -p /root/flake/profiles/hosts/newhost")
+    with subtest("os-install: checks before wiping"):
+        admin.succeed("mkdir -p /root/flake/profiles/hosts/newhost /root/fakebin && ln -s ${fakeNix}/bin/nix /root/fakebin/nix")
         out = admin.fail("cd /root/flake && os-install newhost root@10.0.0.9 2>&1")
         assert "secrets/newhost.yaml" in out, out
         admin.fail("test -e /tmp/nixos-anywhere-args")
-        admin.succeed("mkdir -p /root/flake/profiles/hosts/newhost/secrets && touch /root/flake/profiles/hosts/newhost/secrets/newhost.yaml")
+        admin.succeed(
+            "cd /root/flake && "
+            "printf 'keys:\\n  - &yuxqiu %s\\ncreation_rules:\\n"
+            "  - path_regex: profiles/hosts/newhost/secrets/newhost\\\\.yaml$\\n    key_groups:\\n      - age:\\n          - *yuxqiu\\n'"
+            " \"$(age-keygen -y /root/admin.txt)\" > .sops.yaml && mkdir -p profiles/hosts/newhost/secrets && "
+            "SOPS_EDITOR=${writeGreeting} sops-update admin profiles/hosts/newhost/secrets/newhost.yaml"
+        )
+
+    def flake_state():
+        return admin.succeed("cd /root/flake && sha256sum .sops.yaml profiles/hosts/newhost/secrets/newhost.yaml")
+
+    def os_install(args):
+        return f"cd /root/flake && PATH=/root/fakebin:$PATH os-install newhost root@10.0.0.9 {args}"
+
+    with subtest("os-install: a failed install restores .sops.yaml and the secrets"):
+        before = flake_state()
+        admin.succeed("touch /tmp/fail-install")
+        out = admin.fail(os_install("2>&1"))
+        assert "restored .sops.yaml" in out, out
+        # The fake wrote the hardware config before failing, like the real
+        # one would; the next install should generate it again.
+        admin.succeed("rm /tmp/fail-install /root/flake/profiles/hosts/newhost/_hardware-configuration.nix")
+        assert flake_state() == before, "flake files changed by a failed install"
+        admin.succeed("test -z \"$(ls /dev/shm | grep os-install)\"")
+        pass_clean()
+
+    with subtest("os-install: the host key is made here, granted, and injected"):
         admin.succeed("echo '10.0.0.9 ${sshKeys.snakeOilEd25519PublicKey}' > /root/.ssh/known_hosts")
-        out = admin.succeed("cd /root/flake && os-install newhost root@10.0.0.9 --build-on remote")
+        out = admin.succeed(os_install("--build-on remote"))
         args = admin.succeed("cat /tmp/nixos-anywhere-args").split()
-        assert args == [
+        assert args[:3] == [
             "--generate-hardware-config", "nixos-generate-config",
             "profiles/hosts/newhost/_hardware-configuration.nix",
-            "--flake", ".#newhost", "--target-host", "root@10.0.0.9", "--build-on", "remote",
         ], args
+        assert args[3] == "--extra-files" and args[4].startswith("/dev/shm/os-install."), args
+        assert args[5:] == ["--flake", ".#newhost", "--target-host", "root@10.0.0.9", "--build-on", "remote"], args
+        # The injected tree holds the key at the host's sops.age.keyFile.
+        injected = "/tmp/extra-files${keyFile}"
+        admin.succeed(f"test \"$(stat -c %a {injected})\" = 600")
+        admin.succeed(f"grep -q '^AGE-SECRET-KEY-PQ-1' {injected}")
+        pub = admin.succeed(f"age-keygen -y {injected}").strip()
+        assert pub in admin.succeed("cat /root/flake/.sops.yaml"), "key not granted"
+        admin.succeed(f"cd /root/flake && SOPS_AGE_KEY_FILE={injected} sops -d profiles/hosts/newhost/secrets/newhost.yaml | grep -q hello")
+        # The local copy is gone; the install output says what to commit.
+        admin.succeed("test -z \"$(ls /dev/shm | grep os-install)\"")
+        assert "Commit .sops.yaml" in out, out
         admin.fail("grep -q 10.0.0.9 /root/.ssh/known_hosts")
-        assert "sops-update-key add admin root@10.0.0.9:${keyFile} profiles/hosts/newhost/secrets/newhost.yaml" in out, out
-        # Reinstall: the hardware config exists, so it is kept and the host
-        # is evaluated before anything is wiped.
-        admin.succeed("mkdir -p /root/fakebin && ln -s ${fakeNix}/bin/nix /root/fakebin/nix")
-        admin.succeed("cd /root/flake && PATH=/root/fakebin:$PATH os-install newhost root@10.0.0.9")
+        pass_clean()
+
+    with subtest("os-install: a reinstall keeps the hardware config, evaluates the host first and replaces its key"):
+        first = pub
+        admin.succeed(os_install(""))
         args = admin.succeed("cat /tmp/nixos-anywhere-args").split()
-        assert args == ["--flake", ".#newhost", "--target-host", "root@10.0.0.9"], args
+        second = admin.succeed(f"age-keygen -y {injected}").strip()
+        assert second != first, "reinstall reused the old key"
+        yaml = admin.succeed("cat /root/flake/.sops.yaml")
+        assert second in yaml and first not in yaml, yaml
+        admin.succeed(f"cd /root/flake && SOPS_AGE_KEY_FILE={injected} sops -d profiles/hosts/newhost/secrets/newhost.yaml | grep -q hello")
+        assert args[0] == "--extra-files" and args[2:] == ["--flake", ".#newhost", "--target-host", "root@10.0.0.9"], args
         admin.succeed("grep -q 'nixosConfigurations.newhost.config.system.build.toplevel.drvPath' /tmp/nix-args")
   '';
 }

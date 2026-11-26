@@ -1,5 +1,6 @@
 {
   flake.modules.homeManager.antigravity = {
+    persistence.directories = [ ".gemini" ];
     programs = {
       antigravity-cli = {
         enable = true;

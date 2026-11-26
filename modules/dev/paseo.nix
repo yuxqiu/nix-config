@@ -3,6 +3,10 @@
   flake.modules.homeManager.paseo =
     { pkgs, ... }:
     {
+      persistence.directories = [
+        ".paseo"
+        ".config/Paseo"
+      ];
       home.packages = [ pkgs.paseo-desktop ];
     };
 
@@ -44,6 +48,12 @@
         relay.enable = false;
         # Set here because the module rewrites config.json on every start,
         # discarding changes made in the UI.
+        # Dictation and voice mode run on local speech models the daemon
+        # downloads into $PASEO_HOME/models (about 1 GB); neither is used.
+        settings.features = {
+          dictation.enabled = false;
+          voiceMode.enabled = false;
+        };
         settings.daemon = {
           # Paseo's MCP tools, passed only to agents Paseo itself launches.
           mcp.injectIntoAgents = true;

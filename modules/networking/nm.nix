@@ -15,6 +15,12 @@
   };
 
   flake.modules.nixos.nm = {
+    persistence.directories = [
+      {
+        directory = "/etc/NetworkManager/system-connections";
+        mode = "0700";
+      }
+    ];
     networking.networkmanager = {
       enable = true;
       wifi.macAddress = "random";
@@ -32,6 +38,19 @@
       };
     };
 
-    systemd.services.NetworkManager-wait-online.enable = false;
+    # Profiles are kept across reboots in system-connections, both system-wide
+    # ones and ones restricted to a user (connection.permissions), and a
+    # profile can carry DNS, a VPN or a proxy. NetworkManager's polkit defaults
+    # let the active session create and edit its own profiles without a
+    # password (settings.modify.own = yes), so require admin authentication
+    # for that too, as for system-wide ones. Connecting to saved profiles
+    # (network-control) stays password-free.
+    security.polkit.extraConfig = ''
+      polkit.addRule(function(action, subject) {
+        if (action.id == "org.freedesktop.NetworkManager.settings.modify.own") {
+          return polkit.Result.AUTH_ADMIN_KEEP;
+        }
+      });
+    '';
   };
 }

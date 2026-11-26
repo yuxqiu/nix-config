@@ -147,27 +147,13 @@
       };
 
       config = {
+        persistence.directories = [ "/var/lib/tailscale" ];
         services.tailscale = {
           disableUpstreamLogging = true;
           extraUpFlags = [ "--ssh" ];
         };
 
         services.tailscale.serve.enable = true;
-
-        # tailscaled-autoconnect (from nixpkgs tailscale module) has Type=notify
-        # and waits for tailscale to reach "Running" state, which blocks the
-        # login screen.
-        #
-        # Ordering alone doesn't help: greetd is Type=idle, so it waits until the
-        # boot job queue is empty, and a pending notify start job keeps it busy.
-        # Type=exec finishes the start job at exec; NotifyAccess=all keeps
-        # NOTIFY_SOCKET set so the script's `systemd-notify --ready` doesn't fail.
-        #
-        # https://github.com/NixOS/nixpkgs/issues/430756
-        systemd.services.tailscaled-autoconnect.serviceConfig = {
-          Type = lib.mkForce "exec";
-          NotifyAccess = "all";
-        };
 
         systemd.services.tailscale-serve =
           lib.mkIf (config.services.tailscale.enable && cfg.enable && hasServices)

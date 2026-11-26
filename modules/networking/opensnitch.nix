@@ -39,6 +39,7 @@
     };
 
   flake.modules.nixos.opensnitch = {
+    persistence.directories = [ "/var/lib/opensnitch" ];
     services.opensnitch.enable = true;
 
     # Connections no rule matches are denied whenever no UI answers (before

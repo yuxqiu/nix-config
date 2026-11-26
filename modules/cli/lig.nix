@@ -6,6 +6,7 @@
       c = config.lib.stylix.colors.withHashtag;
     in
     {
+      persistence.directories = [ ".local/state/lig" ];
       imports = [ inputs.lig.homeModules.default ];
 
       # Lig's history owns Ctrl+R; an empty command stops fzf binding it

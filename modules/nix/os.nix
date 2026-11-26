@@ -107,11 +107,51 @@
       };
     in
     {
+      # hm-news's read state. Kept as a directory: it saves by renaming a new
+      # file over news-read-ids, which a kept single file cannot take.
+      persistence.directories = [ ".local/share/home-manager" ];
       home.packages = [
         os-update
         os-switch
-        (pkgs.callPackage (inputs.self + /packages/os-install.nix) { })
+        (pkgs.callPackage (inputs.self + /packages/os-install.nix) {
+          sops-tools = pkgs.callPackage (inputs.self + /packages/sops-tools.nix) { };
+        })
         hm-news
       ];
+    };
+
+  # For a machine that runs NixOS but not yet this flake (e.g. fresh from the
+  # graphical installer): `nix --extra-experimental-features 'nix-command
+  # flakes' develop .#bootstrap` from a checkout.
+  perSystem =
+    { pkgs, ... }:
+    let
+      sops-tools = pkgs.callPackage (inputs.self + /packages/sops-tools.nix) { };
+      os-bootstrap = pkgs.callPackage (inputs.self + /packages/os-bootstrap.nix) { inherit sops-tools; };
+    in
+    {
+      devShells.bootstrap = pkgs.mkShell {
+        packages = [
+          os-bootstrap
+          sops-tools
+          pkgs.mkpasswd
+          pkgs.git
+        ];
+        shellHook = ''
+          cat <<'EOF'
+          Bringing this machine into the flake as <host>:
+            1. Create profiles/hosts/<host>/ (start from cedrus or dracaena), add the
+               host to globals/tailnet.nix, add a .sops.yaml rule for
+               profiles/hosts/<host>/secrets/<host>.yaml with only the admin key,
+               create it with `sops-update admin <file>`, and `git add` it all.
+            2. os-bootstrap <host>
+               Makes the host key, grants it, copies the hardware configuration,
+               and lists secrets still missing (e.g. password hashes:
+               `mkpasswd -m yescrypt`, then `sops-update admin <file>`).
+               Rerun until it says Ready.
+            3. Run the command it prints (nixos-rebuild boot), then reboot.
+          EOF
+        '';
+      };
     };
 }

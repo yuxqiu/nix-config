@@ -22,6 +22,12 @@
       };
     in
     {
+      # restic's repository cache (RESTIC_CACHE_DIR); without it the first backup
+      # after every boot re-reads the repository index.
+      persistence.directories = [
+        "/var/cache/restic-backups-home"
+        "/var/cache/restic-backups-ios"
+      ];
       sops.secrets = {
         "rclone.conf" = rootOwnedSecret;
         "restic-home-password" = rootOwnedSecret;

@@ -1,5 +1,6 @@
 {
   flake.modules.nixos.udisk2 = {
+    persistence.directories = [ "/var/lib/udisks2" ];
     services.udisks2.enable = true;
 
     # udisks lets the active session attach any readable disk-image file as a

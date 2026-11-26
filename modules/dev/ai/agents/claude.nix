@@ -41,6 +41,8 @@
       };
     in
     {
+      persistence.directories = [ ".claude" ];
+      persistence.files = [ ".claude.json" ];
       programs = {
         claude-code = {
           enable = true;

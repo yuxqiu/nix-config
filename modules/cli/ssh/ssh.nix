@@ -7,6 +7,16 @@
       ...
     }:
     {
+      # Only known hosts are kept. ~/.ssh itself is not: a config or a file
+      # in config.d left there by any program running as the user would make
+      # every later ssh run its commands (ProxyCommand, Match exec), so they
+      # last only until the next reboot. Keys come from the agent.
+      persistence.directories = [
+        {
+          directory = ".local/state/ssh";
+          mode = "0700";
+        }
+      ];
       programs.ssh = {
         enable = true;
 
@@ -19,7 +29,7 @@
             serverAliveInterval = 300;
             serverAliveCountMax = 3;
             hashKnownHosts = true;
-            userKnownHostsFile = "~/.ssh/known_hosts";
+            userKnownHostsFile = "~/.local/state/ssh/known_hosts";
           };
         };
 

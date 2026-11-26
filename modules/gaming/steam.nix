@@ -1,5 +1,13 @@
 {
   flake.modules.nixos.steam = { pkgs, ... }: {
+    home-manager.sharedModules = [
+      {
+        persistence.directories = [
+          ".steam"
+          ".local/share/Steam"
+        ];
+      }
+    ];
     programs.steam = {
       enable = true;
       package = pkgs.steam.override {

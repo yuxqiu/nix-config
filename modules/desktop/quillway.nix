@@ -3,6 +3,7 @@
   flake.modules.homeManager.quillway =
     { config, ... }:
     {
+      persistence.directories = [ ".local/share/quillway" ];
       imports = [ inputs.quillway.homeManagerModules.default ];
 
       services.quillway = {
