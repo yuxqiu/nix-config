@@ -9,15 +9,16 @@
 #
 # By default the host's age key is made here, granted access to the host's
 # secrets, and copied onto the new system with --extra-files at the host's
-# `sops.age.keyFile`, so the host decrypts its secrets on first boot. A
-# reinstall replaces the host's previous key. If the install fails,
-# .sops.yaml and the secrets file are restored.
+# `sops.age.keyFile` (under `persistence.storage` on a host with an
+# ephemeral root, where that directory is kept), so the host decrypts its
+# secrets on first boot. A reinstall replaces the host's previous key. If the
+# install fails, .sops.yaml and the secrets file are restored.
 #
-# With --keep-state (a host with impermanence, reinstalled from the machine
+# With --keep-state (a host with an ephemeral root, reinstalled from the machine
 # it is replacing), the state the new system keeps is first copied from the
-# running machine: every path in the host's `persistence.keptPaths` and its
-# age key, as one tar archive that keeps numeric owners, modes, ACLs and
-# extended attributes. The key is reused (it must already have access), so
+# running machine: every path in the host's `persistence.keptPaths` (the age
+# key's directory among them), as one tar archive that keeps numeric owners,
+# modes, ACLs and extended attributes. The key is reused (it must already have access), so
 # .sops.yaml does not change. nixos-anywhere then runs without its reboot,
 # the archive is unpacked as root into the new persistent filesystem, and the
 # machine reboots. It stops before wiping if a kept path or the key is
@@ -130,6 +131,7 @@ writeShellApplication {
       /*) ;;
       *) die "unexpected sops.age.keyFile for $host: '$key_file'" ;;
     esac
+    storage="$(eval_host --apply 'c: c.persistence.storage or ""')"
 
     # tmpfs, so the private key and kept state never touch this machine's disk.
     work="$(mktemp -d -p /dev/shm os-install.XXXXXXXX)"
@@ -156,36 +158,28 @@ writeShellApplication {
     trap cleanup EXIT
 
     if [ -n "$keep_state" ]; then
-      storage="$(eval_host --apply 'c: c.persistence.storage or ""')"
-      [ -n "$storage" ] || die "--keep-state needs a host with impermanence (persistence.storage)"
-      case "$key_file" in
-        "$storage"/*) ;;
-        *) die "sops.age.keyFile ($key_file) is not on persistence.storage ($storage)" ;;
-      esac
+      [ -n "$storage" ] || die "--keep-state needs a host with an ephemeral root (persistence.storage)"
       mapfile -t kept < <(eval_host --apply 'c: builtins.concatStringsSep "\n" c.persistence.keptPaths')
       [ "''${#kept[@]}" -gt 0 ] || die "$host keeps no paths"
 
-      # The key is where the running machine reads it: at keyFile on a host
-      # that already has impermanence, at the same path minus the storage on
-      # one that does not yet.
       quoted="$(printf '%q ' "''${kept[@]}")"
       missing="$(ssh "$target" "for p in $quoted; do [ -e \"\$p\" ] || [ -L \"\$p\" ] || echo \"\$p\"; done")" ||
         die "could not reach $target"
       [ -z "$missing" ] || die "kept paths missing on $target (create them there or drop them from the config):
     $missing"
-      key_src="$(ssh "$target" "for k in $(printf '%q %q' "$key_file" "''${key_file#"$storage"}"); do [ -s \"\$k\" ] && { echo \"\$k\"; break; }; done")"
-      [ -n "$key_src" ] || die "no age key on $target at $key_file or ''${key_file#"$storage"}"
+      # The key's directory is kept, so it is at keyFile on the running
+      # machine with or without an ephemeral root.
+      ssh "$target" "test -s $(printf '%q' "$key_file")" || die "no age key on $target at $key_file"
 
-      # Member names are relative to /; a key read from under the storage
-      # drops that prefix, so every member unpacks relative to the storage.
+      # Member names are relative to /, and unpack relative to the storage.
       members=()
-      for p in "''${kept[@]}" "$key_src"; do members+=("''${p#/}"); done
+      for p in "''${kept[@]}"; do members+=("''${p#/}"); done
       # The machine keeps running while this is read. GNU tar exits 1 when a
       # file changes as it reads it: fine for live logs (journald rotates a
       # damaged journal file), not for keys or service state, so anything
       # else that changed stops here. 2 or more is a fatal tar error.
       status=0
-      ssh "$target" "tar -C / --numeric-owner --xattrs --acls --transform $(printf '%q' "s|^''${storage#/}/||") -cpf - -- $(printf '%q ' "''${members[@]}")" > "$work/state.tar" 2> "$work/tar.err" ||
+      ssh "$target" "tar -C / --numeric-owner --xattrs --acls -cpf - -- $(printf '%q ' "''${members[@]}")" > "$work/state.tar" 2> "$work/tar.err" ||
         status=$?
       changed="$(sed -n 's/^tar: \(.*\): file changed as we read it$/\1/p' "$work/tar.err")"
       if [ "$status" -eq 1 ] && [ -n "$changed" ] && ! grep -v '^var/log/' <<<"$changed" | grep -q . && [ "$(grep -vc 'file changed as we read it' "$work/tar.err")" -eq 0 ]; then
@@ -195,14 +189,17 @@ writeShellApplication {
         die "could not copy the kept state from $target (files other than logs changed, or tar failed; nothing was wiped)"
       fi
       install -d -m 700 "$work/key"
-      tar -C "$work/key" -xf "$work/state.tar" "''${key_file#"$storage"/}"
-      recipient="$(age-keygen -y "$work/key/''${key_file#"$storage"/}")"
+      tar -C "$work/key" -xf "$work/state.tar" "''${key_file#/}"
+      recipient="$(age-keygen -y "$work/key/''${key_file#/}")"
       grep -Fq "$recipient" .sops.yaml || die "the kept key on $target has no access to $secrets; grant it with sops-update-key first"
       echo "Copied $(du -h "$work/state.tar" | cut -f1) of kept state from $target; reusing its age key."
       anywhere=(--phases "kexec,disko,install")
     else
       root="$work/root"
-      key="$root$key_file"
+      # nixos-anywhere unpacks these under the new system's /, which is wiped
+      # at boot on a host with an ephemeral root; the key's directory is kept, so
+      # it goes on the storage.
+      key="$root$storage$key_file"
       install -d -m 755 "$(dirname "$key")"
       (umask 077 && age-keygen -pq -o "$key" 2>/dev/null)
       # The sops module also writes this on activation; here sops-update-key

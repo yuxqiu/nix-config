@@ -1,11 +1,10 @@
-# VM test for the impermanence module: / is a fresh tmpfs on every boot, paths
+# VM test for the ephemeral-root module: / is a fresh tmpfs on every boot, paths
 # listed in `persistence` survive a reboot and nothing else does, and the login
 # password comes from a sops secret decrypted before users are created, with
-# the key read straight from the persistent filesystem.
+# the key read through its kept directory's bind mount.
 {
   pkgs,
-  nixosSops,
-  nixosImpermanence,
+  nixosEphemeralRoot,
   nixosBase,
   genericBase,
 }:
@@ -24,7 +23,7 @@ let
   goneGeneration = "/nix/store/00000000000000000000000000000000-home-manager-files";
 in
 pkgs.testers.runNixOSTest {
-  name = "impermanence";
+  name = "ephemeral-root";
   globalTimeout = 600;
   # nixos.base sets nixpkgs.config (allowUnfree).
   node.pkgsReadOnly = false;
@@ -33,10 +32,10 @@ pkgs.testers.runNixOSTest {
     { config, lib, ... }:
     {
       imports = [
-        nixosSops
-        nixosImpermanence
+        nixosEphemeralRoot
         genericBase
-        # Home Manager and its file settings (force, overwriteBackup).
+        # Home Manager and its file settings (force, overwriteBackup), and
+        # the sops module.
         nixosBase
       ];
 
@@ -57,7 +56,6 @@ pkgs.testers.runNixOSTest {
       };
       persistence.storage = storage;
 
-      sops.age.keyFile = "${storage}/var/lib/sops-nix/key.txt";
       # Outside the store, so the test can write it once the host key exists.
       sops.defaultSopsFile = "${storage}/test-secrets.yaml";
       sops.validateSopsFiles = false;
@@ -67,7 +65,21 @@ pkgs.testers.runNixOSTest {
         hashedPasswordFile = config.sops.secrets.alice-password.path;
       };
 
-      persistence.directories = [ "/var/lib/kept" ];
+      # Owned by a normal user: created by activation, then set by tmpfiles.
+      # The second is declared like a directory whose program sets its own
+      # mode: tmpfiles never changes it.
+      persistence.directories = [
+        {
+          directory = "/var/lib/self-moded";
+          mode = config.persistence.programSetsMode;
+        }
+        {
+          directory = "/var/lib/kept";
+          user = "alice";
+          group = "users";
+          mode = "0700";
+        }
+      ];
       home-manager.sharedModules = [ genericBase ];
       home-manager.users.alice = {
         home.stateVersion = "26.11";
@@ -107,9 +119,30 @@ pkgs.testers.runNixOSTest {
         machine.succeed("findmnt -n -o FSTYPE / | grep -x tmpfs")
         machine.succeed("findmnt -n ${storage}")
         machine.succeed("test -s ${storage}/var/lib/sops-nix/key.txt")
+        # Made through the bind mount, at the path sops-nix reads.
+        machine.succeed("findmnt -n /var/lib/sops-nix")
+        machine.succeed("cmp /var/lib/sops-nix/key.txt ${storage}/var/lib/sops-nix/key.txt")
+        machine_id = machine.succeed("cat /etc/machine-id").strip()
+        assert len(machine_id) == 32, machine_id
+        machine.succeed(f"grep -x {machine_id} ${storage}/etc/machine-id")
 
-    with subtest("a kept file missing from the storage is a link into it"):
-        machine.succeed("test -L /home/alice/kept-file")
+    with subtest("UID allocation is kept, mounted before activation creates users"):
+        machine.succeed("findmnt -n /var/lib/nixos")
+        machine.succeed("grep -q '\"alice\"' ${storage}/var/lib/nixos/uid-map")
+        uids = machine.succeed("getent passwd | cut -d: -f1,3 | sort")
+
+    with subtest("a kept directory has its declared owner and mode on both sides"):
+        machine.succeed("stat -c '%U %a' /var/lib/kept | grep -x 'alice 700'")
+        machine.succeed("stat -c '%U %a' ${storage}/var/lib/kept | grep -x 'alice 700'")
+        # systemd made it when mounting (DirectoryMode=, 0755), before
+        # tmpfiles ran; a ":" mode does not change an existing directory.
+        machine.succeed("stat -c '%a' /var/lib/self-moded | grep -x 755")
+        # A program's own change stays (checked after the reboot).
+        machine.succeed("chmod 750 /var/lib/self-moded")
+        machine.succeed("chmod 750 /var/lib/kept")
+
+    with subtest("a kept file missing from the storage is created there and mounted"):
+        machine.succeed("findmnt -n /home/alice/kept-file")
         machine.succeed("su alice -c 'echo first > ~/kept-file'")
         machine.succeed("grep -x first ${storage}/home/alice/kept-file")
 
@@ -156,6 +189,11 @@ pkgs.testers.runNixOSTest {
 
     with subtest("second boot: kept state survives, everything else is gone"):
         machine.succeed("findmnt -n -o FSTYPE / | grep -x tmpfs")
+        machine.succeed(f"grep -x {machine_id} /etc/machine-id")
+        assert machine.succeed("getent passwd | cut -d: -f1,3 | sort") == uids, "UIDs changed"
+        machine.succeed("stat -c '%a' /var/lib/self-moded | grep -x 750")
+        # An enforced mode is set back.
+        machine.succeed("stat -c '%a' /var/lib/kept | grep -x 700")
         machine.succeed("grep -x kept /var/lib/kept/marker")
         machine.fail("test -e /var/lib/dropped-marker")
         machine.succeed("su alice -c 'grep -x kept ~/kept/marker'")
@@ -194,5 +232,12 @@ pkgs.testers.runNixOSTest {
         # A file the new generation no longer manages stays behind: cleanup
         # needs the previous generation's file list, which was wiped.
         machine.succeed("su alice -c 'readlink ~/kept/obsolete' | grep -F '${oldGeneration}/kept/obsolete'")
+
+    with subtest("activation makes no key on the wiped root when the key directory is not mounted"):
+        machine.succeed("umount /var/lib/sops-nix")
+        out = machine.fail("/run/current-system/activate 2>&1")
+        assert "/var/lib/sops-nix is not mounted" in out, out
+        machine.fail("test -e /var/lib/sops-nix/key.txt")
+        machine.succeed("mount --bind ${storage}/var/lib/sops-nix /var/lib/sops-nix")
   '';
 }

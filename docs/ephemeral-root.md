@@ -1,9 +1,10 @@
-# Impermanence
+# Ephemeral root
 
-A host that includes `nixos.impermanence` (`modules/security/impermanence.nix`)
+A host that includes `nixos.ephemeral-root` (`modules/security/ephemeral-root.nix`)
 has `/` on a tmpfs, which is empty at every boot. Only the paths listed in
 `persistence` survive. They are kept on a persistent filesystem and
-bind-mounted at the same paths.
+bind-mounted at the same paths by
+[preservation](https://github.com/nix-community/preservation).
 
 Two places list kept paths:
 
@@ -15,7 +16,7 @@ Two places list kept paths:
 Hosts using it: `cedrus` ([docs/cedrus.md](cedrus.md)) and `dracaena`
 ([docs/dracaena.md](dracaena.md)).
 
-To set up a machine with impermanence, follow
+To set up a machine with an ephemeral root, follow
 [*Setting up a machine*](../README.md#setting-up-a-machine) in the README. It
 covers both install routes: a remote host laid out by disko, and a desktop
 from the graphical installer converted in place.
@@ -23,30 +24,34 @@ from the graphical installer converted in place.
 ## How a boot goes
 
 1. The initrd mounts the tmpfs as `/`, the persistent filesystem, and `/nix`.
-2. Activation does the following:
-   1. It recreates users and groups from the config. UIDs come from the kept
+   It also bind-mounts the kept paths that activation reads (`inInitrd`):
+   `/etc/machine-id`, `/var/lib/nixos` and `/var/lib/sops-nix`.
+2. Activation, still in the initrd, does the following:
+   1. It decrypts the secrets needed for users (password hashes) with the
+      host key at `/var/lib/sops-nix/key.txt`.
+   2. It recreates users and groups from the config. UIDs come from
       `/var/lib/nixos`.
-   2. It decrypts secrets with the host key, read straight from the persistent
-      filesystem.
-   3. It builds `/etc`.
+   3. It installs the other secrets and builds `/etc`.
    4. Then the module moves the content of newly listed paths onto the
       persistent filesystem (see [Keeping something new](#keeping-something-new)).
-   5. Impermanence creates missing kept directories on the persistent
-      filesystem.
-3. systemd bind-mounts every kept path. Directories are `.mount` units, and
-   files are `persist-*` services.
-4. Home Manager's own boot service re-links every file it manages into the
+3. systemd bind-mounts the other kept paths. These are `.mount` units, before
+   `sysinit.target`. A missing source directory is created by systemd.
+4. systemd-tmpfiles sets each kept path's declared owner and mode, on both
+   sides of the mount (see [Owner and mode](#owner-and-mode)).
+5. Home Manager's own boot service re-links every file it manages into the
    empty home. That is why Home Manager configs need no keeping.
+
+A path that activation reads must be mounted in the initrd: set
+`inInitrd = true` on its entry.
 
 ## Opting in
 
-A host includes `nixos.impermanence` and sets the following in its own
+A host includes `nixos.ephemeral-root` and sets the following in its own
 directory:
 
 | Setting | Why |
 | --- | --- |
 | The persistent filesystem's mount (and `/nix`), and `persistence.storage` (its mount point) | Kept paths are bind-mounted from there. |
-| `sops.age.keyFile` on the persistent filesystem | Secrets are installed during activation, before kept directories are bind-mounted. |
 | A `hashedPasswordFile` per login user, from a sops secret with `neededForUsers = true` | Users are immutable (`users.mutableUsers = false`), so `passwd` changes do not survive. Change the hash in sops instead. |
 
 ## Recommended disk layout
@@ -112,6 +117,38 @@ repartitioning:
 A btrfs snapshot of the top level does not include nested subvolumes. If you
 use snapshots, snapshot `home` separately.
 
+## Owner and mode
+
+systemd-tmpfiles sets every kept path to its declared owner and mode at every
+boot, whatever is on disk. Undeclared means owned by root (or by the user, for
+a Home Manager path) with mode 0755 for a directory and 0644 for a file. A
+missing parent of a Home Manager path is created with the user as owner and
+mode 0755.
+
+So an entry whose path is not that declares it, for example:
+
+```nix
+persistence.directories = [
+  {
+    directory = "/var/lib/lockdown";
+    inherit (config.services.usbmuxd) user group;
+    mode = "2775";
+  }
+];
+```
+
+Take the owner and mode from upstream where it is exposed: a NixOS option
+(`services.usbmuxd.user`) or the unit's settings in the NixOS config
+(`config.systemd.services.acme-setup.serviceConfig.StateDirectoryMode`).
+
+When the program sets the directory's mode itself every time it starts, use
+`mode = config.persistence.programSetsMode;`. It is tmpfiles' create-only form
+(`":0700"`), which never changes an existing directory. systemd has already
+created the directory when mounting it, so the program's own mode is the only
+one applied, and nothing is left to drift from upstream. systemd does this for a unit's `StateDirectory=` and
+`CacheDirectory=` (it re-applies `StateDirectoryMode=` at every start), and
+usbmuxd does it for `/var/lib/lockdown`.
+
 ## Keeping something new
 
 1. Add the path to the module that owns it.
@@ -143,15 +180,11 @@ The user owns their directory on the storage. System paths need `sudo`.
 
 ### Keeping a file or its directory
 
-Keep a directory rather than a single file in these cases:
-
-- The app saves by writing a new file and renaming it over the old one (zsh
-  history, GTK bookmarks). A kept file is a bind mount, which a rename cannot
-  replace.
-- You want the path hidden from file managers. Kept directories are hidden
-  from file managers, and kept files are not.
+Keep a directory rather than a single file when the app saves by writing a
+new file and renaming it over the old one (zsh history, GTK bookmarks). A kept
+file is a bind mount, which a rename cannot replace.
 
 ## Testing the module
 
-`nix build .#checks.<system>.impermanence` (for example, `x86_64-linux`) runs a
+`nix build .#checks.<system>.ephemeral-root` (for example, `x86_64-linux`) runs a
 VM test of the module. It needs a Linux machine with KVM, or a Linux builder.

@@ -3,7 +3,12 @@
   flake.modules.homeManager.hister =
     { config, ... }:
     {
-      persistence.directories = [ ".local/state/hister" ];
+      persistence.directories = [
+        {
+          directory = ".local/state/hister";
+          mode = "0750";
+        }
+      ];
       imports = [ inputs.hister.homeModules.hister ];
 
       services.hister = {

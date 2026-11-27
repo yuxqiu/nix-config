@@ -9,7 +9,12 @@
     {
       # zsh rewrites its history and Zsh-z its database by renaming a temp file
       # over the old one, so both live in a kept directory, not as kept files.
-      persistence.directories = [ ".local/state/zsh" ];
+      persistence.directories = [
+        {
+          directory = ".local/state/zsh";
+          mode = "0700";
+        }
+      ];
       programs.zsh = {
         enable = true;
         # Home Manager's zshrc creates this directory, which Zsh-z needs too.

@@ -2,7 +2,12 @@
   flake.modules.homeManager.docker =
     { pkgs, ... }:
     {
-      persistence.directories = [ ".local/share/docker" ];
+      persistence.directories = [
+        {
+          directory = ".local/share/docker";
+          mode = "0710";
+        }
+      ];
       home.packages = with pkgs; [ lazydocker ];
 
       programs.zsh = {

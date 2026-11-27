@@ -5,6 +5,7 @@
 {
   pkgs,
   nixosSops,
+  genericBase,
 }:
 let
   sshKeys = import (pkgs.path + "/nixos/tests/ssh-keys.nix") pkgs;
@@ -108,7 +109,11 @@ pkgs.testers.runNixOSTest {
   globalTimeout = 120;
 
   nodes.host = {
-    imports = [ nixosSops ];
+    # genericBase declares the `persistence` options the sops module sets.
+    imports = [
+      nixosSops
+      genericBase
+    ];
     services.openssh.enable = true;
     users.users.root.openssh.authorizedKeys.keys = [ sshKeys.snakeOilEd25519PublicKey ];
     # Outside the store, so the test can deliver re-encrypted files at run
@@ -346,25 +351,25 @@ pkgs.testers.runNixOSTest {
         admin.succeed(f"cd /root/flake && SOPS_AGE_KEY_FILE={injected} sops -d profiles/hosts/newhost/secrets/newhost.yaml | grep -q hello")
         assert args[0] == "--extra-files" and args[2:] == ["--flake", ".#newhost", "--target-host", "root@1.0.0.9"], args
         admin.succeed("grep -q 'nixosConfigurations.newhost.config.system.build.toplevel.drvPath' /tmp/nix-args")
-  
+
     # The key granted by the reinstall above; the fake nixos-anywhere clears
     # its copy of the injected tree on every run.
     granted = "/root/granted-key"
     admin.succeed(f"cp {injected} {granted}")
 
-    def keep_state(key_at):
+    def keep_state():
         # The replaced machine: kept paths (one owned by another user), its
-        # host key, and the granted key at key_at.
+        # host key, and the granted key in its kept directory.
         admin.succeed("rm -rf /mnt/persist /persist /var/lib/newhost-sops /root/fake-eval && mkdir -p /root/fake-eval")
-        admin.succeed("printf /persist > /root/fake-eval/storage && printf /persist/var/lib/newhost-sops/key.txt > /root/fake-eval/key-file")
-        admin.succeed("printf '/var/lib/kept-state\\n/etc/kept-file\\n/etc/ssh/ssh_host_ed25519_key' > /root/fake-eval/kept")
+        admin.succeed("printf /persist > /root/fake-eval/storage && printf /var/lib/newhost-sops/key.txt > /root/fake-eval/key-file")
+        admin.succeed("printf '/var/lib/kept-state\\n/etc/kept-file\\n/etc/ssh/ssh_host_ed25519_key\\n/var/lib/newhost-sops' > /root/fake-eval/kept")
         admin.succeed("mkdir -p /var/lib/kept-state && echo data > /var/lib/kept-state/file && chown -R nobody:nogroup /var/lib/kept-state && chmod 640 /var/lib/kept-state/file")
         admin.succeed("echo kept > /etc/kept-file && (test -e /etc/ssh/ssh_host_ed25519_key || echo hostkey > /etc/ssh/ssh_host_ed25519_key)")
-        admin.succeed(f"install -D -m 600 {granted} {key_at}")
+        admin.succeed(f"install -D -m 600 {granted} /var/lib/newhost-sops/key.txt")
         admin.succeed("echo '1.0.0.9 ${sshKeys.snakeOilEd25519PublicKey}' > /root/.ssh/known_hosts && rm -f /tmp/nixos-anywhere-args /tmp/ssh-log")
 
     with subtest("os-install --keep-state: kept state and the existing key move to the new system"):
-        keep_state("/var/lib/newhost-sops/key.txt")
+        keep_state()
         before = flake_state()
         out = admin.succeed(os_install("--keep-state"))
         args = admin.succeed("cat /tmp/nixos-anywhere-args").split()
@@ -381,14 +386,8 @@ pkgs.testers.runNixOSTest {
         assert ".sops.yaml is unchanged" in out, out
         admin.succeed("test -z \"$(ls /dev/shm | grep os-install)\"")
 
-    with subtest("os-install --keep-state: a machine that already keeps state has its key under the storage"):
-        keep_state("/persist/var/lib/newhost-sops/key.txt")
-        admin.succeed(os_install("--keep-state"))
-        admin.succeed(f"cmp {granted} /mnt/persist/var/lib/newhost-sops/key.txt")
-        admin.fail("test -e /mnt/persist/persist")
-
     with subtest("os-install --keep-state: a log written while it is copied is kept as read"):
-        keep_state("/var/lib/newhost-sops/key.txt")
+        keep_state()
         admin.succeed("echo var/log/journal/x/system.journal > /tmp/changed-while-read")
         out = admin.succeed(os_install("--keep-state"))
         admin.succeed("rm /tmp/changed-while-read")
@@ -396,7 +395,7 @@ pkgs.testers.runNixOSTest {
         admin.succeed("test -e /tmp/nixos-anywhere-args")
 
     with subtest("os-install --keep-state: other state written while it is copied stops it"):
-        keep_state("/var/lib/newhost-sops/key.txt")
+        keep_state()
         admin.succeed("echo var/lib/kept-state/file > /tmp/changed-while-read")
         out = admin.fail(os_install("--keep-state 2>&1"))
         admin.succeed("rm /tmp/changed-while-read")
@@ -404,7 +403,7 @@ pkgs.testers.runNixOSTest {
         admin.fail("test -e /tmp/nixos-anywhere-args")
 
     with subtest("os-install --keep-state: a failure after nixos-anywhere started keeps the kept state"):
-        keep_state("/var/lib/newhost-sops/key.txt")
+        keep_state()
         before = flake_state()
         admin.succeed("touch /tmp/fail-install")
         out = admin.fail(os_install("--keep-state 2>&1"))
@@ -418,18 +417,24 @@ pkgs.testers.runNixOSTest {
         admin.succeed(f"rm {archive} && test -z \"$(ls /dev/shm | grep '^os-install\\.')\"")
 
     with subtest("os-install --keep-state: refuses before wiping"):
-        keep_state("/var/lib/newhost-sops/key.txt")
+        keep_state()
         before = flake_state()
         admin.succeed("rm /etc/kept-file")
         out = admin.fail(os_install("--keep-state 2>&1"))
         assert "kept paths missing" in out and "/etc/kept-file" in out, out
         admin.fail("test -e /tmp/nixos-anywhere-args")
-        keep_state("/var/lib/newhost-sops/key.txt")
+        keep_state()
         admin.succeed("rm /var/lib/newhost-sops/key.txt && (umask 077 && age-keygen -pq -o /var/lib/newhost-sops/key.txt)")
         out = admin.fail(os_install("--keep-state 2>&1"))
         assert "has no access" in out, out
         admin.fail("test -e /tmp/nixos-anywhere-args")
         assert flake_state() == before, ".sops.yaml or the secrets changed"
         admin.succeed("test -z \"$(ls /dev/shm | grep os-install)\"")
+
+    with subtest("os-install: on a host with an ephemeral root the injected key is on the storage"):
+        admin.succeed("rm -rf /root/fake-eval && mkdir -p /root/fake-eval && printf /persist > /root/fake-eval/storage")
+        admin.succeed(os_install(""))
+        admin.succeed("grep -q '^AGE-SECRET-KEY-PQ-1' /tmp/extra-files/persist${keyFile}")
+        admin.fail("test -e /tmp/extra-files${keyFile}")
   '';
 }

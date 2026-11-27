@@ -7,6 +7,7 @@
 {
   pkgs,
   nixosSops,
+  genericBase,
   disko,
 }:
 let
@@ -43,7 +44,11 @@ let
   # What every host here runs: the base module, one secret from a file the
   # test delivers (outside the store, as a redeploy would), root over SSH.
   hostConfig = {
-    imports = [ nixosSops ];
+    # genericBase declares the `persistence` options the sops module sets.
+    imports = [
+      nixosSops
+      genericBase
+    ];
     services.openssh.enable = true;
     users.users.root.openssh.authorizedKeys.keys = [ sshKeys.snakeOilEd25519PublicKey ];
     sops.defaultSopsFile = "/etc/test-secrets/host.yaml";
@@ -203,7 +208,7 @@ pkgs.testers.runNixOSTest {
             assert newhost.succeed("hostname").strip() == "newhost"
             assert_own_key(newhost)
             assert newhost.succeed("sha256sum < ${keyFile}") == injected_sum, "not the injected key"
-            # No key was generated anywhere: it existed before activation.
+            # No key was generated anywhere: it existed before first boot.
             newhost.succeed("! journalctl -b -o cat | grep -q 'Public key: age1pq1'")
             assert newhost.succeed("cat /run/secrets/greeting").strip() == "hello"
 
@@ -253,8 +258,8 @@ pkgs.testers.runNixOSTest {
         assert "nixos-rebuild boot --flake .#fresh" in out, out
         assert fresh.succeed("sha256sum < ${keyFile}") == key_sum, "key replaced on rerun"
 
-    def impermanent(storage, device, options=""):
-        fresh.succeed(f"printf %s {storage} > /root/fake-eval/storage && printf %s {storage}${keyFile} > /root/fake-eval/key-file")
+    def ephemeral_root(storage, device, options=""):
+        fresh.succeed(f"printf %s {storage} > /root/fake-eval/storage")
         fresh.succeed(f"printf %s {device} > /root/fake-eval/device && printf %s '{options}' > /root/fake-eval/options")
 
     def place_key(base):
@@ -263,14 +268,14 @@ pkgs.testers.runNixOSTest {
         fresh.succeed(f"install -d -m 755 {base}$(dirname ${keyFile}) && cp -p ${keyFile} ${keyFile}.pub {base}$(dirname ${keyFile})/")
 
     with subtest("local: converted in place, the running root becomes the persistent filesystem"):
-        impermanent("/disk", fresh.succeed("findmnt -n -o SOURCE /").strip())
+        ephemeral_root("/disk", fresh.succeed("findmnt -n -o SOURCE /").strip())
         out = bootstrap(True)
         assert "mounted at /, so the key goes at ${keyFile}" in out and "Host key exists: ${keyFile}" in out, out
 
     with subtest("local: a persistent subvolume already mounted at the storage path"):
         fresh.succeed("mkfs.btrfs -q /dev/vdb && mkdir -p /mnt/top && mount /dev/vdb /mnt/top && btrfs -q subvolume create /mnt/top/@persist")
         fresh.succeed("mkdir -p /persist && mount -o subvol=@persist /dev/vdb /persist")
-        impermanent("/persist", "/dev/vdb", "subvol=@persist,noatime")
+        ephemeral_root("/persist", "/dev/vdb", "subvol=@persist,noatime")
         place_key("/persist")
         out = bootstrap(True)
         # The top level (also /dev/vdb, at /mnt/top) is not the subvolume.
@@ -284,16 +289,16 @@ pkgs.testers.runNixOSTest {
         assert "Host key exists: /mnt/elsewhere${keyFile}" in out, out
 
     with subtest("local: a subvolume spelled with a leading slash, and the top level as subvol=/"):
-        impermanent("/persist", "/dev/vdb", "subvol=/@persist")
+        ephemeral_root("/persist", "/dev/vdb", "subvol=/@persist")
         out = bootstrap(True)
         assert "mounted at /mnt/elsewhere, so the key goes at /mnt/elsewhere${keyFile}" in out, out
         # The btrfs top level, as a desktop converted in place mounts it.
-        impermanent("/persist", "/dev/vdb", "subvol=/,noatime")
+        ephemeral_root("/persist", "/dev/vdb", "subvol=/,noatime")
         place_key("/mnt/top")
         out = bootstrap(True)
         assert "mounted at /mnt/top, so the key goes at /mnt/top${keyFile}" in out, out
         # Back to the subvolume, which the next subtest unmounts.
-        impermanent("/persist", "/dev/vdb", "subvol=@persist,noatime")
+        ephemeral_root("/persist", "/dev/vdb", "subvol=@persist,noatime")
 
     with subtest("local: an unmounted persistent filesystem stops before making a key"):
         fresh.succeed("umount /mnt/elsewhere")

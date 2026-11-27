@@ -12,9 +12,15 @@
     {
       persistence.directories = [
         ".local/share/opencode"
-        ".local/share/opencode-goal-plugin"
+        {
+          directory = ".local/share/opencode-goal-plugin";
+          mode = "0700";
+        }
         ".local/share/btw-opencode"
-        ".opencode-goal-plugin"
+        {
+          directory = ".opencode-goal-plugin";
+          mode = "0700";
+        }
       ];
       # Other Interesting Plugins
       # - opencode-background-agents (seems a bit overkill)

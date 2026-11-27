@@ -28,18 +28,12 @@
       };
       persistence.storage = "/disk";
 
-      # Bind mounts of kept directories exist only after activation, when
-      # secrets are installed, so the key is read from the filesystem itself.
-      sops.age.keyFile = "/disk/var/lib/sops-nix/key.txt";
-
       # Users are immutable; the login password is a hash in sops, decrypted
       # before users are created.
       sops.secrets.yuxqiu-password.neededForUsers = true;
       users.users.yuxqiu.hashedPasswordFile = config.sops.secrets.yuxqiu-password.path;
 
-      # Gurobi's license, in one of its default locations. Kept as a directory:
-      # a kept file in the home is a bind mount without x-gvfs-hide, which
-      # file managers list as a mount.
+      # Gurobi's license, in one of its default locations.
       persistence.directories = [ "/opt/gurobi" ];
     };
 

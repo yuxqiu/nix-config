@@ -4,7 +4,10 @@
       {
         persistence.directories = [
           ".steam"
-          ".local/share/Steam"
+          {
+            directory = ".local/share/Steam";
+            mode = "0700";
+          }
         ];
       }
     ];

@@ -6,12 +6,12 @@
 # once done:
 #
 #   1. Makes the host's age key, where the host's config will read it
-#      (`sops.age.keyFile`). On a host with impermanence the key lives on the
-#      persistent filesystem, so it goes wherever that filesystem is mounted
-#      now: at `/` on a machine converted in place (its root becomes the
-#      persistent filesystem), at `persistence.storage` on one already laid
-#      out or switched, or at any other mount point. Stops if it is not
-#      mounted.
+#      (`sops.age.keyFile`). On a host with an ephemeral root the key's directory
+#      is kept: it is bind-mounted from the same path on the persistent
+#      filesystem, so the key goes under wherever that filesystem is mounted
+#      now: `/` on a machine converted in place (its root becomes the
+#      persistent filesystem), `persistence.storage` on one already laid out
+#      or switched, or any other mount point. Stops if it is not mounted.
 #   2. Grants that key access to the host's secrets (sops-update-key).
 #   3. Copies the installer's hardware configuration into the host directory.
 #   4. Lists secrets the host needs before users exist (password hashes) that
@@ -69,10 +69,6 @@ writeShellApplication {
     # is running.
     key="$key_file"
     if [ -n "$storage" ]; then
-      case "$key_file" in
-        "$storage"/*) ;;
-        *) die "sops.age.keyFile ($key_file) is not on persistence.storage ($storage)" ;;
-      esac
       # The filesystem the config mounts at $storage: its device, and for a
       # btrfs subvolume the subvolume, which findmnt reports as FSROOT (bind
       # mounts of its directories have other FSROOTs).
@@ -100,8 +96,8 @@ writeShellApplication {
         *) die "the persistent filesystem ($device, $fs_root) is mounted at several places: ''${mounted_at[*]}" ;;
       esac
       base="''${mounted_at[0]%/}"
-      key="$base''${key_file#"$storage"}"
-      echo "Impermanent host: its persistent filesystem is mounted at ''${mounted_at[0]}, so the key goes at $key."
+      key="$base$key_file"
+      echo "Host with an ephemeral root: its persistent filesystem is mounted at ''${mounted_at[0]}, so the key goes at $key."
     fi
     if sudo test -e "$key"; then
       if ! sudo test -e "$key.pub"; then

@@ -4,8 +4,11 @@
   # or the host lists it in `persistence`; files dropped anywhere else (shell
   # startup, autostart, user units) are gone after a reboot. The host mounts
   # its persistent filesystem and sets `persistence.storage` to it; every
-  # listed path is bind-mounted from the same path under that mount.
-  flake.modules.nixos.impermanence =
+  # listed path is bind-mounted from the same path under that mount by
+  # nix-community/preservation: systemd mount units, and systemd-tmpfiles
+  # rules that set each kept path's declared owner and mode (default root or
+  # the user, 0755 for directories and 0644 for files) at every boot.
+  flake.modules.nixos.ephemeral-root =
     {
       config,
       lib,
@@ -14,27 +17,27 @@
     }:
     let
       inherit (config.persistence) storage;
+      preserved = config.preservation.preserveAt.${storage};
+      # Without it file managers list every kept path as a mount.
+      mountOptions = [ "x-gvfs-hide" ];
 
       # Every kept path, system and Home Manager, as an absolute live path.
+      # Preservation adds the missing parents of per-user paths to the users'
+      # lists as `_intermediate` entries; those are not kept.
       keptPaths =
         let
-          system = config.environment.persistence.${storage};
-          homes = lib.concatMap (
-            user:
-            let
-              home = user.home.persistence.${storage};
-            in
-            home.files ++ home.directories
-          ) (lib.attrValues config.home-manager.users);
+          users = lib.attrValues preserved.users;
+          kept = lib.filter (entry: entry.how != "_intermediate");
         in
-        map (entry: entry.filePath or entry.dirPath) (system.files ++ system.directories ++ homes);
+        map (d: d.directory) (kept (preserved.directories ++ lib.concatMap (u: u.directories) users))
+        ++ map (f: f.file) (kept (preserved.files ++ lib.concatMap (u: u.files) users));
 
-      # Moves a path listed for the first time onto the storage before
-      # impermanence mounts it, so content a program wrote before the path was
-      # listed is kept. Without this, a switch fails on a file ("A file already
-      # exists") and mounts an empty directory over a directory's content; both
-      # are lost at reboot. Skipped: paths already on the storage, missing
-      # live, links (Home Manager's or impermanence's own) and mounts.
+      # Moves a path listed for the first time onto the storage before it is
+      # mounted, so content a program wrote before the path was listed is
+      # kept. Without this, an empty storage directory or file (made by
+      # systemd or tmpfiles) is mounted over the live content, which is lost
+      # at reboot. Skipped: paths already on the storage, missing live, links
+      # (Home Manager's) and mounts.
       captureNewlyKept = pkgs.writeShellApplication {
         name = "persistence-capture";
         runtimeInputs = [
@@ -55,8 +58,7 @@
             if [ -e "$stored" ] || [ -L "$stored" ] || [ ! -e "$live" ] || [ -L "$live" ] || mountpoint -q "$live"; then
               continue
             fi
-            # impermanence copies each storage directory's owner and mode onto
-            # the live side, so new parents on the storage take the live ones'.
+            # New parents on the storage take the live ones' owner and mode.
             parent=""
             IFS=/ read -ra parts <<<"$(dirname "''${live#/}")"
             for part in "''${parts[@]}"; do
@@ -90,7 +92,7 @@
       };
     in
     {
-      imports = [ inputs.impermanence.nixosModules.impermanence ];
+      imports = [ inputs.preservation.nixosModules.preservation ];
 
       options.persistence.keptPaths = lib.mkOption {
         type = lib.types.listOf lib.types.str;
@@ -106,6 +108,41 @@
       };
 
       config = {
+        # Needed by every host: UID/GID allocation, systemd state (timers,
+        # random seed), the journal, and the machine identity.
+        persistence.directories = [
+          # UID/GID allocation (uid-map, gid-map), read when activation
+          # creates users, which runs in the initrd.
+          {
+            directory = "/var/lib/nixos";
+            mode = "0755";
+            inInitrd = true;
+          }
+          {
+            directory = "/var/lib/systemd";
+            mode = "0755";
+          }
+          {
+            directory = "/var/log";
+            mode = "0755";
+          }
+        ];
+        persistence.files = [
+          # Read by systemd before stage 2, so mounted in the initrd. Empty
+          # on a fresh storage (tmpfiles creates it); systemd then generates
+          # an id and writes it through the bind mount.
+          {
+            file = "/etc/machine-id";
+            mode = "0444";
+            inInitrd = true;
+          }
+        ];
+        # That bind mount is writable, so systemd writes a newly generated id
+        # straight to it. The commit unit saves an id systemd kept on a tmpfs
+        # over a read-only file; here it has nothing to save and fails ("not
+        # on a temporary file system").
+        systemd.suppressedSystemUnits = [ "systemd-machine-id-commit.service" ];
+
         fileSystems."/" = lib.mkForce {
           device = "none";
           fsType = "tmpfs";
@@ -115,32 +152,16 @@
           ];
         };
 
-        environment.persistence.${storage} = {
-          hideMounts = true;
-          # Needed by every host: UID/GID allocation, systemd state (timers,
-          # random seed), the journal, and the machine identity.
-          directories = [
-            "/var/lib/nixos"
-            "/var/lib/systemd"
-            "/var/log"
-          ]
-          ++ config.persistence.directories;
-          files = [ "/etc/machine-id" ] ++ config.persistence.files;
+        preservation.enable = true;
+        preservation.preserveAt.${storage} = {
+          commonMountOptions = mountOptions;
+          inherit (config.persistence) directories files;
+          # Home Manager configs list paths relative to the home directory.
+          users = lib.mapAttrs (_: home: {
+            commonMountOptions = mountOptions;
+            inherit (home.persistence) directories files;
+          }) config.home-manager.users;
         };
-        home-manager.sharedModules = [
-          (
-            { config, ... }:
-            {
-              home.persistence.${storage} = {
-                inherit (config.persistence) directories files;
-                # Home Manager's persistence has its own default (false);
-                # without it file managers list every kept directory as a
-                # mount.
-                hideMounts = true;
-              };
-            }
-          )
-        ];
 
         # A zone set with timedatectl lives in /etc/localtime, which is rebuilt
         # every boot. With no declared zone, keep the link on the persistent
@@ -171,7 +192,8 @@
           };
         };
 
-        # Before impermanence creates empty storage directories for new paths.
+        # Activation runs before a switch starts new mount units and before
+        # systemd-tmpfiles creates empty storage paths for new entries.
         system.activationScripts.persistence-capture = {
           deps = [
             "users"
@@ -179,7 +201,6 @@
           ];
           text = "${lib.getExe captureNewlyKept} ${lib.escapeShellArgs config.persistence.keptPaths}";
         };
-        system.activationScripts.createPersistentStorageDirs.deps = [ "persistence-capture" ];
 
         # sudo records who has seen its first-use lecture in /var/db/sudo,
         # which is not kept, so the lecture would show after every boot.
@@ -196,11 +217,11 @@
           lib.mapAttrsToList (name: user: [
             {
               assertion = !user.isNormalUser || user.hashedPasswordFile != null || user.hashedPassword != null;
-              message = "impermanence.nix: users are immutable, so ${name} needs hashedPasswordFile (e.g. a sops secret with neededForUsers = true) or cannot log in.";
+              message = "ephemeral-root.nix: users are immutable, so ${name} needs hashedPasswordFile (e.g. a sops secret with neededForUsers = true) or cannot log in.";
             }
             {
               assertion = user.initialPassword == null && user.password == null;
-              message = "impermanence.nix: users are immutable, so ${name}'s initialPassword/password would be the real password, in plain text; use hashedPasswordFile.";
+              message = "ephemeral-root.nix: users are immutable, so ${name}'s initialPassword/password would be the real password, in plain text; use hashedPasswordFile.";
             }
           ]) config.users.users
         );

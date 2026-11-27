@@ -4,7 +4,12 @@
     { pkgs, ... }:
     {
       # The desktop app's own state; ~/.paseo is the daemon's (nixos.paseo).
-      persistence.directories = [ ".config/Paseo" ];
+      persistence.directories = [
+        {
+          directory = ".config/Paseo";
+          mode = "0700";
+        }
+      ];
       home.packages = [ pkgs.paseo-desktop ];
     };
 

@@ -19,7 +19,10 @@
     {
       persistence.directories = [
         ".local/state/dms"
-        ".local/share/dankcal"
+        {
+          directory = ".local/share/dankcal";
+          mode = "0700";
+        }
       ];
       imports = [
         inputs.dms.homeModules.dank-material-shell

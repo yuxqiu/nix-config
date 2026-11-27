@@ -7,9 +7,9 @@
 | Account | `yuxqiu` |
 | Host files | `profiles/hosts/cedrus/` |
 
-## Impermanence
+## Ephemeral root
 
-`/` is a tmpfs. [docs/impermanence.md](impermanence.md) explains how it
+`/` is a tmpfs. [docs/ephemeral-root.md](ephemeral-root.md) explains how it
 works and how to keep new paths; the README's
 [*Setting up a machine*](../README.md#setting-up-a-machine) covers setting up
 another one.

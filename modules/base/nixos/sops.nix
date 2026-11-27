@@ -15,10 +15,14 @@
     }:
     let
       inherit (config.sops.age) keyFile;
+      keyDir = dirOf keyFile;
       secrets = lib.attrValues config.sops.secrets;
       # sops-nix installs these two kinds in separate activation snippets.
       hasUserSecrets = lib.any (s: s.neededForUsers) secrets;
       hasOtherSecrets = lib.any (s: !s.neededForUsers) secrets;
+      # The root is wiped at boot (modules/security/ephemeral-root.nix); the key
+      # directory is then a mount from the persistent filesystem.
+      keyDirIsMount = config.preservation.enable or false;
       # sops-nix's own generateKey runs plain `age-keygen`, which makes a
       # classic X25519 key. Once its module passes -pq anywhere, use it instead.
       upstreamGeneratesPq = lib.any (f: lib.hasInfix "-pq" (builtins.readFile f)) (
@@ -30,28 +34,43 @@
         inputs.sops-nix.nixosModules.sops
       ];
 
+      # Secrets are installed during activation, which runs in the initrd, so
+      # on a host whose root is wiped at boot the key directory is mounted
+      # there too. Traversable by everyone so key.txt.pub can be read without
+      # root; key.txt itself is 0600 (age-keygen creates it so).
+      persistence.directories = [
+        {
+          directory = keyDir;
+          mode = "0755";
+          inInitrd = true;
+        }
+      ];
+
       # Each host decrypts with its own post-quantum (hybrid ML-KEM-768 +
       # X25519) age key, made on the host at first activation so the private
       # key never leaves it. `<key>.pub` holds its recipient for .sops.yaml.
-      # Hosts whose /var is wiped at boot set this to a path on their
-      # persistent filesystem.
-      sops.age.keyFile = lib.mkDefault "/var/lib/sops-nix/key.txt";
+      sops.age.keyFile = "/var/lib/sops-nix/key.txt";
       # sops-nix otherwise derives classic keys from the SSH host keys.
       sops.age.sshKeyPaths = lib.mkDefault [ ];
 
       system.activationScripts.generate-pq-age-key = {
         deps = [ "specialfs" ];
+        # Unmounted (a live switch from a config that did not keep it), a key
+        # made here would be on the wiped root and decrypt nothing.
         text = ''
-          # Traversable by everyone so key.txt.pub can be read without root;
-          # key.txt itself is 0600 (age-keygen creates it so).
-          mkdir -p ${dirOf keyFile}
-          chmod 0755 ${dirOf keyFile}
-          if [ ! -f ${keyFile} ]; then
-            ${pkgs.age}/bin/age-keygen -pq -o ${keyFile}
-          fi
-          if [ ! -f ${keyFile}.pub ]; then
-            ${pkgs.age}/bin/age-keygen -y ${keyFile} > ${keyFile}.pub
-            chmod 0644 ${keyFile}.pub
+          if ${lib.boolToString keyDirIsMount} && ! ${pkgs.util-linux}/bin/mountpoint -q ${keyDir}; then
+            echo "generate-pq-age-key: ${keyDir} is not mounted from the persistent filesystem; apply with 'boot' and reboot" >&2
+            _localstatus=1
+          else
+            mkdir -p ${keyDir}
+            chmod 0755 ${keyDir}
+            if [ ! -f ${keyFile} ]; then
+              ${pkgs.age}/bin/age-keygen -pq -o ${keyFile}
+            fi
+            if [ ! -f ${keyFile}.pub ]; then
+              ${pkgs.age}/bin/age-keygen -y ${keyFile} > ${keyFile}.pub
+              chmod 0644 ${keyFile}.pub
+            fi
           fi
         '';
       };

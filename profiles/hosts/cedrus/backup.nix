@@ -23,11 +23,25 @@
     in
     {
       # restic's repository cache (RESTIC_CACHE_DIR); without it the first backup
-      # after every boot re-reads the repository index.
-      persistence.directories = [
-        "/var/cache/restic-backups-home"
-        "/var/cache/restic-backups-ios"
-      ];
+      # after every boot re-reads the repository index. The owner is the backup
+      # unit's; its CacheDirectory= sets the mode at every start.
+      persistence.directories =
+        map
+          (
+            name:
+            let
+              unit = config.systemd.services."restic-backups-${name}".serviceConfig;
+            in
+            {
+              directory = "/var/cache/${unit.CacheDirectory}";
+              user = unit.User;
+              mode = config.persistence.programSetsMode;
+            }
+          )
+          [
+            "home"
+            "ios"
+          ];
       sops.secrets = {
         "rclone.conf" = rootOwnedSecret;
         "restic-home-password" = rootOwnedSecret;

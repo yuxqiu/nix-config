@@ -7,8 +7,14 @@
     # history). Logs and swap files in ~/.local/state/nvim are not kept.
     persistence.directories = [
       ".local/share/nvim"
-      ".local/state/nvim/undo"
-      ".local/state/nvim/shada"
+      {
+        directory = ".local/state/nvim/undo";
+        mode = "0700";
+      }
+      {
+        directory = ".local/state/nvim/shada";
+        mode = "0700";
+      }
     ];
     programs.nixvim.opts = {
       encoding = "utf-8";

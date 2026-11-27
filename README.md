@@ -30,7 +30,7 @@ copy one, check what it reads from outside itself:
 | `config.identity`, `config.tailnet` | `globals/` | Replace them with your own values. |
 | `inputs.*` (captured from the outer function) and `mv` (pinned package versions, passed as a special argument) | Flake inputs of this repo | See `flake.nix`. |
 | Options without a default (for example, `programs.geminicommit.configFile`) | Your config | Set them. |
-| `persistence.directories`, `persistence.files` | `modules/security/impermanence.nix` | These list the state the module keeps on hosts whose root is wiped at boot ([docs/impermanence.md](docs/impermanence.md)). Without that module they do nothing. Drop them if you copy the module elsewhere. |
+| `persistence.directories`, `persistence.files` | `modules/security/ephemeral-root.nix` | These list the state the module keeps on hosts whose root is wiped at boot ([docs/ephemeral-root.md](docs/ephemeral-root.md)). Without that module they do nothing. Drop them if you copy the module elsewhere. |
 
 ### Fork it for your own machines
 
@@ -99,7 +99,7 @@ first boot. An admin key kept in Proton Pass grants access.
     for example
     `openssh.authorizedKeys.keys = [ config.identity.keys."general-ssh" ];`.
     For a new key, add it to `identity.keys` there first.
-  - **Password:** on a host with impermanence, the login password comes from
+  - **Password:** on a host with an ephemeral root, the login password comes from
     sops (step 3).
 - Add the host to `globals/tailnet.nix` as
   `<host> = "<hostName>.<tailnet>.ts.net";`. SSH aliases (`ssh <host>`) and
@@ -115,19 +115,19 @@ first boot. An admin key kept in Proton Pass grants access.
    `tailscale_key`, read by the host's `tailscale.nix`.
 4. `git add` everything.
 
-### 3. Decide on impermanence
+### 3. Decide on an ephemeral root
 
-Impermanence is optional. With it, `/` is a tmpfs, and only the paths that
+An ephemeral root is optional. With it, `/` is a tmpfs, and only the paths that
 modules list in `persistence` survive a reboot
-([docs/impermanence.md](docs/impermanence.md)). A host that uses it needs the
+([docs/ephemeral-root.md](docs/ephemeral-root.md)). A host that uses it needs the
 following (why each is needed:
-[Opting in](docs/impermanence.md#opting-in)):
+[Opting in](docs/ephemeral-root.md#opting-in)):
 
-- `nixos.impermanence` in its modules.
+- `nixos.ephemeral-root` in its modules.
 - A persistent filesystem with `neededForBoot = true`. Which filesystem
   depends on the install route (below).
 - A `persistence.nix` that sets `persistence.storage` to that filesystem's
-  mount point and `sops.age.keyFile` under it.
+  mount point.
 - Each login user's password hash in the secrets file as `<user>-password`.
   Make the hash with `mkpasswd -m yescrypt`. `os-bootstrap` stops while a hash
   is missing. `os-install` does not check.
@@ -140,8 +140,8 @@ installed with the NixOS graphical installer.
 #### Remote: wipe and install with `os-install`
 
 The host needs a `disko.nix` that describes the whole disk. nixos-anywhere
-wipes the disk and formats it from that file. With impermanence, use the
-[recommended layout](docs/impermanence.md#recommended-disk-layout): btrfs
+wipes the disk and formats it from that file. With an ephemeral root, use the
+[recommended layout](docs/ephemeral-root.md#recommended-disk-layout): btrfs
 subvolumes `@nix` at `/nix` and `@persist` at `/persist`, with `@persist` as
 the persistent filesystem.
 
@@ -151,19 +151,19 @@ the persistent filesystem.
 2. Commit `.sops.yaml`, the secrets file and `_hardware-configuration.nix`.
 
 To reinstall, run `os-install` again. The host gets a new key. On a host with
-impermanence, add `--keep-state` to keep its state instead. The kept paths and
+an ephemeral root, add `--keep-state` to keep its state instead. The kept paths and
 the existing key are copied from the running machine into memory, then
 restored before the first boot.
 
 #### Local: graphical installer, then `os-bootstrap`
 
-Steps marked *(impermanence)* apply only to a host that uses it.
+Steps marked *(ephemeral root)* apply only to a host that uses it.
 
 1. Install NixOS with the graphical installer, with any layout.
-   *(impermanence)* Choose btrfs, turn encryption on, and set swap to "none".
+   *(ephemeral root)* Choose btrfs, turn encryption on, and set swap to "none".
    The installer puts `/` on the btrfs top level, with subvolumes `home` and
    `nix`.
-2. *(impermanence)* In the host's `persistence.nix`, make that top level,
+2. *(ephemeral root)* In the host's `persistence.nix`, make that top level,
    which is the running root now, the persistent filesystem. Use the device
    of the generated `/nix` entry:
 
@@ -175,7 +175,6 @@ Steps marked *(impermanence)* apply only to a host that uses it.
      neededForBoot = true;
    };
    persistence.storage = "/persist";
-   sops.age.keyFile = "/persist/var/lib/sops-nix/key.txt";
    ```
 3. In a checkout of this repository on that machine, run
    `nix --extra-experimental-features 'nix-command flakes' develop .#bootstrap`.
@@ -183,16 +182,16 @@ Steps marked *(impermanence)* apply only to a host that uses it.
 4. Run `os-bootstrap <host>` until it says *Ready*. It makes and grants the
    key, copies the hardware configuration to `_hardware-configuration.nix`,
    and lists secrets that are still missing.
-5. *(impermanence)* Delete `fileSystems."/"` and `fileSystems."/home"` from
+5. *(ephemeral root)* Delete `fileSystems."/"` and `fileSystems."/home"` from
    `_hardware-configuration.nix`. From now on, edit that file instead of
    rerunning `nixos-generate-config`, which would write them back.
 6. Run the `nixos-rebuild boot` command that `os-bootstrap` prints, then
    reboot.
-7. *(impermanence)* Check that `findmnt /` shows a tmpfs. If the new
+7. *(ephemeral root)* Check that `findmnt /` shows a tmpfs. If the new
    generation fails, choose the previous one in the boot menu: it boots the
    old root unchanged.
 
-*(impermanence)* The old root's files stay in `/persist` after the switch.
+*(ephemeral root)* The old root's files stay in `/persist` after the switch.
 Once you will not roll back:
 
 1. Delete the older generations with `sudo nix-collect-garbage -d`, so

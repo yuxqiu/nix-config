@@ -1,4 +1,4 @@
-# VM test: the local route with impermanence in the README's "Setting up a
+# VM test: the local route with an ephemeral root in the README's "Setting up a
 # machine" (graphical installer, converted in place). The disk is laid out the way the NixOS
 # graphical installer lays out LUKS + btrfs: LUKS2 opened as `luks-<uuid>`,
 # `/` on the btrfs top level, subvolumes `home` and `nix`, the ESP at /boot
@@ -11,7 +11,7 @@
 # generation still boots the old root.
 {
   pkgs,
-  nixosImpermanence,
+  nixosEphemeralRoot,
   nixosBase,
   genericBase,
 }:
@@ -71,8 +71,8 @@ let
       inherit (pkgs.stdenv.hostPlatform) system;
       modules = [
         hardware
-        nixosImpermanence
-        # Home Manager, which nixos.impermanence configures.
+        nixosEphemeralRoot
+        # Home Manager, which nixos.ephemeral-root configures.
         nixosBase
         genericBase
         {
@@ -218,7 +218,7 @@ pkgs.testers.runNixOSTest {
             machine_id = desktop.succeed("cat /etc/machine-id")
             alice_uid = desktop.succeed("id -u alice")
 
-        with subtest("convert: nixos-rebuild boot into the impermanent system"):
+        with subtest("convert: nixos-rebuild boot into the ephemeral-root system"):
             # What `nixos-rebuild boot --flake .#desktop` does with the built system.
             desktop.succeed(
                 "nix-env -p /nix/var/nix/profiles/system --set $(readlink -f /etc/converted)"

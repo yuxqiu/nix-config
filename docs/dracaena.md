@@ -20,7 +20,7 @@ Run `os-switch dracaena root@<host>`. The system is built on the server.
 
 ## Storage
 
-- Root is on tmpfs (`nixos.impermanence`).
+- Root is on tmpfs (`nixos.ephemeral-root`).
 - The disk holds the btrfs subvolumes `@nix` and `@persist`, with no disk
   encryption: unlocking a cloud VM at boot would need SSH in the initrd or a
   virtual TPM.

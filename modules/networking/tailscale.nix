@@ -147,7 +147,14 @@
       };
 
       config = {
-        persistence.directories = [ "/var/lib/tailscale" ];
+        persistence.directories = [
+          # tailscaled.service's StateDirectoryMode= sets the mode at every
+          # start.
+          {
+            directory = "/var/lib/tailscale";
+            mode = config.persistence.programSetsMode;
+          }
+        ];
         services.tailscale = {
           disableUpstreamLogging = true;
           extraUpFlags = [ "--ssh" ];

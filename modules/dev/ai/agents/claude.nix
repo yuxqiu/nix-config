@@ -42,7 +42,13 @@
     in
     {
       persistence.directories = [ ".claude" ];
-      persistence.files = [ ".claude.json" ];
+      # Private to the user: it holds the signed-in account's details.
+      persistence.files = [
+        {
+          file = ".claude.json";
+          mode = "0600";
+        }
+      ];
       programs = {
         claude-code = {
           enable = true;

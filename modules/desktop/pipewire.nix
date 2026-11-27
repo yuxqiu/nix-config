@@ -2,7 +2,12 @@
   flake.modules.nixos.pipewire = {
     home-manager.sharedModules = [
       {
-        persistence.directories = [ ".local/state/wireplumber" ];
+        persistence.directories = [
+          {
+            directory = ".local/state/wireplumber";
+            mode = "0700";
+          }
+        ];
       }
     ];
     services.pipewire = {

@@ -16,10 +16,7 @@
     {
       imports = [ inputs.disko.nixosModules.disko ];
 
-      warnings =
-        lib.optional
-          (lib.hasInfix "udevadm wait" (builtins.readFile "${inputs.disko}/lib/types/gpt.nix"))
-          "disko.nix: disko now waits for partition links itself (udevadm wait in lib/types/gpt.nix); remove waitForPartition, its preCreateHook uses, and this warning.";
+      warnings = lib.optional (lib.hasInfix "udevadm wait" (builtins.readFile "${inputs.disko}/lib/types/gpt.nix")) "disko.nix: disko now waits for partition links itself (udevadm wait in lib/types/gpt.nix); remove waitForPartition, its preCreateHook uses, and this warning.";
 
       disko.devices = {
         disk.main = {
@@ -68,7 +65,7 @@
             };
           };
         };
-        # Root on tmpfs is set by nixos.impermanence.
+        # Root on tmpfs is set by nixos.ephemeral-root.
       };
       fileSystems."/persist".neededForBoot = true;
     };

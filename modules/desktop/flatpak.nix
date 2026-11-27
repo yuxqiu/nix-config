@@ -6,7 +6,10 @@
   flake.modules.homeManager.flatpak = {
     persistence.directories = [
       ".var"
-      ".local/share/flatpak"
+      {
+        directory = ".local/share/flatpak";
+        mode = "0700";
+      }
     ];
     imports = [ inputs.nix-flatpak.homeManagerModules.nix-flatpak ];
 
