@@ -17,14 +17,6 @@
       };
       environment.systemPackages = [ pkgs.xray ];
 
-      security.acme = {
-        acceptTerms = true;
-        defaults.email = local.acmeEmail;
-        certs.${local.domain} = {
-          listenHTTP = ":80";
-        };
-      };
-
       systemd.services.xray = {
         after = [
           "acme-${local.domain}.service"

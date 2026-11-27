@@ -83,7 +83,13 @@ writeShellApplication {
       IFS=, read -ra opts <<<"$options"
       for opt in "''${opts[@]}"; do
         case "$opt" in
-          subvol=*) fs_root="/''${opt#subvol=}"; fs_root="/''${fs_root##/}" ;;
+          subvol=*)
+            # findmnt reports a subvolume as /<path> and the top level as /;
+            # the option may spell either with any number of leading slashes.
+            fs_root="''${opt#subvol=}"
+            while [[ $fs_root == /* ]]; do fs_root="''${fs_root#/}"; done
+            fs_root="/$fs_root"
+            ;;
           subvolid=*) die "fileSystems.\"$storage\" selects its subvolume by subvolid; use subvol=<name>" ;;
         esac
       done

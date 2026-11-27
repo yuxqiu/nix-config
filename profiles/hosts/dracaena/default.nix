@@ -23,6 +23,7 @@
         # security
         config.flake.modules.nixos.sysctl
         config.flake.modules.nixos.coredump
+        config.flake.modules.nixos.impermanence
 
         # services
         config.flake.modules.nixos.journald

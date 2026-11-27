@@ -1,5 +1,7 @@
 {
   flake.modules.nixos.dracaena = { pkgs, ... }: {
+    # The device registration made by warp-setup below.
+    persistence.directories = [ "/var/lib/cloudflare-warp" ];
     services.cloudflare-warp.enable = true;
 
     # warp-svc only starts the daemon; registration + proxy mode are

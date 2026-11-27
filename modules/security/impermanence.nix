@@ -92,6 +92,13 @@
     {
       imports = [ inputs.impermanence.nixosModules.impermanence ];
 
+      options.persistence.keptPaths = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        readOnly = true;
+        default = keptPaths;
+        description = "Every kept path, system and Home Manager, as an absolute live path (read by capture and by os-install --keep-state).";
+      };
+
       options.persistence.storage = lib.mkOption {
         type = lib.types.str;
         example = "/disk";
@@ -170,7 +177,7 @@
             "users"
             "groups"
           ];
-          text = "${lib.getExe captureNewlyKept} ${lib.escapeShellArgs keptPaths}";
+          text = "${lib.getExe captureNewlyKept} ${lib.escapeShellArgs config.persistence.keptPaths}";
         };
         system.activationScripts.createPersistentStorageDirs.deps = [ "persistence-capture" ];
 

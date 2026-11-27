@@ -3,15 +3,14 @@
   flake.modules.homeManager.paseo =
     { pkgs, ... }:
     {
-      persistence.directories = [
-        ".paseo"
-        ".config/Paseo"
-      ];
+      # The desktop app's own state; ~/.paseo is the daemon's (nixos.paseo).
+      persistence.directories = [ ".config/Paseo" ];
       home.packages = [ pkgs.paseo-desktop ];
     };
 
   flake.modules.nixos.paseo =
     {
+      config,
       lib,
       pkgs,
       ...
@@ -38,6 +37,15 @@
       # fails with services.paseo "already declared": switch to nixpkgs' module
       # then, and drop the `paseo` flake input.
       imports = [ "${inputs.paseo}/nix/module.nix" ];
+
+      # The daemon's agent data, config and logs (PASEO_HOME).
+      persistence.directories = [
+        {
+          directory = config.services.paseo.dataDir;
+          inherit (config.services.paseo) user group;
+          mode = "0700";
+        }
+      ];
 
       services.paseo = {
         enable = true;

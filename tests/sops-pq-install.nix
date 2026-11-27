@@ -283,6 +283,18 @@ pkgs.testers.runNixOSTest {
         assert "mounted at /mnt/elsewhere, so the key goes at /mnt/elsewhere${keyFile}" in out, out
         assert "Host key exists: /mnt/elsewhere${keyFile}" in out, out
 
+    with subtest("local: a subvolume spelled with a leading slash, and the top level as subvol=/"):
+        impermanent("/persist", "/dev/vdb", "subvol=/@persist")
+        out = bootstrap(True)
+        assert "mounted at /mnt/elsewhere, so the key goes at /mnt/elsewhere${keyFile}" in out, out
+        # The btrfs top level, as a desktop converted in place mounts it.
+        impermanent("/persist", "/dev/vdb", "subvol=/,noatime")
+        place_key("/mnt/top")
+        out = bootstrap(True)
+        assert "mounted at /mnt/top, so the key goes at /mnt/top${keyFile}" in out, out
+        # Back to the subvolume, which the next subtest unmounts.
+        impermanent("/persist", "/dev/vdb", "subvol=@persist,noatime")
+
     with subtest("local: an unmounted persistent filesystem stops before making a key"):
         fresh.succeed("umount /mnt/elsewhere")
         sops_before = fresh.succeed("sha256sum < /root/flake/.sops.yaml")

@@ -7,6 +7,9 @@
         isNormalUser = true;
         shell = pkgs.zsh;
         openssh.authorizedKeys.keys = [ config.identity.keys."general-ssh" ];
+        # Keys only: the password is locked. A declared hash is also what
+        # immutable users (impermanence) require.
+        hashedPassword = "!";
       };
     };
 }

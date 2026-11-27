@@ -14,13 +14,13 @@ let
 in
 stdenvNoCC.mkDerivation rec {
   pname = "pstack";
-  version = "0.9.155";
+  version = "0.9.158";
 
   src = fetchFromGitHub {
     owner = "michael-denyer";
     repo = "pstack-claude";
     rev = "v${version}";
-    hash = "sha256-mLtz4au3kks0fAmGUq6FTBqRmUk43y3pUFqcUYm9pkI=";
+    hash = "sha256-8lNLqHVwXFBGHSQCtEjBL1+xL4trLsZ1FLg9MpDgncE=";
   };
 
   nativeBuildInputs = [ bun ];

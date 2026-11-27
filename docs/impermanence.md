@@ -1,31 +1,61 @@
 # Impermanence
 
 A host that includes `nixos.impermanence` (`modules/security/impermanence.nix`)
-has `/` on a tmpfs, empty at every boot. Only paths listed in `persistence`
-survive; they are bind-mounted from a persistent filesystem at the same paths.
-Each module lists the state it needs (e.g. `nm.nix` keeps saved networks,
-`firefox.nix` the profile); host-only data (documents, the dotfiles checkout)
-goes in the host's own `persistence.nix`. Hosts using it: `cedrus`
-([docs/cedrus.md](cedrus.md)).
+has `/` on a tmpfs, which is empty at every boot. Only the paths listed in
+`persistence` survive. They are kept on a persistent filesystem and
+bind-mounted at the same paths.
+
+Two places list kept paths:
+
+- Each module lists the state it needs. For example, `nm.nix` keeps saved
+  networks, and `firefox.nix` keeps the profile.
+- The host's own `persistence.nix` lists host-only data, such as documents and
+  the dotfiles checkout.
+
+Hosts using it: `cedrus` ([docs/cedrus.md](cedrus.md)) and `dracaena`
+([docs/dracaena.md](dracaena.md)).
+
+To set up a machine with impermanence, follow
+[*Setting up a machine*](../README.md#setting-up-a-machine) in the README. It
+covers both install routes: a remote host laid out by disko, and a desktop
+from the graphical installer converted in place.
 
 ## How a boot goes
 
 1. The initrd mounts the tmpfs as `/`, the persistent filesystem, and `/nix`.
-2. Activation recreates users and groups from the config (UIDs from the kept
-   `/var/lib/nixos`), decrypts secrets with the host key read straight from
-   the persistent filesystem, and builds `/etc`. The module then moves content
-   of newly listed paths onto the persistent filesystem (see below) and
-   impermanence creates missing kept directories there.
-3. systemd bind-mounts every kept path (directories as `.mount` units, files
-   as `persist-*` services).
+2. Activation does the following:
+   1. It recreates users and groups from the config. UIDs come from the kept
+      `/var/lib/nixos`.
+   2. It decrypts secrets with the host key, read straight from the persistent
+      filesystem.
+   3. It builds `/etc`.
+   4. Then the module moves the content of newly listed paths onto the
+      persistent filesystem (see [Keeping something new](#keeping-something-new)).
+   5. Impermanence creates missing kept directories on the persistent
+      filesystem.
+3. systemd bind-mounts every kept path. Directories are `.mount` units, and
+   files are `persist-*` services.
 4. Home Manager's own boot service re-links every file it manages into the
    empty home. That is why Home Manager configs need no keeping.
 
+## Opting in
+
+A host includes `nixos.impermanence` and sets the following in its own
+directory:
+
+| Setting | Why |
+| --- | --- |
+| The persistent filesystem's mount (and `/nix`), and `persistence.storage` (its mount point) | Kept paths are bind-mounted from there. |
+| `sops.age.keyFile` on the persistent filesystem | Secrets are installed during activation, before kept directories are bind-mounted. |
+| A `hashedPasswordFile` per login user, from a sops secret with `neededForUsers = true` | Users are immutable (`users.mutableUsers = false`), so `passwd` changes do not survive. Change the hash in sops instead. |
+
 ## Recommended disk layout
 
-For a new machine, use one btrfs partition (inside LUKS: the persistent
-filesystem holds every kept secret) with separate subvolumes mounted directly,
-and the tmpfs as `/`:
+For a machine laid out by disko (a server installed with `os-install`), use
+one btrfs partition with separate subvolumes mounted directly, and the tmpfs
+as `/`. Put the partition inside LUKS: the persistent filesystem holds every
+kept secret. The exception is a machine nobody can unlock at boot, such as a
+cloud VM without SSH in the initrd or a virtual TPM (`dracaena`).
 
 | Mount | Source | Notes |
 | --- | --- | --- |
@@ -49,72 +79,79 @@ fileSystems."/persist" = {
 persistence.storage = "/persist";
 ```
 
-Why separate mounts: when `/nix` is a bind mount of a directory on the
-persistent filesystem (the only way to share one ext4 partition), `nix.mount`
-requires the persistent filesystem's mount. systemd stops that mount at
-shutdown, the stop propagates to `/nix` and `/nix/store`, and the busy store
-logs "Failed unmounting /nix/store" on every shutdown. It is harmless (the
-store is remounted read-only at the end), but separate subvolumes or partitions
-have no such dependency. Separate partitions work too; subvolumes share one
-pool of free space.
+Separate partitions work too. Subvolumes share one pool of free space.
 
-A machine converted in place keeps its old root as the persistent filesystem
-and binds `/nix` from it (as `cedrus` does), and so shows that message.
+### Why `/nix` is a separate mount
 
-## Opting in
+The alternative is to make `/nix` a bind mount of a directory on the
+persistent filesystem. That is the only way to share one ext4 partition.
+Then:
 
-A host includes `nixos.impermanence` and sets, in its own directory:
+1. `nix.mount` requires the persistent filesystem's mount.
+2. systemd stops that mount at shutdown.
+3. The stop propagates to `/nix` and `/nix/store`.
+4. The store is busy, so every shutdown logs "Failed unmounting /nix/store".
 
-- the persistent filesystem's mount (and `/nix`) and `persistence.storage`
-  (its mount point);
-- `sops.age.keyFile` on that filesystem: secrets are installed during
-  activation, before kept directories are bind-mounted;
-- a `hashedPasswordFile` per login user, from a sops secret with
-  `neededForUsers = true`. Users are immutable (`users.mutableUsers = false`),
-  so `passwd` changes do not survive; change the hash in sops instead.
+The message is harmless: the store is remounted read-only at the end. Separate
+subvolumes or partitions have no such dependency.
+
+A machine converted in place whose old root holds `/nix` as a plain directory
+binds `/nix` from it (as `cedrus` does), and so shows that message.
+
+### A desktop from the graphical installer
+
+A desktop from the graphical installer gets the same property without
+repartitioning:
+
+- `/nix` stays the installer's `nix` subvolume.
+- The btrfs top level (the old root) is mounted at `/persist`.
+- The installer's `home` subvolume is not mounted on its own. It is a nested
+  subvolume, so it appears as the directory `/persist/home`, and kept home
+  paths are bind-mounted from it.
+
+A btrfs snapshot of the top level does not include nested subvolumes. If you
+use snapshots, snapshot `home` separately.
 
 ## Keeping something new
 
-Add its path to the owning module and apply with `nh os switch` (not `boot`):
-the switch moves the current content onto the persistent filesystem before
-mounting it. With `boot`, the content lives only on the tmpfs and is gone at
-the reboot. Restart the app afterwards; files it still has open point at the
-old copy.
+1. Add the path to the module that owns it.
+2. Apply with `nh os switch`, not `boot`. The switch moves the current content
+   onto the persistent filesystem before mounting it. With `boot`, the content
+   lives only on the tmpfs and is gone at the reboot.
+3. Restart the app. Files it still has open point at the old copy.
 
-One case is not captured: newly keeping a directory that contains an
-already-kept one. Say `.local/share/app/models` is kept and you add
-`.local/share/app`. The persistent filesystem already has `.local/share/app`
-(as the parent of `models`), so the switch treats it as kept and mounts it
-over the live directory, hiding the files the app wrote next to `models`
-(they are lost at the reboot). Before such a switch, copy those files over
-yourself, for example
-`cp -a ~/.local/share/app/settings.json <storage>/home/<user>/.local/share/app/`
-(the user owns their directory on the storage; system paths need `sudo`).
+### Keeping a parent of a kept directory
 
-Keep a directory rather than a single file when the app saves by writing a new
-file and renaming it over the old one (zsh history, GTK bookmarks): a kept file
-is a bind mount, which a rename cannot replace. Kept files are also not hidden
-from file managers, unlike kept directories.
+The switch does not capture one case: newly keeping a directory that contains
+an already-kept one.
 
-`nix build .#checks.<system>.impermanence` (e.g. `x86_64-linux`) runs a VM
-test of the module; it needs a Linux machine with KVM, or a Linux builder.
+Say `.local/share/app/models` is kept and you add `.local/share/app`:
 
-## Setting up an impermanent machine
+1. The persistent filesystem already has `.local/share/app`, as the parent of
+   `models`.
+2. So the switch treats it as kept and mounts it over the live directory.
+3. That hides the files the app wrote next to `models`. They are lost at the
+   reboot.
 
-Follow the README's *Setting up a machine*. Two things differ:
+Before such a switch, copy those files over yourself. For example:
 
-- Its users' passwords come from sops, so put each `<user>-password` hash
-  (`mkpasswd -m yescrypt`) in the secrets file before the first boot;
-  `os-bootstrap` stops and lists any that are missing.
-- The host's config must already declare its persistent filesystem
-  (`fileSystems.<storage>`, `persistence.storage`, `sops.age.keyFile` on it),
-  and that filesystem must be mounted when `os-bootstrap` runs: it puts the
-  key wherever the filesystem is mounted now. On a machine converted in place
-  that is `/` (the running root becomes the persistent filesystem, so
-  `/disk/var/lib/sops-nix/key.txt` is written as `/var/lib/sops-nix/key.txt`);
-  with the recommended layout it is wherever you mounted `@persist`. It stops
-  if the filesystem is not mounted. Enable disk encryption in the installer.
-- Install with `nh os boot . -H <host>` and reboot. On a machine converted in
-  place, the previous generation in the boot menu still boots from the
-  persistent filesystem as its root. Afterwards, use the key's path under
-  the persistent filesystem with `sops-update-key`.
+```sh
+cp -a ~/.local/share/app/settings.json <storage>/home/<user>/.local/share/app/
+```
+
+The user owns their directory on the storage. System paths need `sudo`.
+
+### Keeping a file or its directory
+
+Keep a directory rather than a single file in these cases:
+
+- The app saves by writing a new file and renaming it over the old one (zsh
+  history, GTK bookmarks). A kept file is a bind mount, which a rename cannot
+  replace.
+- You want the path hidden from file managers. Kept directories are hidden
+  from file managers, and kept files are not.
+
+## Testing the module
+
+`nix build .#checks.<system>.impermanence` (for example, `x86_64-linux`) runs a
+VM test of the module. It needs a Linux machine with KVM, or a Linux builder.
