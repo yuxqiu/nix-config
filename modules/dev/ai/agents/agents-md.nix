@@ -149,7 +149,7 @@ in
 
       config.agents-md.content = agentsMd;
 
-      config.home.file = lib.mapAttrs' (name: path: {
+      config.home.file = lib.mapAttrs' (_name: path: {
         name = path;
         value.text = agentsMd;
       }) config.agents-md.destinations;

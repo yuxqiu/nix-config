@@ -141,20 +141,10 @@
         config.flake.modules.homeManager.quillway
 
         # dev (ai)
+        config.flake.modules.homeManager.agents
         config.flake.modules.homeManager.agentsview
-        config.flake.modules.homeManager.agent-browser
         config.flake.modules.homeManager.herdr
-        config.flake.modules.homeManager.harness
         config.flake.modules.homeManager.hunk
-        config.flake.modules.homeManager.mcp
-        config.flake.modules.homeManager.skills
-        config.flake.modules.homeManager.pstack
-        config.flake.modules.homeManager.agents-md
-        config.flake.modules.homeManager.antigravity
-        config.flake.modules.homeManager.claude
-        config.flake.modules.homeManager.codex
-        config.flake.modules.homeManager.devin
-        config.flake.modules.homeManager.opencode
         config.flake.modules.homeManager.geminicommit
         config.flake.modules.homeManager.opencodecommit
         config.flake.modules.homeManager.paseo
@@ -182,7 +172,6 @@
         config.flake.modules.homeManager.json
         config.flake.modules.homeManager.css
         config.flake.modules.homeManager.lean
-        config.flake.modules.homeManager.fence
         config.flake.modules.homeManager.hyperfine
         config.flake.modules.homeManager.poop
 
@@ -210,6 +199,7 @@
         # virtualization (home-manager)
         config.flake.modules.homeManager.docker
         config.flake.modules.homeManager.distrobox
+        config.flake.modules.homeManager.vm-run
 
         # fonts
         config.flake.modules.homeManager.fonts

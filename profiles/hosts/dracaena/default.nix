@@ -44,11 +44,7 @@
         config.flake.modules.homeManager.git
 
         # dev (ai)
-        config.flake.modules.homeManager.mcp
-        config.flake.modules.homeManager.skills
-        config.flake.modules.homeManager.agents-md
-        config.flake.modules.homeManager.claude
-        config.flake.modules.homeManager.codex
+        config.flake.modules.homeManager.agents
 
         # user
         config.flake.modules.homeManager.dracaena

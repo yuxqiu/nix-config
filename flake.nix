@@ -108,8 +108,14 @@
     # Only for its NixOS module; the package comes from nixpkgs, so keep the
     # tag in step with nixpkgs' paseo version.
     paseo = {
-      url = "github:getpaseo/paseo?ref=v0.17.5";
+      url = "github:getpaseo/paseo?ref=v0.18.1";
       flake = false;
+    };
+    # Follows main: the last release (v0.5.0, 2024-04) predates the runner's
+    # extraArgsScript, which vm-run uses for per-run QEMU arguments.
+    microvm = {
+      url = "github:microvm-nix/microvm.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     edgepad = {
       url = "github:assembledev/edgepad?ref=v0.4.0";
@@ -122,7 +128,7 @@
       inputs.rust-overlay.follows = "rust-overlay";
     };
     lig = {
-      url = "github:KevenGoncalves/lig?ref=v1.4.2";
+      url = "github:KevenGoncalves/lig?ref=v1.4.4";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     headup = {
