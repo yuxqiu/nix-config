@@ -12,6 +12,9 @@
    firefox.nix. */
 :root {
     --search-input-height: round(nearest, 50px, var(--device-pixel));
+    --search-width: 45vw;
+    /* Gap between a row's highlight and the box's sides */
+    --search-row-inset: 12px;
 }
 
 /* No background color for url bar (replaces Firefox-Mod-Blur's
@@ -49,7 +52,7 @@
     position: fixed !important;
     top: 20vh !important;
     left: 29vw !important;
-    width: 45vw !important;
+    width: var(--search-width) !important;
     max-width: unset !important;
     margin-top: 15px !important;
     transition: none !important;
@@ -73,42 +76,80 @@
     overflow: hidden !important;
 }
 
-/* Input half: drop Firefox's overhang so it sits exactly on the input, and
-   clip to its own box (Firefox draws past it). #navigator-toolbox outranks
-   liquid-fox's all-corner radius. Its shadow comes from the results view, see
-   below. */
+/* One blurred background for the whole box. Input and results are separate
+   elements, and each backdrop-filter blurs only what lies behind its own box,
+   so two blurs break at the seam. The input's background (below the input's
+   content) is the only blur: it reaches down far enough to cover any results
+   view (the window's height) and is masked to the input plus the results'
+   shape. The results view sits in the top layer, so nothing outside it can be
+   sized or anchored to it (Gecko rejects anchors in the top layer), but
+   -moz-element(#urlbar-results) renders the results as an image of their
+   exact size. That image carries the solid shape #urlbar-results draws for it
+   below. Mask layers, top to bottom: the input; the results' left shape;
+   their right shape, intersected with the left one so both bottom corners
+   are rounded. #navigator-toolbox outranks liquid-fox's all-corner radius.
+   Its shadow comes from the results view, see below. */
 #navigator-toolbox #urlbar[popover-open] .urlbar-background {
     inset: 0 !important;
-    clip-path: inset(0) !important;
     border: none !important;
     border-radius: var(--br2) var(--br2) 0 0 !important;
-    height: var(--search-input-height) !important;
-    background-color: var(--bg2) !important;
+    height: 100vh !important;
+    background-color: color-mix(in srgb, var(--bg2) @popupOpacity@%, transparent) !important;
     backdrop-filter: blur(30px) !important;
     box-shadow: none !important;
+    mask:
+        linear-gradient(#000, #000) 0 0 / 100% var(--search-input-height) no-repeat,
+        -moz-element(#urlbar-results) 0 var(--search-input-height) no-repeat,
+        -moz-element(#urlbar-results) calc(-2 * var(--search-results-shape-offset)) var(--search-input-height) no-repeat !important;
+    mask-composite: add, intersect !important;
 }
 
-/* Results half: paint the view itself instead of Firefox's joint background */
+/* The results' shape for the mask above: one opaque area as wide as the box
+   in each inline border, a gap away from the box, with the box's bottom
+   radius on the outer corners. The negative margins keep the rows where they
+   were. On screen the view clips both areas away (overflow-x below);
+   -moz-element ignores ancestors' clipping, so the mask still gets them.
+   The gap is twice the shadow's reach, so the areas start well outside the
+   view's clip edge and no rounding at that edge shows them. */
+#urlbar[popover-open] {
+    --search-results-shape-offset: calc(var(--search-width) + 2 * var(--bs1-reach));
+}
+
+#urlbar[popover-open] #urlbar-results {
+    border-inline: var(--search-results-shape-offset) solid transparent !important;
+    margin-inline: calc(-1 * var(--search-results-shape-offset)) !important;
+    border-end-start-radius: var(--br2) !important;
+    border-end-end-radius: var(--br2) !important;
+    background: linear-gradient(
+        90deg,
+        #000 var(--search-width),
+        transparent var(--search-width) calc(100% - var(--search-width)),
+        #000 calc(100% - var(--search-width))
+    ) border-box !important;
+}
+
+/* Firefox's own joint background is replaced by the one above */
 #urlbar[popover-open] .urlbarView-background {
     display: none !important;
 }
 
+/* The view itself is transparent over the input's background. It clips the
+   rows and the shape areas sideways, keeping room for the shadow. */
 #urlbar[popover-open] .urlbarView {
     margin: 0 !important;
     padding: 0 !important;
     border-radius: 0 0 var(--br2) var(--br2) !important; /* round only bottom corners */
-    overflow: visible !important;
-    background: var(--bg2) !important;
-    backdrop-filter: blur(30px) !important;
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+    overflow-clip-margin: var(--bs1-reach) !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
     box-shadow: none !important;
 }
 
-/* One shadow for the whole box. Input and results are separate elements, and
-   two shadows clipped at the seam leave a lighter notch beside it, so the
-   results view draws a single shadow for both: its box reaches up over the
-   input, and a box-shadow paints only outside its box, so the input stays
-   uncovered. The view's overflow is visible so this isn't clipped; the rows
-   are clipped by .urlbarView-body-outer instead. */
+/* One shadow for the whole box, drawn by the results view: its box reaches
+   up over the input, and a box-shadow paints only outside its box, so the
+   input stays uncovered. */
 #urlbar[popover-open] .urlbarView::before {
     content: "" !important;
     position: absolute !important;
@@ -116,19 +157,6 @@
     border-radius: var(--br2) !important;
     box-shadow: var(--bs1) !important;
     pointer-events: none !important;
-}
-
-#urlbar[popover-open] .urlbarView-body-outer,
-#urlbar[popover-open] .urlbarView-body-inner {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-#urlbar[popover-open] .urlbarView-body-outer {
-    overflow: clip !important;
 }
 
 /* Make suggestions look good inside the big centered box */
@@ -139,13 +167,26 @@
     max-width: 50% !important;
 }
 
+/* The selected row is painted with the opaque system highlight; make it
+   translucent like the rest of the box */
+#urlbar[popover-open] .urlbarView-row[selected] {
+    background-color: color-mix(in srgb, SelectedItem 50%, transparent) !important;
+}
+
 /* Fix any inner rows overflowing the new width */
 #urlbar[popover-open] .urlbarView-row,
 #urlbar[popover-open] .urlbarView-row-inner {
     width: 100% !important;
     max-width: 100% !important;
-    padding-inline: 12px !important; /* match your input padding feel */
+    padding-inline: var(--search-row-inset) !important;
     box-sizing: border-box !important;
+}
+
+/* The last row's highlight gets the same gap to the box's bottom edge as to
+   its sides; the row's gutter (its padding, outside the highlight)
+   already gives part of it. */
+#urlbar[popover-open] #urlbar-results {
+    padding-block-end: calc(var(--search-row-inset) - var(--urlbarview-row-gutter)) !important;
 }
 
 /* Grow both halves together. The view is a top-layer popover, so a transform

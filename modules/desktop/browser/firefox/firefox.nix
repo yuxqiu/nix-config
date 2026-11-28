@@ -9,23 +9,30 @@
     let
       profileName = "default";
 
-      # Menus are tinted with stylix's popup opacity, like GTK and Qt menus.
-      # Their corner radius is shared with niri's `popups` blur rule below;
-      # 6 is Firefox's default menupopup --panel-border-radius.
-      popupRadius = 6;
-      menupopupSubstitutions = {
-        "@popupOpacity@" = toString config.lib.style.popupOpacityPercent;
-        "@popupRadius@" = toString popupRadius;
-      };
-      menupopupCss = builtins.readFile ./css/chrome/menupopup.css;
-      menupopup =
+      # Reads a stylesheet and fills in its @placeholders@; each one given must
+      # appear in the file.
+      cssWithSubstitutions =
+        file: substitutions:
+        let
+          css = builtins.readFile file;
+        in
         assert lib.all (
           placeholder:
-          lib.assertMsg (lib.hasInfix placeholder menupopupCss) "firefox.nix: ${placeholder} placeholder missing from menupopup.css"
-        ) (lib.attrNames menupopupSubstitutions);
-        builtins.replaceStrings (lib.attrNames menupopupSubstitutions)
-          (lib.attrValues menupopupSubstitutions)
-          menupopupCss;
+          lib.assertMsg (lib.hasInfix placeholder css) "firefox.nix: ${placeholder} placeholder missing from ${baseNameOf file}"
+        ) (lib.attrNames substitutions);
+        builtins.replaceStrings (lib.attrNames substitutions) (lib.attrValues substitutions) css;
+
+      # Menus and the search popup are tinted with stylix's popup opacity, like
+      # GTK and Qt menus.
+      popupOpacity = toString config.lib.style.popupOpacityPercent;
+      # The menu corner radius is shared with niri's `popups` blur rule below;
+      # 6 is Firefox's default menupopup --panel-border-radius.
+      popupRadius = 6;
+      menupopup = cssWithSubstitutions ./css/chrome/menupopup.css {
+        "@popupOpacity@" = popupOpacity;
+        "@popupRadius@" = toString popupRadius;
+      };
+      search = cssWithSubstitutions ./css/chrome/search.css { "@popupOpacity@" = popupOpacity; };
 
       # --device-pixel: one device pixel in CSS px, for CSS that must land on
       # the device pixel grid. Gecko lays out in 60 app units per CSS px and
@@ -68,7 +75,7 @@
         (builtins.readFile ./css/chrome/findbar.css)
         (builtins.readFile ./css/chrome/liquid-fox.css)
         menupopup
-        (builtins.readFile ./css/chrome/search.css)
+        search
         (builtins.readFile "${firefox-mod-blur}/EXTRA MODS/Privacy mods/Blur Username in main menu/privacy_blur_email_in_main_menu.css")
         (builtins.readFile "${firefox-mod-blur}/EXTRA MODS/Compact extensions menu/Style 1/With no settings wheel icon/cleaner_extensions_menu.css")
         (builtins.readFile "${firefox-mod-blur}/EXTRA MODS/Icon and Button Mods/uBlock icon change/ublock-icon-change.css")
@@ -238,12 +245,6 @@
 
       # stylix
       stylix.targets.firefox.profileNames = [ profileName ];
-
-      # Before 161, chrome backdrop-filter can't see remote browser content, so a
-      # translucent search popup would be tinted but not blurred over web pages
-      # (bug 2079476). css/chrome/search-translucent.css (tested on Nightly
-      # 161.0a1) stays out of userChrome until then.
-      warnings = lib.optional (lib.versionAtLeast config.programs.firefox.package.version "161") "firefox.nix: Firefox 161 can blur chrome over web pages (bug 2079476). Merge css/chrome/search-translucent.css into search.css (swap the two var(--bg2) backgrounds, add the selected-row rule), give search.css the @popupOpacity@ substitution menupopup.css gets, delete search-translucent.css, check it blurs, then remove this warning.";
 
       xdg.mimeApps = {
         associations.added = {

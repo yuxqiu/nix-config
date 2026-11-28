@@ -7,7 +7,7 @@
   configurations.nixos = {
     "dracaena" = {
       system = "aarch64-linux";
-      stateVersion = "26.11";
+      stateVersion = "27.05";
       modules = [
         # base
         config.flake.modules.nixos.base

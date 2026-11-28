@@ -18,13 +18,13 @@ let
 in
 stdenvNoCC.mkDerivation rec {
   pname = "easyeffects-dolby";
-  version = "2026.10";
+  version = "2026.11";
 
   src = fetchFromGitHub {
     owner = "antoinecellerier";
     repo = "speaker-tuning-to-easyeffects";
     rev = "v${version}";
-    hash = "sha256-N5UEvyaWKjTtPEA4z0w/3nyp1G7IG7/MtFZWqAKkq6c=";
+    hash = "sha256-I7Fh/7F9LK0+OOaZLPIEqR1wc+C5CUYlEF9Kl7Vp0os=";
   };
 
   nativeBuildInputs = [

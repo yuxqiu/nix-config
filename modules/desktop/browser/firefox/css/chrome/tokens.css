@@ -4,6 +4,8 @@
 :root {
     --bg2: light-dark(#fff, #36363a);
     --bs1: 0 5px 15px rgba(0, 0, 0, 0.2), 0 0 0 0.5px rgba(0, 0, 0, 0.15);
+    /* How far --bs1 reaches past the box's sides: its 15px blur radius. */
+    --bs1-reach: 15px;
     --br1: 6px;
     --br2: 8px;
     --button-hover-bgcolor: light-dark(

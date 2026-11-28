@@ -5,8 +5,8 @@
       tldr-pages = pkgs.fetchFromGitHub {
         owner = "tldr-pages";
         repo = "tldr";
-        rev = "23ab69f80b7301652e8a9e616bbac5944b97cb2e"; # follow:branch main
-        hash = "sha256-rDf7bdpat2meC5605VJqsdnubhGG28ZSNgJMIbO87MM=";
+        rev = "42413d230dedd96b91e3a117b6f207c2e79e9b1d"; # follow:branch main
+        hash = "sha256-rYMi7JNn3aUkwyV+fUvnf+WncF94mEbz6QioDPQcxJ4=";
       };
 
       # tealdeer reads pages from <cache_dir>/tldr-pages/pages.<lang>/

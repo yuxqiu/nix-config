@@ -98,15 +98,19 @@ in
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
-            users.${config.vm-run.user} = {
-              # generic.base declares options the agent modules set
-              # (`persistence`, which has no effect here).
-              imports = [
-                generic.base
-                homeManager.agents
-              ];
-              home.stateVersion = lib.trivial.release;
-            };
+            users.${config.vm-run.user} =
+              { config, ... }:
+              {
+                # generic.base declares options the agent modules set
+                # (`persistence`, which has no effect here).
+                imports = [
+                  generic.base
+                  homeManager.agents
+                ];
+                # Home Manager's own release: it accepts only releases it knows,
+                # and on unstable it can lag behind nixpkgs' release.
+                home.stateVersion = config.home.version.release;
+              };
           };
 
           nix = {
