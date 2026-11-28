@@ -31,11 +31,11 @@
         ];
         text = ''
           usage() {
-            echo "Usage: os-switch <flake-output-name> [user@host [--build-on remote|local]] [nh os switch flags...]"
+            echo "Usage: os-switch <flake-output-name> [user@host [--build-on local|remote]] [nh os switch flags...]"
             echo "Example: os-switch cedrus"
             echo "Example: os-switch cedrus --ask -- --show-trace"
             echo "Example: os-switch dracaena root@<ip>"
-            echo "Example: os-switch dracaena root@<ip> --build-on local"
+            echo "Example: os-switch dracaena root@<ip> --build-on remote"
             exit 1
           }
           if [ $# -eq 0 ] || [[ "$1" == -* ]]; then
@@ -53,16 +53,16 @@
           else
             target="$1"
             shift
-            # --build-on picks where the system is evaluated and built.
-            # remote (the default): upload the flake and every locked input
-            # (so the target never fetches, private inputs included) and run
-            # nh on the target, taken from the flake's own nixpkgs so the
-            # target needs no nh of its own.
-            # local: evaluate and build here; nh copies the closure over.
-            # nh's --build-host (evaluate here, build there) is not offered:
-            # a package built during evaluation is copied back here, and this
-            # host refuses it unsigned.
-            build_on=remote
+            # By default this host evaluates and the target builds (nh
+            # --build-host). That fails if evaluation needs a package built
+            # that no trusted cache has signed: Nix builds it on the target and
+            # this host refuses the unsigned copy. --build-on overrides it:
+            # - remote: upload the flake and every locked input (so the target
+            #   never fetches, private inputs included) and run nh on the
+            #   target, taken from the flake's own nixpkgs so the target needs
+            #   no nh of its own; the target evaluates and builds.
+            # - local: evaluate and build here; nh copies the closure over.
+            build_on=""
             if [ "''${1:-}" = --build-on ]; then
               [ $# -ge 2 ] || usage
               build_on="$2"
@@ -72,6 +72,9 @@
             elevation=auto
             [[ "$target" == root@* ]] && elevation=none
             case "$build_on" in
+              "")
+                nh os switch . -H "$host" --build-host "$target" --target-host "$target" -e "$elevation" "$@"
+                ;;
               remote)
                 archive="$(nix flake archive --json --no-check-sigs --to "ssh-ng://$target" .)"
                 flake="$(jq -r .path <<<"$archive")"

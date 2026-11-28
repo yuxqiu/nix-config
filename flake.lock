@@ -1,25 +1,5 @@
 {
   "nodes": {
-    "agent-skills-nix": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1794456227,
-        "narHash": "sha256-qu7S1arVl+Q6H/yZhJ2VdeDY/kBxY8mK8m6U49M0alk=",
-        "owner": "Kyure-A",
-        "repo": "agent-skills-nix",
-        "rev": "93a02cb60eda167de8c5baa085e4a2bcfc71b885",
-        "type": "github"
-      },
-      "original": {
-        "owner": "Kyure-A",
-        "repo": "agent-skills-nix",
-        "type": "github"
-      }
-    },
     "base16": {
       "inputs": {
         "fromYaml": "fromYaml"
@@ -904,7 +884,6 @@
     },
     "root": {
       "inputs": {
-        "agent-skills-nix": "agent-skills-nix",
         "dank-greeter": "dank-greeter",
         "danksearch": "danksearch",
         "disko": "disko",

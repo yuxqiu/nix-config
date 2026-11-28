@@ -15,18 +15,6 @@
       home.packages = [ pkgs.bun ];
       programs.claude-code.plugins.pstack = agents;
 
-      programs.agent-skills = {
-        sources.pstack = {
-          path = pstack;
-          subdir = "skills";
-          filter.maxDepth = 1;
-        };
-        skills.enableAll = [ "pstack" ];
-        # Home Manager owns the shared Claude skill links and native agent plugin.
-        targets.claude = {
-          structure = "link";
-          dest = ".claude/skills";
-        };
-      };
+      skills.sources.pstack = "${pstack}/skills";
     };
 }

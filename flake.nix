@@ -50,10 +50,6 @@
       url = "github:yuxqiu/nix-update-git?ref=v0.7.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    agent-skills-nix = {
-      url = "github:Kyure-A/agent-skills-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     llm-agents-nix = {
       url = "github:numtide/llm-agents.nix";
       inputs.nixpkgs.follows = "nixpkgs";

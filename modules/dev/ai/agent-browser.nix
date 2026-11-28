@@ -25,15 +25,6 @@ _: {
     {
       home.packages = [ agentBrowser ];
 
-      programs.agent-skills = {
-        sources.agent-browser = {
-          path = pkgs.agent-browser;
-          subdir = "skills";
-        };
-
-        skills.enableAll = [
-          "agent-browser"
-        ];
-      };
+      skills.sources.agent-browser = "${pkgs.agent-browser}/skills";
     };
 }

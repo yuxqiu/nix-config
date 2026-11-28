@@ -25,12 +25,6 @@ in
   flake.modules.homeManager.dracaena =
     { pkgs, ... }:
     {
-      programs.agent-skills = {
-        sources.paseo = {
-          path = pkgs.paseo.src;
-          subdir = "skills";
-        };
-        skills.enableAll = [ "paseo" ];
-      };
+      skills.sources.paseo = "${pkgs.paseo.src}/skills";
     };
 }

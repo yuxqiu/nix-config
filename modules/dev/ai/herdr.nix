@@ -15,13 +15,6 @@
         };
       };
 
-      programs.agent-skills = {
-        sources = {
-          herdr.path = config.programs.herdr.package;
-          herdr.subdir = "share/skills/herdr";
-        };
-
-        skills.enableAll = [ "herdr" ];
-      };
+      skills.sources.herdr = "${config.programs.herdr.package}/share/skills/herdr";
     };
 }

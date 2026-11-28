@@ -45,6 +45,6 @@
       home.file.".config/opencode/plugins/opencode-queue.js".source =
         "${opencodeQueue}/lib/opencode-queue/index.js";
 
-      programs.agent-skills.targets.opencode.enable = true;
+      skills.destinations.opencode = ".config/opencode/skills";
     };
 }

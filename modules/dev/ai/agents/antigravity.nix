@@ -10,8 +10,7 @@
           security.auth.selectedType = "oauth-personal";
         };
       };
-
-      agent-skills.targets.gemini.enable = true;
     };
+    skills.destinations.gemini = ".gemini/skills";
   };
 }
