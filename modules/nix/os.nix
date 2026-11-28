@@ -21,14 +21,25 @@
 
       os-switch = pkgs.writeShellApplication {
         name = "os-switch";
-        runtimeInputs = [ pkgs.nh ];
+        # The command run on the target over ssh is built here on purpose,
+        # with every value quoted by `printf %q`.
+        excludeShellChecks = [ "SC2029" ];
+        runtimeInputs = [
+          pkgs.jq
+          pkgs.nh
+          pkgs.openssh
+        ];
         text = ''
-          if [ $# -eq 0 ] || [[ "$1" == -* ]]; then
-            echo "Usage: os-switch <flake-output-name> [user@host] [nh os switch flags...]"
+          usage() {
+            echo "Usage: os-switch <flake-output-name> [user@host [--build-on remote|local]] [nh os switch flags...]"
             echo "Example: os-switch cedrus"
             echo "Example: os-switch cedrus --ask -- --show-trace"
             echo "Example: os-switch dracaena root@<ip>"
+            echo "Example: os-switch dracaena root@<ip> --build-on local"
             exit 1
+          }
+          if [ $# -eq 0 ] || [[ "$1" == -* ]]; then
+            usage
           fi
           host="$1"
           shift
@@ -42,10 +53,37 @@
           else
             target="$1"
             shift
+            # --build-on picks where the system is evaluated and built.
+            # remote (the default): upload the flake and every locked input
+            # (so the target never fetches, private inputs included) and run
+            # nh on the target, taken from the flake's own nixpkgs so the
+            # target needs no nh of its own.
+            # local: evaluate and build here; nh copies the closure over.
+            # nh's --build-host (evaluate here, build there) is not offered:
+            # a package built during evaluation is copied back here, and this
+            # host refuses it unsigned.
+            build_on=remote
+            if [ "''${1:-}" = --build-on ]; then
+              [ $# -ge 2 ] || usage
+              build_on="$2"
+              shift 2
+            fi
             # Logging in as root needs no sudo on the target.
             elevation=auto
             [[ "$target" == root@* ]] && elevation=none
-            nh os switch . -H "$host" --build-host "$target" --target-host "$target" -e "$elevation" "$@"
+            case "$build_on" in
+              remote)
+                archive="$(nix flake archive --json --no-check-sigs --to "ssh-ng://$target" .)"
+                flake="$(jq -r .path <<<"$archive")"
+                nixpkgs="$(jq -r .inputs.nixpkgs.path <<<"$archive")"
+                ssh -t "$target" "$(printf '%q ' nix run "path:$nixpkgs#nh" -- \
+                  os switch "path:$flake" -H "$host" -e "$elevation" "$@")"
+                ;;
+              local)
+                nh os switch . -H "$host" --target-host "$target" -e "$elevation" "$@"
+                ;;
+              *) echo "--build-on takes local or remote, not $build_on" >&2; exit 1 ;;
+            esac
           fi
         '';
       };

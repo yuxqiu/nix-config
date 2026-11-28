@@ -39,7 +39,15 @@ stdenv.mkDerivation rec {
 
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
-    outputHash = "sha256-XkIvUIknx/7OFBrQPI+4IJh85m5eSFr+F/5uZy65PcA=";
+    # bun installs @opentui/core's native package for the build platform only
+    # (core-linux-x64 / core-linux-arm64), so the output differs per system.
+    outputHash =
+      {
+        x86_64-linux = "sha256-XkIvUIknx/7OFBrQPI+4IJh85m5eSFr+F/5uZy65PcA=";
+        aarch64-linux = "sha256-6f/TCV6dZJ3b6ldUJnOVeUkY5Xd/Vkrw05WUALCaiuY=";
+      }
+      .${stdenv.hostPlatform.system}
+        or (throw "opencode-queue: no node_modules hash for ${stdenv.hostPlatform.system}");
   };
 
   nativeBuildInputs = [ bun ];
