@@ -2,9 +2,11 @@
   flake.modules.homeManager.typescript =
     { pkgs, ... }:
     {
-      my.dev.languages.typescript = {
-        lsp = [ pkgs.typescript-language-server ];
-        formatter = pkgs.prettier;
+      dev.languages.typescript = {
+        packages = with pkgs; [
+          typescript-language-server
+          prettier
+        ];
       };
     };
 }

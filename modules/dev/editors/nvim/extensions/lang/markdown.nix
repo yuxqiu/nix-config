@@ -6,7 +6,7 @@
       lib,
       ...
     }:
-    lib.mkIf (config.my.dev.languages ? markdown) {
+    lib.mkIf (config.dev.languages ? markdown) {
       programs.nixvim.autoCmd = [
         {
           event = [ "FileType" ];

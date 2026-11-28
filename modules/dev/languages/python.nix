@@ -2,14 +2,14 @@
   flake.modules.homeManager.python =
     { pkgs, ... }:
     {
-      my.dev.languages.python = {
-        toolchain = with pkgs; [
+      dev.languages.python = {
+        # ruff is both formatter and linter.
+        packages = with pkgs; [
           uv
           python3
+          basedpyright
+          ruff
         ];
-        lsp = [ pkgs.basedpyright ];
-        formatter = pkgs.ruff;
-        linter = [ pkgs.ruff ];
       };
     };
 }

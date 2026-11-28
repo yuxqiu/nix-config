@@ -6,17 +6,17 @@
       lib,
       ...
     }:
-    lib.mkIf (config.my.dev.languages ? latex) {
+    lib.mkIf (config.dev.languages ? latex) {
       programs.nixvim = {
         extraPlugins = with pkgs.vimPlugins; [ vimtex ];
 
         # vimtex is loaded eagerly (extraPlugins puts it in the "start"
         # pack), so its own ftplugin auto-inits on the first tex/latex/bib
         # FileType event before the lz-n "before" hook below would run.
-        # These must be set here (like mapleader in ../default.nix) so
-        # vimtex sees them at that first init instead of falling back to
-        # its default compiler (latexmk, which the tectonic engine doesn't
-        # install).
+        # These must be set here (like mapleader in the nvim module's
+        # extraConfigLuaPre) so vimtex sees them at that first init instead
+        # of falling back to its default compiler (latexmk, which the
+        # tectonic engine doesn't install).
         globals = {
           vimtex_view_method = "sioyek";
           tex_flavor = "latex";
@@ -28,19 +28,11 @@
           vimtex_syntax_enabled = 0;
         }
         // (
-          if config.my.dev.latex.engine == "tectonic" then
+          if config.dev.latex.engine == "tectonic" then
             {
               vimtex_compiler_method = "tectonic";
-              vimtex_compiler_tectonic = {
-                options = [
-                  "--untrusted"
-                  "--synctex"
-                  "--keep-logs"
-                  "--keep-intermediates"
-                  "-Z"
-                  "continue-on-errors"
-                ];
-              };
+              # vimtex adds --outdir and the input file itself.
+              vimtex_compiler_tectonic.options = config.dev.latex.tectonicFlags;
             }
           else
             {

@@ -6,7 +6,7 @@
       lib,
       ...
     }:
-    lib.mkIf (config.my.dev.languages ? json) {
+    lib.mkIf (config.dev.languages ? json) {
       programs.nixvim = {
         plugins.lsp.servers.jsonls.enable = true;
         plugins.conform-nvim.settings.formatters_by_ft.json = [ "prettier" ];

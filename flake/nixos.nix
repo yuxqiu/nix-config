@@ -2,6 +2,7 @@
   lib,
   config,
   inputs,
+  withSystem,
   ...
 }:
 
@@ -61,43 +62,51 @@
 
   config.flake.nixosConfigurations =
     let
-      hardwareConfig = name: ../hosts + "/${name}/_hardware-configuration.nix";
+      hostFile = name: file: ../profiles/hosts + "/${name}/${file}";
     in
     lib.mapAttrs (
       name: cfg:
-      let
-        mv = inputs.multiverse.lib.mkMultiverse {
+      withSystem cfg.system (
+        { mv, ... }:
+        inputs.nixpkgs.lib.nixosSystem {
           inherit (cfg) system;
-          config.allowUnfree = true;
-        };
-      in
-      inputs.nixpkgs.lib.nixosSystem {
-        inherit (cfg) system;
-        specialArgs = {
-          inherit inputs mv;
-        };
-        modules =
-          cfg.modules
-          ++ [
-            { system.stateVersion = cfg.stateVersion; }
+          specialArgs = {
+            inherit inputs mv;
+          };
+          # Every host gets the flake-wide facts (generic.base), the flake's
+          # nixpkgs config, and its secrets file
+          # profiles/hosts/<host>/secrets/<host>.yaml.
+          modules = [
+            config.flake.modules.generic.base
+            {
+              system.stateVersion = cfg.stateVersion;
+              nixpkgs = { inherit (config.nixpkgs) config overlays; };
+              sops.defaultSopsFile = hostFile name "secrets/${name}.yaml";
+            }
           ]
+          ++ cfg.modules
           # Generated hardware config (nixos-generate-config, written by
           # os-install). It is a NixOS module, not a flake-parts one, so its name
           # starts with "_" for import-tree to skip it and it is imported here.
-          ++ lib.optional (builtins.pathExists (hardwareConfig name)) (hardwareConfig name)
+          ++ lib.optional (builtins.pathExists (hostFile name "_hardware-configuration.nix")) (
+            hostFile name "_hardware-configuration.nix"
+          )
           ++ (lib.optional (cfg.homeManager != null) {
             home-manager.users.${cfg.homeManager.username} = {
               imports = cfg.homeManager.modules;
               home.stateVersion = cfg.homeManager.stateVersion;
             };
             home-manager.extraSpecialArgs = { inherit mv; };
+            # Home Manager evaluates its own nixpkgs, so the facts and the
+            # nixpkgs config are passed in again.
             home-manager.sharedModules = [
+              config.flake.modules.generic.base
               {
-                nixpkgs.config = config.nixpkgs.config;
-                nixpkgs.overlays = config.nixpkgs.overlays;
+                nixpkgs = { inherit (config.nixpkgs) config overlays; };
               }
             ];
           });
-      }
+        }
+      )
     ) config.configurations.nixos;
 }

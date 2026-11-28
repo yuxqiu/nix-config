@@ -11,10 +11,16 @@
       ...
     }:
     let
-      niri-focused-output = pkgs.callPackage (inputs.self + /packages/niri-focused-output.nix) { };
-      dms-brightness = pkgs.callPackage (inputs.self + /packages/dms-brightness.nix) {
-        inherit niri-focused-output;
-      };
+      inherit (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}) dms-brightness;
+      # argv of `dms ipc call <args>`, for niri's spawn.
+      dmsIpcCall =
+        args:
+        [
+          "dms"
+          "ipc"
+          "call"
+        ]
+        ++ args;
     in
     {
       persistence.directories = [
@@ -90,10 +96,7 @@
           binds = {
             "Mod+Space" = {
               _props.hotkey-overlay-title = "Application Launcher";
-              spawn = [
-                "dms"
-                "ipc"
-                "call"
+              spawn = dmsIpcCall [
                 "spotlight"
                 "toggle"
               ];
@@ -101,10 +104,7 @@
 
             "Mod+V" = {
               _props.hotkey-overlay-title = "Clipboard Manager";
-              spawn = [
-                "dms"
-                "ipc"
-                "call"
+              spawn = dmsIpcCall [
                 "clipboard"
                 "toggle"
               ];
@@ -112,10 +112,7 @@
 
             "Mod+Slash" = {
               _props.hotkey-overlay-title = "Search Keybinds";
-              spawn = [
-                "dms"
-                "ipc"
-                "call"
+              spawn = dmsIpcCall [
                 "spotlight"
                 "toggleQuery"
                 "\\"
@@ -124,10 +121,7 @@
 
             "Mod+Shift+O" = {
               _props.hotkey-overlay-title = "Lock Screen";
-              spawn = [
-                "dms"
-                "ipc"
-                "call"
+              spawn = dmsIpcCall [
                 "lock"
                 "lock"
               ];
@@ -135,10 +129,7 @@
 
             "XF86AudioRaiseVolume" = {
               _props."allow-when-locked" = true;
-              spawn = [
-                "dms"
-                "ipc"
-                "call"
+              spawn = dmsIpcCall [
                 "audio"
                 "increment"
                 "5"
@@ -147,10 +138,7 @@
 
             "XF86AudioLowerVolume" = {
               _props."allow-when-locked" = true;
-              spawn = [
-                "dms"
-                "ipc"
-                "call"
+              spawn = dmsIpcCall [
                 "audio"
                 "decrement"
                 "5"
@@ -159,10 +147,7 @@
 
             "XF86AudioMute" = {
               _props."allow-when-locked" = true;
-              spawn = [
-                "dms"
-                "ipc"
-                "call"
+              spawn = dmsIpcCall [
                 "audio"
                 "mute"
               ];
@@ -170,10 +155,7 @@
 
             "XF86AudioMicMute" = {
               _props."allow-when-locked" = true;
-              spawn = [
-                "dms"
-                "ipc"
-                "call"
+              spawn = dmsIpcCall [
                 "audio"
                 "micmute"
               ];

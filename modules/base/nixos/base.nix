@@ -34,41 +34,14 @@
         ];
       };
 
-      nix = {
-        settings = {
-          experimental-features = [
-            "nix-command"
-            "flakes"
-          ];
-          trusted-users = [ "root" ];
-
-          auto-optimise-store = true;
-        };
-
-        gc = {
-          automatic = true;
-          dates = "weekly";
-          options = "--delete-older-than 7d";
-        };
-
-        extraOptions = ''
-          accept-flake-config = true
-          http-connections = 50
-          keep-derivations = true
-          keep-outputs = true
-          min-free = ${toString (1024 * 1024 * 1024)}
-          max-free = ${toString (5 * 1024 * 1024 * 1024)}
-        '';
-      };
-
-      nixpkgs.config.allowUnfree = true;
-
       boot.tmp.cleanOnBoot = true;
 
       i18n.defaultLocale = "en_US.UTF-8";
 
       environment.defaultPackages = lib.mkForce [ ];
 
+      # Usable by root and by every user (the system profile is on PATH), so
+      # Home Manager modules do not list them again.
       environment.systemPackages = with pkgs; [
         bottom
         dig
@@ -94,13 +67,10 @@
       programs.zsh.enable = true;
 
       environment.etc."nixos/configuration.nix".text = ''
-        # This file intentionally left minimal.
-        # The real system config is managed by the nix-config flake.
-        # To rebuild: nixos cedrus
+        # Not used: this system is built from the dotfiles flake.
+        # To rebuild: os-switch <host>
         { ... }:
-        {
-          imports = [ ./hardware-configuration.nix ];
-        }
+        { }
       '';
     };
 }

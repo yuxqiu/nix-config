@@ -6,7 +6,7 @@
       lib,
       ...
     }:
-    lib.mkIf (config.my.dev.languages ? go) {
+    lib.mkIf (config.dev.languages ? go) {
       programs.nixvim = {
         plugins.lsp.servers.gopls.enable = true;
         plugins.conform-nvim.settings.formatters_by_ft.go = [ "gofmt" ];

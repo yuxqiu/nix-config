@@ -41,9 +41,9 @@
         enable = true;
         setSocketVariable = true;
       };
-      # The user unit is wanted by every user manager; nixpkgs only excludes
-      # root, so system users with a manager (the greeter) kept failing to
-      # start it.
+      # The user unit is wanted by every user manager and nixpkgs only
+      # excludes root; this keeps it from starting (and failing) in system
+      # users' managers, such as the greeter's.
       systemd.user.services.docker.unitConfig.ConditionUser = lib.mkForce "!@system";
     };
 }

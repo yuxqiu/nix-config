@@ -6,7 +6,7 @@
       lib,
       ...
     }:
-    lib.mkIf (config.my.dev.languages ? lua) {
+    lib.mkIf (config.dev.languages ? lua) {
       programs.nixvim = {
         plugins.lsp.servers.lua_ls.enable = true;
         plugins.conform-nvim.settings.formatters_by_ft.lua = [ "stylua" ];

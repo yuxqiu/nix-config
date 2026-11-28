@@ -19,9 +19,6 @@
         name = "handy-stt";
         runtimeInputs = [ handy ];
         text = ''
-          #!/usr/bin/env bash
-          set -euo pipefail
-
           readonly MIC_STATE_FILE="/tmp/mic-state"
           readonly HANDY="handy"
           readonly PACTL="${pkgs.pulseaudio}/bin/pactl"
@@ -35,9 +32,7 @@
           }
           unmute() {
             local source="$1"
-            "$PACTL" set-source-mute "$source" 0 || {
-              exit 1
-            }
+            "$PACTL" set-source-mute "$source" 0
           }
           save_mic_state() {
             local muted="$1"

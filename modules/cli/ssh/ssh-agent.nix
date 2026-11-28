@@ -1,6 +1,6 @@
 { inputs, ... }:
 {
-  config.flake.modules.homeManager.ssh-agent =
+  flake.modules.homeManager.ssh-agent =
     {
       config,
       pkgs,
@@ -9,9 +9,6 @@
     }:
     let
       clearSshKeys = pkgs.writeShellScript "clear-ssh-keys" ''
-        #!${pkgs.bash}/bin/bash
-        set +e
-
         sock="$XDG_RUNTIME_DIR/${config.services.ssh-agent.socket}"
         if [ -S "$sock" ]; then
           SSH_AUTH_SOCK="$sock" ${pkgs.openssh}/bin/ssh-add -D 2>/dev/null || true
@@ -19,7 +16,6 @@
       '';
 
       watchSuspend = pkgs.writeShellScript "watch-suspend-and-clear-ssh-keys" ''
-        #!${pkgs.bash}/bin/bash
         set -euo pipefail
 
         ${pkgs.glib}/bin/gdbus monitor \
@@ -44,7 +40,6 @@
         defaultMaximumIdentityLifetime = null;
       };
 
-      # Linux: systemd integration
       systemd.user.services.ssh-agent = {
         Install.WantedBy = lib.mkForce [ "graphical-session.target" ];
         Unit = {
@@ -79,10 +74,5 @@
           };
         }
       ];
-
-      # Darwin: launchd integration
-      launchd.agents.ssh-agent.config.EnvironmentVariables = {
-        SSH_ASKPASS = "${pkgs.ssh-askpass-fullscreen}/bin/ssh-askpass-fullscreen";
-      };
     };
 }

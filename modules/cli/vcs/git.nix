@@ -10,6 +10,10 @@
         enable = true;
 
         settings = {
+          user = {
+            inherit (config.identity) name email;
+          };
+
           init.defaultBranch = "main";
 
           branch.sort = "-committerdate";

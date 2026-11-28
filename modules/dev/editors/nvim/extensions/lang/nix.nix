@@ -6,7 +6,7 @@
       lib,
       ...
     }:
-    lib.mkIf (config.my.dev.languages ? nix) {
+    lib.mkIf (config.dev.languages ? nix) {
       programs.nixvim = {
         plugins.lsp.servers.nixd.enable = true;
         plugins.conform-nvim.settings.formatters_by_ft.nix = [ "nixfmt" ];

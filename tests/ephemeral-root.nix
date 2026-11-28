@@ -25,8 +25,6 @@ in
 pkgs.testers.runNixOSTest {
   name = "ephemeral-root";
   globalTimeout = 600;
-  # nixos.base sets nixpkgs.config (allowUnfree).
-  node.pkgsReadOnly = false;
 
   nodes.machine =
     { config, lib, ... }:

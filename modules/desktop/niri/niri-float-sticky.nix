@@ -3,7 +3,7 @@
   flake.modules.homeManager.niri =
     { pkgs, lib, ... }:
     let
-      niri-float-sticky = pkgs.callPackage (inputs.self + /packages/niri-float-sticky.nix) { };
+      niri-float-sticky = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.niri-float-sticky;
       exe = lib.getExe niri-float-sticky;
     in
     {

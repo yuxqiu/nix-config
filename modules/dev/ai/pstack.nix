@@ -3,7 +3,7 @@
   flake.modules.homeManager.pstack =
     { pkgs, ... }:
     let
-      pstack = pkgs.callPackage (inputs.self + /packages/pstack.nix) { };
+      pstack = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.pstack;
       agents = pkgs.runCommand "pstack-claude-agents" { } ''
         mkdir -p "$out/.claude-plugin"
         cp ${pstack.src}/plugins/pstack/.claude-plugin/plugin.json \

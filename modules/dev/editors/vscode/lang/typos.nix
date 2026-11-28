@@ -7,8 +7,8 @@
       ...
     }:
     {
-      programs.vscode.profiles.default.extensions = lib.mkIf (config.my.dev.languages ? typos) (
-        with pkgs.vscode-marketplace; [ streetsidesoftware.code-spell-checker ]
+      programs.vscode.profiles.default.extensions = lib.mkIf (config.dev.languages ? typos) (
+        with pkgs.vscode-marketplace; [ tekumara.typos-vscode ]
       );
     };
 }

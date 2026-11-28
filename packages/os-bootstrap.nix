@@ -25,6 +25,7 @@
   gawk,
   git,
   gnugrep,
+  jq,
   sops-tools,
   util-linux,
   yq-go,
@@ -37,33 +38,20 @@ writeShellApplication {
     gawk
     git
     gnugrep
+    jq
     sops-tools
     util-linux
     yq-go
   ];
-  text = ''
+  text = builtins.readFile ./os-host-lib.sh + ''
     if [ $# -ne 1 ] || [[ "$1" == -* ]]; then
       echo "Usage: os-bootstrap <host>" >&2
       exit 1
     fi
     host="$1"
-    dir="profiles/hosts/$host"
-    secrets="$dir/secrets/$host.yaml"
-    hardware="$dir/_hardware-configuration.nix"
-
-    die() { echo "os-bootstrap: $*" >&2; exit 1; }
-    [ -d "$dir" ] || die "no $dir; run from the flake root after creating the host"
-    [ -f .sops.yaml ] || die "no .sops.yaml; run from the flake root"
-    [ -f "$secrets" ] || die "no $secrets; create it with: sops-update admin $secrets"
-
-    # `nix` and `sudo` come from PATH: the running system's.
-    eval_host() {
-      nix --extra-experimental-features 'nix-command flakes' eval "$@" ".#nixosConfigurations.$host.config" ||
-        die "could not evaluate $host (error above)"
-    }
-    key_file="$(eval_host --raw --apply 'c: c.sops.age.keyFile')"
-    storage="$(eval_host --raw --apply 'c: c.persistence.storage or ""')"
-    user_secrets="$(eval_host --raw --apply 'c: builtins.concatStringsSep "\n" (builtins.filter (n: (builtins.getAttr n c.sops.secrets).neededForUsers) (builtins.attrNames c.sops.secrets))')"
+    host_files "$host"
+    # `sudo` comes from PATH: the running system's.
+    load_host_facts "$host"
 
     # 1. The key, on the filesystem that will hold it once the host's config
     # is running.
@@ -72,11 +60,10 @@ writeShellApplication {
       # The filesystem the config mounts at $storage: its device, and for a
       # btrfs subvolume the subvolume, which findmnt reports as FSROOT (bind
       # mounts of its directories have other FSROOTs).
-      device="$(nix --extra-experimental-features 'nix-command flakes' eval --raw ".#nixosConfigurations.$host.config.fileSystems" --apply "fs: (builtins.getAttr \"$storage\" fs).device")" ||
-        die "the config has no fileSystems.\"$storage\" (error above)"
-      options="$(nix --extra-experimental-features 'nix-command flakes' eval --raw ".#nixosConfigurations.$host.config.fileSystems" --apply "fs: builtins.concatStringsSep \",\" (builtins.getAttr \"$storage\" fs).options")"
+      device="$(jq -r '.storage.fileSystem.device // ""' <<<"$facts")"
+      [ -n "$device" ] || die "the config mounts no filesystem with a device at $storage (fileSystems.\"$storage\")"
       fs_root=/
-      IFS=, read -ra opts <<<"$options"
+      mapfile -t opts < <(jq -r '.storage.fileSystem.options[]' <<<"$facts")
       for opt in "''${opts[@]}"; do
         case "$opt" in
           subvol=*)
@@ -100,14 +87,10 @@ writeShellApplication {
       echo "Host with an ephemeral root: its persistent filesystem is mounted at ''${mounted_at[0]}, so the key goes at $key."
     fi
     if sudo test -e "$key"; then
-      if ! sudo test -e "$key.pub"; then
-        sudo sh -c "$(command -v age-keygen) -y '$key' > '$key.pub' && chmod 644 '$key.pub'"
-      fi
+      sudo test -e "$key.pub" || write_key_pub "$key" sudo
       echo "1. Host key exists: $key"
     else
-      sudo install -d -m 755 "$(dirname "$key")"
-      sudo sh -c "umask 077 && $(command -v age-keygen) -pq -o '$key'" 2>/dev/null
-      sudo sh -c "$(command -v age-keygen) -y '$key' > '$key.pub' && chmod 644 '$key.pub'"
+      make_key "$key" sudo
       echo "1. Made the host key: $key"
     fi
 
@@ -132,12 +115,7 @@ writeShellApplication {
     fi
 
     # 4. Secrets needed before users exist.
-    missing=()
-    while IFS= read -r name; do
-      [ -n "$name" ] || continue
-      export NAME="$name"
-      if [ "$(yq 'has(strenv(NAME))' "$secrets")" != true ]; then missing+=("$name"); fi
-    done <<<"$user_secrets"
+    mapfile -t missing < <(missing_user_secrets)
     if [ "''${#missing[@]}" -gt 0 ]; then
       echo
       echo "4. $secrets lacks secrets the host needs before users exist:"

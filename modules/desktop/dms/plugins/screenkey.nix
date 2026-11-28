@@ -4,7 +4,7 @@ let
   # access to every keyboard. Instead of the input group, it runs that one
   # command through pkexec only while the visualizer is on; the polkit action
   # asks for the admin password (kept for polkit's usual few minutes).
-  screenkeyInput = pkgs: pkgs.callPackage (inputs.self + /packages/dms-screenkey-input.nix) { };
+  screenkeyInput = pkgs: inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.dms-screenkey-input;
 in
 {
   # The polkit action must be installed system-wide.

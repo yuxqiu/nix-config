@@ -50,31 +50,24 @@
 
       stylix.targets.nixvim.enable = false;
 
-      xdg.mimeApps = {
-        associations.added = {
-          "application/json" = [ "nvim.desktop" ];
-          "application/x-zerosize" = [ "nvim.desktop" ];
-          "text/markdown" = [ "nvim.desktop" ];
-          "text/plain" = [ "nvim.desktop" ];
-          "text/x-c++src" = [ "nvim.desktop" ];
-          "text/x-csrc" = [ "nvim.desktop" ];
-          "text/x-python" = [ "nvim.desktop" ];
-          "text/x-shellscript" = [ "nvim.desktop" ];
-          "text/x-tex" = [ "nvim.desktop" ];
-          "text/x-typst" = [ "nvim.desktop" ];
+      xdg.mimeApps =
+        let
+          nvimForMimeTypes = lib.genAttrs [
+            "application/json"
+            "application/x-zerosize"
+            "text/markdown"
+            "text/plain"
+            "text/x-c++src"
+            "text/x-csrc"
+            "text/x-python"
+            "text/x-shellscript"
+            "text/x-tex"
+            "text/x-typst"
+          ] (_: [ "nvim.desktop" ]);
+        in
+        {
+          associations.added = nvimForMimeTypes;
+          defaultApplications = nvimForMimeTypes;
         };
-        defaultApplications = {
-          "application/json" = [ "nvim.desktop" ];
-          "application/x-zerosize" = [ "nvim.desktop" ];
-          "text/markdown" = [ "nvim.desktop" ];
-          "text/plain" = [ "nvim.desktop" ];
-          "text/x-c++src" = [ "nvim.desktop" ];
-          "text/x-csrc" = [ "nvim.desktop" ];
-          "text/x-python" = [ "nvim.desktop" ];
-          "text/x-shellscript" = [ "nvim.desktop" ];
-          "text/x-tex" = [ "nvim.desktop" ];
-          "text/x-typst" = [ "nvim.desktop" ];
-        };
-      };
     };
 }

@@ -3,7 +3,7 @@
     { config, lib, ... }:
     {
       programs.zed-editor = {
-        userSettings.languages = lib.mkIf (config.my.dev.languages ? nix) {
+        userSettings.languages = lib.mkIf (config.dev.languages ? nix) {
           Nix = {
             language_servers = [
               "nixd"
@@ -16,7 +16,7 @@
             };
           };
         };
-        extensions = lib.mkIf (config.my.dev.languages ? nix) [ "nix" ];
+        extensions = lib.mkIf (config.dev.languages ? nix) [ "nix" ];
       };
     };
 }

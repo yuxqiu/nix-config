@@ -2,8 +2,8 @@
   flake.modules.homeManager.sage =
     { pkgs, ... }:
     {
-      my.dev.languages.sage = {
-        toolchain = [ pkgs.sage ];
+      dev.languages.sage = {
+        packages = [ pkgs.sage ];
       };
     };
 }

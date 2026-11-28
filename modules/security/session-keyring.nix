@@ -5,7 +5,12 @@
   # search finds nothing or fails with EACCES, which breaks keyutils-backed
   # credential stores such as proton-pass-cli's kernel keyring backend.
   flake.modules.nixos.session-keyring =
-    { config, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       pamModule = builtins.readFile "${pkgs.path}/nixos/modules/security/pam.nix";
     in
@@ -22,7 +27,7 @@
         ];
       };
 
-      warnings = pkgs.lib.optional (pkgs.lib.hasInfix "pam_keyinit" pamModule) ''
+      warnings = lib.optional (lib.hasInfix "pam_keyinit" pamModule) ''
         session-keyring.nix: nixpkgs' PAM module now references pam_keyinit. Check whether
         /etc/pam.d/systemd-user already gets it; if so, delete modules/security/session-keyring.nix
         (including this warning) and its entry in profiles/hosts/cedrus/default.nix.

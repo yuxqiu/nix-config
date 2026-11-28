@@ -24,10 +24,7 @@
       edgepadExe = lib.getExe cfg.package;
       configPath = "${config.xdg.configHome}/edgepad/edgepad.toml";
       udevadm = "${pkgs.systemd}/bin/udevadm";
-      niri-focused-output = pkgs.callPackage (inputs.self + /packages/niri-focused-output.nix) { };
-      dms-brightness = pkgs.callPackage (inputs.self + /packages/dms-brightness.nix) {
-        inherit niri-focused-output;
-      };
+      inherit (inputs.self.packages.${pkgs.stdenv.hostPlatform.system}) dms-brightness;
 
       # Pick external (USB/Bluetooth) touchpad if present, fall back to internal.
       # Supervises edgepad and switches devices on hot-plug via inotify.
@@ -38,8 +35,6 @@
           pkgs.inotify-tools
         ];
         text = ''
-          set -euo pipefail
-
           pick_device() {
             local external=""
             local internal=""
@@ -63,19 +58,33 @@
           edgepad_fifo=""
           reader_pid=""
 
+          # Stops edgepad and its output reader, if running, and removes the FIFO.
+          stop_edgepad() {
+            [ -n "$reader_pid" ] && kill "$reader_pid" 2>/dev/null || true
+            [ -n "$edgepad_pid" ] && kill "$edgepad_pid" 2>/dev/null || true
+            [ -n "$edgepad_pid" ] && wait "$edgepad_pid" 2>/dev/null || true
+            [ -n "$edgepad_fifo" ] && rm -f "$edgepad_fifo"
+            reader_pid=""
+            edgepad_pid=""
+            edgepad_fifo=""
+          }
+
+          watcher_pid=""
           cleanup() {
-            [ -n "''${reader_pid:-}" ] && kill "$reader_pid" 2>/dev/null || true
-            [ -n "''${edgepad_pid:-}" ] && kill "$edgepad_pid" 2>/dev/null || true
-            [ -n "''${edgepad_fifo:-}" ] && rm -f "$edgepad_fifo"
+            [ -n "$watcher_pid" ] && kill "$watcher_pid" 2>/dev/null || true
+            stop_edgepad
             exit 0
           }
           trap cleanup TERM INT
 
           forward_reload() {
-            [ -n "''${edgepad_pid:-}" ] && kill -HUP "$edgepad_pid" 2>/dev/null || true
+            [ -n "$edgepad_pid" ] && kill -HUP "$edgepad_pid" 2>/dev/null || true
           }
           trap forward_reload HUP
 
+          # Starts edgepad on the picked device. Fails, leaving nothing
+          # running, when there is no touchpad, fingers are on it, or edgepad
+          # exits before it is ready.
           # shellcheck disable=SC2094
           start_edgepad() {
             current_device=$(pick_device)
@@ -94,11 +103,7 @@
               echo "$line" >&2
               case "$line" in
                 *"already touched"*)
-                  # Fingers were on the trackpad — kill and signal retry
-                  kill "$edgepad_pid" 2>/dev/null || true
-                  wait "$edgepad_pid" 2>/dev/null || true
-                  rm -f "$edgepad_fifo"
-                  edgepad_fifo=""
+                  stop_edgepad
                   return 1
                   ;;
                 *"ready notification sent"*)
@@ -113,45 +118,48 @@
             done <"$edgepad_fifo"
 
             # edgepad exited before printing either message
-            rm -f "$edgepad_fifo"
-            edgepad_fifo=""
+            stop_edgepad
             return 1
           }
 
+          # Stops whatever runs and starts edgepad again, retrying every
+          # second until a touchpad is found and no fingers are on it.
           restart_edgepad() {
-            [ -n "''${reader_pid:-}" ] && kill "$reader_pid" 2>/dev/null || true
-            [ -n "''${edgepad_pid:-}" ] && kill "$edgepad_pid" 2>/dev/null || true
-            wait "$edgepad_pid" 2>/dev/null || true
-            [ -n "''${edgepad_fifo:-}" ] && rm -f "$edgepad_fifo"
-            while ! start_edgepad; do
+            stop_edgepad
+            until start_edgepad; do
               sleep 1
             done
           }
 
-          # Initial start (retry until a device is found and not "already touched")
-          while ! start_edgepad; do
-            sleep 1
-          done
+          restart_edgepad
 
           # Watch /dev/input for device add/remove events.
           # If edgepad crashes without a device change, systemd's
           # Restart=on-failure restarts the whole wrapper.
-          inotifywait -m -e create,delete /dev/input |
-          while IFS= read -r _line; do
-            # Brief settle for udev to populate device properties
-            sleep 0.2
-
-            # edgepad died (e.g. device removed) — restart with new device
-            if ! kill -0 "$edgepad_pid" 2>/dev/null; then
-              [ -n "''${reader_pid:-}" ] && kill "$reader_pid" 2>/dev/null || true
-              [ -n "''${edgepad_fifo:-}" ] && rm -f "$edgepad_fifo"
-              while ! start_edgepad; do
-                sleep 1
-              done
-              continue
+          # Read from a process substitution, not a pipe, so the loop runs in
+          # this shell: restarts update the edgepad_pid the traps use, and
+          # the traps run while `read` waits for the next event.
+          exec {events}< <(inotifywait -m -q -e create,delete --format '%e %f' /dev/input)
+          watcher_pid=$!
+          while IFS=' ' read -r event name <&"$events"; do
+            # The kernel creates a node before udev has run its rules and
+            # stored the device's properties (ID_INPUT_TOUCHPAD, ID_BUS),
+            # which pick_device reads, so wait until udev has initialized a
+            # new event node. Bounded by udev's own event timeout (180 s
+            # default, udev.conf(5)), after which udevd abandons the event
+            # and the device never initializes. A node already gone again
+            # (a stale event) is not waited for.
+            if [ "$event" = CREATE ] && [[ "$name" == event* ]] && [ -e "/dev/input/$name" ]; then
+              ${udevadm} wait --initialized=yes --timeout=180 "/dev/input/$name" ||
+                echo "edgepad-wrapper: udev did not initialize /dev/input/$name" >&2
             fi
 
-            # A different device appeared — switch
+            # edgepad died (e.g. device removed), or a different device
+            # appeared: restart on the device picked now.
+            if ! kill -0 "$edgepad_pid" 2>/dev/null; then
+              restart_edgepad
+              continue
+            fi
             new_device=$(pick_device)
             if [ -n "$new_device" ] && [ "$new_device" != "$current_device" ]; then
               restart_edgepad

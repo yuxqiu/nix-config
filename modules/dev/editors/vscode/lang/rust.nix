@@ -7,7 +7,7 @@
       ...
     }:
     {
-      programs.vscode.profiles.default.extensions = lib.mkIf (config.my.dev.languages ? rust) (
+      programs.vscode.profiles.default.extensions = lib.mkIf (config.dev.languages ? rust) (
         with pkgs.vscode-marketplace;
         [
           rust-lang.rust-analyzer
@@ -15,7 +15,7 @@
         ]
       );
 
-      programs.vscode.profiles.default.userSettings = lib.mkIf (config.my.dev.languages ? rust) {
+      programs.vscode.profiles.default.userSettings = lib.mkIf (config.dev.languages ? rust) {
         "lldb.launch.terminal" = "integrated";
       };
     };

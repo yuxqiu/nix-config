@@ -135,23 +135,23 @@ in
   flake.modules.homeManager.agents-md =
     { lib, config, ... }:
     {
-      options.my.agents-md.destinations = lib.mkOption {
+      options.agents-md.destinations = lib.mkOption {
         type = lib.types.attrsOf lib.types.str;
         default = { };
         description = "Map of agent names to their AGENTS.md destination paths relative to $HOME.";
       };
 
-      options.my.agents-md.content = lib.mkOption {
+      options.agents-md.content = lib.mkOption {
         type = lib.types.str;
         readOnly = true;
         description = "The shared AGENTS.md content, for agents that ingest it via a non-AGENTS.md path (e.g. Claude Code's CLAUDE.md).";
       };
 
-      config.my.agents-md.content = agentsMd;
+      config.agents-md.content = agentsMd;
 
       config.home.file = lib.mapAttrs' (name: path: {
         name = path;
         value.text = agentsMd;
-      }) config.my.agents-md.destinations;
+      }) config.agents-md.destinations;
     };
 }

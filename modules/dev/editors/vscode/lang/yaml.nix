@@ -7,7 +7,7 @@
       ...
     }:
     {
-      programs.vscode.profiles.default.extensions = lib.mkIf (config.my.dev.languages ? yaml) (
+      programs.vscode.profiles.default.extensions = lib.mkIf (config.dev.languages ? yaml) (
         with pkgs.vscode-marketplace; [ redhat.vscode-yaml ]
       );
     };

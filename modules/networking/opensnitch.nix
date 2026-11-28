@@ -9,14 +9,19 @@
     {
       home.packages = [ pkgs.opensnitch-ui ];
 
-      # Add restart as opensnitch-ui is started too early and crashes consistently.
       services.opensnitch-ui.enable = true;
+      # opensnitch-ui 1.8.0 aborts when a prompt opens and Qt cannot tell
+      # which screen the cursor is on (always so on Wayland):
+      # dialogs/prompt move_popup calls availableGeometry() on the None that
+      # virtualSiblingAt() returns. Restarted so the next connection still
+      # gets a prompt. Upstream master checks for None; no release has it yet.
       systemd.user.services.opensnitch-ui = {
         Service = {
           Restart = "on-failure";
           RestartSec = "5";
         };
       };
+      warnings = lib.optional (lib.versionOlder "1.8.0" pkgs.opensnitch-ui.version) "modules/networking/opensnitch.nix: opensnitch-ui is now ${pkgs.opensnitch-ui.version}. If its dialogs/prompt move_popup checks virtualSiblingAt() for None, remove Restart/RestartSec from the opensnitch-ui unit and this warning.";
 
       wayland.windowManager.niri.settings._children = lib.mkAfter [
         {

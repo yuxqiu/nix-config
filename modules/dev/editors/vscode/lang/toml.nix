@@ -7,7 +7,7 @@
       ...
     }:
     {
-      programs.vscode.profiles.default.extensions = lib.mkIf (config.my.dev.languages ? toml) (
+      programs.vscode.profiles.default.extensions = lib.mkIf (config.dev.languages ? toml) (
         with pkgs.vscode-marketplace; [ tamasfe.even-better-toml ]
       );
     };

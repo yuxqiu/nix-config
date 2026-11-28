@@ -8,16 +8,11 @@
     # device physically plugged in.
     users.users.yuxqiu.extraGroups = [ "usbguard" ];
 
-    # Host-specific USB device whitelist
-    # Blocks all USB devices by default; only listed devices are allowed.
-    # Run `lsusb` to find device IDs, then add them here.
-    services.usbguard = {
-      enable = true;
-      rules = ''
-        allow with-interface equals { 09:00:00 }
-        allow id 27c6:659a    # Goodix fingerprint sensor
-        allow id 04f2:b875    # Chicony integrated camera
-      '';
-    };
+    # USB devices allowed on this host. Run `lsusb` to find device IDs.
+    services.usbguard.rules = ''
+      allow with-interface equals { 09:00:00 }
+      allow id 27c6:659a    # Goodix fingerprint sensor
+      allow id 04f2:b875    # Chicony integrated camera
+    '';
   };
 }

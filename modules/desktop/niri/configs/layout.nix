@@ -11,6 +11,8 @@
 
       default-column-width.proportion = 0.5;
 
+      # Colours from niri's default config (resources/default-config.kdl);
+      # the theme has no matching colours.
       focus-ring = {
         width = 1;
         active-color = "#7fc8ff";

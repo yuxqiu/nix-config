@@ -14,8 +14,6 @@
           # in /usr/bin, /bin, etc.  On NixOS everything is under /nix/store,
           # so Landlock deny-by-default blocks every command.
           allowRead = [ "/nix/store/**" ];
-          # agent-lsp writes audit logs and caches to ~/.agent-lsp/
-          allowWrite = [ "~/.agent-lsp/**" ];
         };
 
         # The tool blocks "chroot" at runtime by resolving binary paths.

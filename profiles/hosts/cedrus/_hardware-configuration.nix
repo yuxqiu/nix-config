@@ -1,5 +1,5 @@
 # Hardware detected by `nixos-generate-config`: kernel modules and filesystems.
-# profiles/configs/nixos.nix imports it into this host; choices made on top of
+# flake/nixos.nix imports it into this host; choices made on top of
 # the hardware (boot loader, firmware, drivers) are in hardware.nix.
 { modulesPath, ... }:
 {

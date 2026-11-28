@@ -2,9 +2,9 @@
   flake.modules.homeManager.toml =
     { pkgs, ... }:
     {
-      my.dev.languages.toml = {
-        lsp = [ pkgs.taplo ];
-        formatter = pkgs.taplo;
+      dev.languages.toml = {
+        # taplo is both language server and formatter.
+        packages = [ pkgs.taplo ];
       };
     };
 }

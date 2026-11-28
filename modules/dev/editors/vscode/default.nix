@@ -42,7 +42,7 @@
             "editor.cursorSmoothCaretAnimation" = "on";
             "editor.cursorBlinking" = "smooth";
             "editor.minimap.autohide" = "mouseover";
-            "editor.desktopdes.bracketPairs" = true;
+            "editor.guides.bracketPairs" = true;
             "editor.autoClosingOvertype" = "always";
             "editor.linkedEditing" = true;
             "editor.suggest.snippetsPreventQuickSuggestions" = false;
@@ -69,9 +69,6 @@
 
             # Workbench
             "workbench.list.smoothScrolling" = true;
-            "workbench.editorAssociations" = {
-              "*.pdf" = "latex-workshop-pdf-hook";
-            };
             "workbench.startupEditor" = "none";
             "workbench.editor.labelFormat" = "medium";
             "workbench.tips.enabled" = false;

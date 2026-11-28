@@ -16,7 +16,7 @@
           config.qt.kvantum.themes;
       base = "${stylixTheme}/share/Kvantum/Base16Kvantum";
       name = "Base16KvantumBlur";
-      menuOpacity = toString (100 - builtins.floor (config.stylix.opacity.popups * 100 + 0.5));
+      menuOpacity = toString (100 - config.lib.style.popupOpacityPercent);
       kvconfig = pkgs.runCommandLocal "${name}.kvconfig" { } ''
         sed -e 's/^menu_shadow_depth=.*/menu_shadow_depth=0/' \
             -e 's/^reduce_menu_opacity=.*/reduce_menu_opacity=${menuOpacity}/' \

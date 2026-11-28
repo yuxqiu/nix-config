@@ -9,8 +9,6 @@
       system = "x86_64-linux";
       stateVersion = "26.11";
       modules = [
-        config.flake.modules.generic.base
-
         # base
         config.flake.modules.nixos.base
         config.flake.modules.nixos.console
@@ -49,8 +47,8 @@
         config.flake.modules.nixos.earlyoom
         config.flake.modules.nixos.journald
         config.flake.modules.nixos.logind
-        config.flake.modules.nixos.accountservice
-        config.flake.modules.nixos.udisk2
+        config.flake.modules.nixos.accounts-daemon
+        config.flake.modules.nixos.udisks2
         config.flake.modules.nixos.upower
         config.flake.modules.nixos.ios
         config.flake.modules.nixos.libinput
@@ -86,15 +84,10 @@
         # user
         config.flake.modules.nixos.yuxqiu
         config.flake.modules.nixos.cedrus
-
-        # hostname
-        { networking.hostName = "pc"; }
       ];
       homeManager.username = "yuxqiu";
       homeManager.stateVersion = "26.11";
       homeManager.modules = [
-        config.flake.modules.generic.base
-
         # base
         config.flake.modules.homeManager.base
         config.flake.modules.homeManager.base-linux
@@ -148,7 +141,6 @@
         config.flake.modules.homeManager.quillway
 
         # dev (ai)
-        config.flake.modules.homeManager.agent-lsp
         config.flake.modules.homeManager.agentsview
         config.flake.modules.homeManager.agent-browser
         config.flake.modules.homeManager.herdr
@@ -178,9 +170,6 @@
         config.flake.modules.homeManager.c
         # config.flake.modules.homeManager.sage
         config.flake.modules.homeManager.bash-lang
-        {
-          config.my.dev.latex.engine = "texlive";
-        }
         config.flake.modules.homeManager.latex
         config.flake.modules.homeManager.lua
         config.flake.modules.homeManager.markdown

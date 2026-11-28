@@ -156,35 +156,40 @@
           }
         ];
         services.tailscale = {
+          enable = true;
+          authKeyFile = config.sops.secrets."tailscale_key".path;
           disableUpstreamLogging = true;
           extraUpFlags = [ "--ssh" ];
+        };
+        sops.secrets."tailscale_key" = {
+          mode = "0400";
+          owner = config.users.users.root.name;
+          restartUnits = [ "tailscaled.service" ];
         };
 
         services.tailscale.serve.enable = true;
 
-        systemd.services.tailscale-serve =
-          lib.mkIf (config.services.tailscale.enable && cfg.enable && hasServices)
-            {
-              description = "Tailscale serve proxy service";
-              wantedBy = [ "network-online.target" ];
-              after = [
-                "network-online.target"
-                "tailscaled.service"
-              ];
-              wants = [
-                "network-online.target"
-                "tailscaled.service"
-              ];
-              partOf = [ "tailscaled.service" ];
-              enableStrictShellChecks = true;
-              serviceConfig = {
-                RemainAfterExit = true;
-                Restart = "on-failure";
-                RestartSec = "2s";
-                ExecStop = "${lib.getExe pkgs.tailscale} serve reset";
-              };
-              script = "${tailscaleServeScript}/bin/tailscale-serve";
-            };
+        systemd.services.tailscale-serve = lib.mkIf (cfg.enable && hasServices) {
+          description = "Tailscale serve proxy service";
+          wantedBy = [ "network-online.target" ];
+          after = [
+            "network-online.target"
+            "tailscaled.service"
+          ];
+          wants = [
+            "network-online.target"
+            "tailscaled.service"
+          ];
+          partOf = [ "tailscaled.service" ];
+          enableStrictShellChecks = true;
+          serviceConfig = {
+            RemainAfterExit = true;
+            Restart = "on-failure";
+            RestartSec = "2s";
+            ExecStop = "${lib.getExe pkgs.tailscale} serve reset";
+          };
+          script = "${tailscaleServeScript}/bin/tailscale-serve";
+        };
       };
     };
 }

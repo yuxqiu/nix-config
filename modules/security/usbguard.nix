@@ -1,6 +1,7 @@
 {
   flake.modules.nixos.usbguard = {
     services.usbguard = {
+      enable = true;
       implicitPolicyTarget = "block";
       IPCAllowedGroups = [ "usbguard" ];
       dbus.enable = true;

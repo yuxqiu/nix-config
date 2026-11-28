@@ -10,7 +10,7 @@
         name = "os-update";
         runtimeInputs = [
           pkgs.flake-edit
-          inputs.nix-update-git.packages.${pkgs.stdenv.system}.default
+          inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.nix-update-git
         ];
         text = ''
           flake-edit follow
@@ -113,9 +113,7 @@
       home.packages = [
         os-update
         os-switch
-        (pkgs.callPackage (inputs.self + /packages/os-install.nix) {
-          sops-tools = pkgs.callPackage (inputs.self + /packages/sops-tools.nix) { };
-        })
+        inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.os-install
         hm-news
       ];
     };
@@ -124,16 +122,12 @@
   # graphical installer): `nix --extra-experimental-features 'nix-command
   # flakes' develop .#bootstrap` from a checkout.
   perSystem =
-    { pkgs, ... }:
-    let
-      sops-tools = pkgs.callPackage (inputs.self + /packages/sops-tools.nix) { };
-      os-bootstrap = pkgs.callPackage (inputs.self + /packages/os-bootstrap.nix) { inherit sops-tools; };
-    in
+    { pkgs, self', ... }:
     {
       devShells.bootstrap = pkgs.mkShell {
         packages = [
-          os-bootstrap
-          sops-tools
+          self'.packages.os-bootstrap
+          self'.packages.sops-tools
           pkgs.mkpasswd
           pkgs.git
         ];

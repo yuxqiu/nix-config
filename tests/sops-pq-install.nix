@@ -11,35 +11,15 @@
   disko,
 }:
 let
-  sshKeys = import (pkgs.path + "/nixos/tests/ssh-keys.nix") pkgs;
-  keyFile = "/var/lib/sops-nix/key.txt";
-
-  fakePassCli = pkgs.writeShellScriptBin "pass-cli" ''
-    case "$1" in
-      info) [ -e /tmp/pass-session ] ;;
-      login) touch /tmp/pass-session ;;
-      logout) rm /tmp/pass-session ;;
-      item) cat /root/admin.txt ;;
-      *) exit 2 ;;
-    esac
-  '';
+  inherit (import ./lib/fakes.nix { inherit pkgs; })
+    sshKeys
+    keyFile
+    fakePassCli
+    hostFacts
+    fakeNix
+    ;
   sops-tools = pkgs.callPackage ../packages/sops-tools.nix { proton-pass-cli = fakePassCli; };
   os-bootstrap = pkgs.callPackage ../packages/os-bootstrap.nix { inherit sops-tools; };
-
-  # os-bootstrap asks the flake (`nix eval`) for the host's key path,
-  # persistence storage, the storage's device and mount options, and secrets
-  # needed for users; the test has no flake, so this answers from files the
-  # test writes in /root/fake-eval.
-  fakeNix = pkgs.writeShellScriptBin "nix" ''
-    case "$*" in
-      *sops.age.keyFile*) cat /root/fake-eval/key-file ;;
-      *persistence.storage*) cat /root/fake-eval/storage ;;
-      *getAttr*.device*) cat /root/fake-eval/device ;;
-      *getAttr*.options*) cat /root/fake-eval/options ;;
-      *neededForUsers*) cat /root/fake-eval/user-secrets ;;
-      *) echo "fake nix: unexpected: $*" >&2; exit 1 ;;
-    esac
-  '';
 
   # What every host here runs: the base module, one secret from a file the
   # test delivers (outside the store, as a redeploy would), root over SSH.
@@ -141,6 +121,7 @@ pkgs.testers.runNixOSTest {
       pkgs.sops
       pkgs.git
       pkgs.yq-go
+      pkgs.jq
     ];
     services.openssh.enable = true;
     users.users.root.openssh.authorizedKeys.keys = [ sshKeys.snakeOilEd25519PublicKey ];
@@ -148,6 +129,9 @@ pkgs.testers.runNixOSTest {
   };
 
   testScript = ''
+    import json
+    import shlex
+
     def setup_admin():
         admin.succeed("install -d -m 700 /root/.ssh && install -m 600 ${sshKeys.snakeOilEd25519PrivateKey} /root/.ssh/id_ed25519")
         admin.succeed("age-keygen -pq -o /root/admin.txt")
@@ -215,6 +199,13 @@ pkgs.testers.runNixOSTest {
     finally:
         newhost.crash()
 
+    def host_facts(**fields):
+        # fresh's hostFacts: one user secret, and the given fields.
+        facts = json.loads('${builtins.toJSON hostFacts}')
+        facts["secretsNeededForUsers"] = ["alice-password"]
+        facts.update(fields)
+        fresh.succeed(f"echo {shlex.quote(json.dumps(facts))} > /root/host-facts.json")
+
     def fresh_repo():
         admin.copy_from_machine("/root/admin.txt")
         fresh.copy_from_host(str(admin.out_dir / "admin.txt"), "/root/admin.txt")
@@ -225,9 +216,8 @@ pkgs.testers.runNixOSTest {
             " \"$(age-keygen -y /root/admin.txt)\" > .sops.yaml && "
             "SOPS_EDITOR=${writeGreeting} sops-update admin profiles/hosts/fresh/secrets/fresh.yaml"
         )
-        fresh.succeed("mkdir -p /root/fake-eval /root/fakebin && ln -s ${fakeNix}/bin/nix /root/fakebin/nix")
-        fresh.succeed("printf %s ${keyFile} > /root/fake-eval/key-file && truncate -s0 /root/fake-eval/storage")
-        fresh.succeed("printf alice-password > /root/fake-eval/user-secrets")
+        fresh.succeed("mkdir -p /root/fakebin && ln -s ${fakeNix}/bin/nix /root/fakebin/nix")
+        host_facts()
         fresh.succeed("mkdir -p /etc/nixos && echo '{ }' > /etc/nixos/hardware-configuration.nix")
 
     def bootstrap(expect_ok):
@@ -258,9 +248,8 @@ pkgs.testers.runNixOSTest {
         assert "nixos-rebuild boot --flake .#fresh" in out, out
         assert fresh.succeed("sha256sum < ${keyFile}") == key_sum, "key replaced on rerun"
 
-    def ephemeral_root(storage, device, options=""):
-        fresh.succeed(f"printf %s {storage} > /root/fake-eval/storage")
-        fresh.succeed(f"printf %s {device} > /root/fake-eval/device && printf %s '{options}' > /root/fake-eval/options")
+    def ephemeral_root(storage, device, options=[]):
+        host_facts(storage={"mountPoint": storage, "fileSystem": {"device": device, "options": options}})
 
     def place_key(base):
         # The key already granted, where os-bootstrap should look; so a run
@@ -275,7 +264,7 @@ pkgs.testers.runNixOSTest {
     with subtest("local: a persistent subvolume already mounted at the storage path"):
         fresh.succeed("mkfs.btrfs -q /dev/vdb && mkdir -p /mnt/top && mount /dev/vdb /mnt/top && btrfs -q subvolume create /mnt/top/@persist")
         fresh.succeed("mkdir -p /persist && mount -o subvol=@persist /dev/vdb /persist")
-        ephemeral_root("/persist", "/dev/vdb", "subvol=@persist,noatime")
+        ephemeral_root("/persist", "/dev/vdb", ["subvol=@persist", "noatime"])
         place_key("/persist")
         out = bootstrap(True)
         # The top level (also /dev/vdb, at /mnt/top) is not the subvolume.
@@ -289,16 +278,16 @@ pkgs.testers.runNixOSTest {
         assert "Host key exists: /mnt/elsewhere${keyFile}" in out, out
 
     with subtest("local: a subvolume spelled with a leading slash, and the top level as subvol=/"):
-        ephemeral_root("/persist", "/dev/vdb", "subvol=/@persist")
+        ephemeral_root("/persist", "/dev/vdb", ["subvol=/@persist"])
         out = bootstrap(True)
         assert "mounted at /mnt/elsewhere, so the key goes at /mnt/elsewhere${keyFile}" in out, out
         # The btrfs top level, as a desktop converted in place mounts it.
-        ephemeral_root("/persist", "/dev/vdb", "subvol=/,noatime")
+        ephemeral_root("/persist", "/dev/vdb", ["subvol=/", "noatime"])
         place_key("/mnt/top")
         out = bootstrap(True)
         assert "mounted at /mnt/top, so the key goes at /mnt/top${keyFile}" in out, out
         # Back to the subvolume, which the next subtest unmounts.
-        ephemeral_root("/persist", "/dev/vdb", "subvol=@persist,noatime")
+        ephemeral_root("/persist", "/dev/vdb", ["subvol=@persist", "noatime"])
 
     with subtest("local: an unmounted persistent filesystem stops before making a key"):
         fresh.succeed("umount /mnt/elsewhere")
@@ -307,7 +296,7 @@ pkgs.testers.runNixOSTest {
         assert "is not mounted" in out and "Made the host key" not in out, out
         assert fresh.succeed("sha256sum < /root/flake/.sops.yaml") == sops_before, ".sops.yaml changed"
         fresh.succeed("umount /mnt/top")
-        fresh.succeed("truncate -s0 /root/fake-eval/storage && printf %s ${keyFile} > /root/fake-eval/key-file")
+        host_facts()
 
     with subtest("local: the first switch to the host's config decrypts at once"):
         fresh.succeed("mkdir -p /etc/test-secrets && cp /root/flake/profiles/hosts/fresh/secrets/fresh.yaml /etc/test-secrets/host.yaml")

@@ -5,6 +5,9 @@
       programs.jujutsu = {
         enable = true;
         settings = {
+          user = {
+            inherit (config.identity) name email;
+          };
           signing = {
             behavior = "own";
             backend = "ssh";

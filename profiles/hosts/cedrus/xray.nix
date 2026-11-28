@@ -1,3 +1,4 @@
+{ inputs, ... }:
 let
   # false leaves the Xray client and `t2p` out of cedrus.
   enabled = false;
@@ -13,15 +14,11 @@ in
     let
       xray = config.services.xray.package;
 
-      tunName = "xray0";
-      # 198.18.0.0/15 is the RFC 2544 benchmarking range: never routed on the
-      # internet and outside Docker's default address pools. The fake-IP pool
-      # takes the lower /16, the TUN link a /30 in the upper /16.
-      fakeIpPool = "198.18.0.0/16";
-      tunGateway = "198.19.0.1/30";
-      # The kernel owns the gateway address (.1); packets to any other address
-      # in the TUN subnet reach Xray, which answers DNS through `dns-out`.
-      tunDns = "198.19.0.2";
+      # The drop-in t2p removes and restores is the one dns.nix writes.
+      t2p = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.t2p.override {
+        domainConf = config.services.resolved.globalDomainConf;
+      };
+      inherit (t2p) tun;
 
       # Merged after the sops config. Xray's multi-file rules: inbounds and
       # outbounds merge by tag, but a later file's `dns` and `routing` replace
@@ -37,7 +34,7 @@ in
           # evict it (LRU), not for a fixed time. 65535 fits in the /16.
           fakedns = [
             {
-              ipPool = fakeIpPool;
+              ipPool = tun.fakeIpPool;
               poolSize = 65535;
             }
           ];
@@ -46,14 +43,14 @@ in
               tag = "tun";
               protocol = "tun";
               settings = {
-                name = tunName;
-                gateway = [ tunGateway ];
+                name = tun.interface;
+                gateway = [ tun.gateway ];
                 # Binds outbounds to the physical interface so Xray's own
                 # traffic skips the TUN routes `t2p` adds.
                 autoOutboundsInterface = "auto";
               };
               sniffing = {
-                enabled = true;
+                enabled = false;
                 destOverride = [ "fakedns" ];
               };
             }
@@ -67,86 +64,6 @@ in
         };
         checkPhase = ''
           ${xray}/bin/xray run -test -c $out
-        '';
-      };
-
-      t2p = pkgs.writeShellApplication {
-        name = "t2p";
-
-        runtimeInputs = with pkgs; [
-          iproute2
-          coreutils
-          systemd
-        ];
-
-        text = ''
-          TUN_IF="${tunName}"
-          TUN_DNS="${tunDns}"
-          # Present while the proxy is on. /run is cleared at boot, so the
-          # proxy starts off, like the tunnel process it replaces.
-          STATE_DIR="/run/t2p"
-          STATE="$STATE_DIR/on"
-          DOMAIN_CONF="/etc/systemd/resolved.conf.d/domain.conf"
-          # Halves of each address family: more specific than any default
-          # route, so they win without touching it.
-          ROUTES=("0.0.0.0/1" "128.0.0.0/1" "::/1" "8000::/1")
-
-          require_tun() {
-              # Xray creates the TUN during startup, well within this bound.
-              local tries=50
-              until ip link show "$TUN_IF" >/dev/null 2>&1; do
-                  if (( --tries == 0 )); then
-                      echo "ERROR: $TUN_IF missing; is xray.service running?" >&2
-                      exit 1
-                  fi
-                  sleep 0.1
-              done
-          }
-
-          # Routes and per-link DNS live on the TUN link, so they vanish when
-          # Xray restarts; xray.service reapplies them via `t2p resume`.
-          apply() {
-              require_tun
-              local route
-              for route in "''${ROUTES[@]}"; do
-                  ip route replace "$route" dev "$TUN_IF"
-              done
-              resolvectl dns "$TUN_IF" "$TUN_DNS"
-              resolvectl domain "$TUN_IF" "~."
-              resolvectl flush-caches
-          }
-
-          on() {
-              require_tun
-              mkdir -p "$STATE_DIR"
-              touch "$STATE"
-              if [[ -f "$DOMAIN_CONF" ]]; then
-                  rm -f "$DOMAIN_CONF"
-                  systemctl restart systemd-resolved
-              fi
-              apply
-              echo "on"
-          }
-
-          off() {
-              rm -f "$STATE"
-              local route
-              for route in "''${ROUTES[@]}"; do
-                  ip route del "$route" dev "$TUN_IF" 2>/dev/null || true
-              done
-              resolvectl revert "$TUN_IF" 2>/dev/null || true
-              systemctl restart systemd-resolved-domain-conf
-              systemctl restart systemd-resolved
-              resolvectl flush-caches
-              echo "off"
-          }
-
-          case "''${1:-}" in
-            toggle) if [[ -e "$STATE" ]]; then off; else on; fi ;;
-            status) if [[ -e "$STATE" ]]; then echo on; else echo off; fi ;;
-            resume) if [[ -e "$STATE" ]]; then apply; fi ;;
-            *) echo "Usage: $(basename "$0") {toggle|status|resume}" >&2; exit 1 ;;
-          esac
         '';
       };
 
@@ -173,7 +90,7 @@ in
           };
         };
 
-        networking.firewall.trustedInterfaces = [ tunName ];
+        networking.firewall.trustedInterfaces = [ tun.interface ];
         networking.firewall.checkReversePath = "loose";
 
         environment.systemPackages = [ t2p ];

@@ -20,10 +20,10 @@
             fcitx5-mellow-themes
           ];
 
-          # Optional: If you're on Wayland, enable this to use the Wayland frontend
+          # niri is a Wayland compositor: apps reach fcitx5 through the
+          # Wayland input-method protocol, not GTK_IM_MODULE/QT_IM_MODULE.
           waylandFrontend = true;
 
-          # Optional: Declarative settings (example for basic input group setup)
           settings = {
             globalOptions = {
               Behavior = {

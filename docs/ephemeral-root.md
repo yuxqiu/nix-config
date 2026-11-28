@@ -1,6 +1,6 @@
 # Ephemeral root
 
-A host that includes `nixos.ephemeral-root` (`modules/security/ephemeral-root.nix`)
+A host that includes `nixos.ephemeral-root` (`modules/base/ephemeral-root.nix`)
 has `/` on a tmpfs, which is empty at every boot. Only the paths listed in
 `persistence` survive. They are kept on a persistent filesystem and
 bind-mounted at the same paths by

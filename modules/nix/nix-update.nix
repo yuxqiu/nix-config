@@ -4,7 +4,7 @@
     { pkgs, ... }:
     {
       home.packages = [
-        inputs.nix-update-git.packages.${pkgs.stdenv.system}.default
+        inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.nix-update-git
       ];
     };
 }

@@ -12,7 +12,9 @@
 # `sops.age.keyFile` (under `persistence.storage` on a host with an
 # ephemeral root, where that directory is kept), so the host decrypts its
 # secrets on first boot. A reinstall replaces the host's previous key. If the
-# install fails, .sops.yaml and the secrets file are restored.
+# install fails, .sops.yaml and the secrets file are restored. It stops
+# before wiping if the secrets file lacks a secret the host needs before users
+# exist (a password hash), since that user would get no password.
 #
 # With --keep-state (a host with an ephemeral root, reinstalled from the machine
 # it is replacing), the state the new system keeps is first copied from the
@@ -31,6 +33,7 @@
   getent,
   gnugrep,
   gnutar,
+  jq,
   nixos-anywhere,
   openssh,
   sops-tools,
@@ -48,12 +51,13 @@ writeShellApplication {
     getent
     gnugrep
     gnutar
+    jq
     nixos-anywhere
     openssh
     sops-tools
     yq-go
   ];
-  text = ''
+  text = builtins.readFile ./os-host-lib.sh + ''
     if [ $# -lt 2 ] || [[ "$1" == -* ]] || [[ "$2" == -* ]]; then
       echo "Usage: os-install <host> <[user@]address> [--keep-state] [nixos-anywhere flags...]" >&2
       echo "Example: os-install dracaena root@<ip>" >&2
@@ -71,15 +75,6 @@ writeShellApplication {
         *) flags+=("$arg") ;;
       esac
     done
-
-    dir="profiles/hosts/$host"
-    secrets="$dir/secrets/$host.yaml"
-    # import-tree skips paths containing "/_", so the raw NixOS module that
-    # nixos-generate-config writes doesn't break the flake;
-    # profiles/configs/nixos.nix imports it into the host.
-    hardware="$dir/_hardware-configuration.nix"
-
-    die() { echo "os-install: $*" >&2; exit 1; }
 
     # nixos-anywhere kexecs into its installer, which keeps only the
     # machine's own network: no VPN, nothing reached through a jump host. So
@@ -118,20 +113,10 @@ writeShellApplication {
     done
 
     # Checked before nixos-anywhere wipes the target, not after.
-    [ -d "$dir" ] || die "no $dir; run from the flake root"
-    [ -f "$secrets" ] || die "no $secrets; create it encrypted to the admin key first"
-    [ -f .sops.yaml ] || die "no .sops.yaml; run from the flake root"
-
-    # `nix` comes from PATH: the system's Nix, matching the daemon.
-    eval_host() {
-      nix eval --raw ".#nixosConfigurations.$host.config" "$@" || die "could not evaluate $host (error above)"
-    }
-    key_file="$(eval_host --apply 'c: c.sops.age.keyFile')"
-    case "$key_file" in
-      /*) ;;
-      *) die "unexpected sops.age.keyFile for $host: '$key_file'" ;;
-    esac
-    storage="$(eval_host --apply 'c: c.persistence.storage or ""')"
+    host_files "$host"
+    load_host_facts "$host"
+    mapfile -t missing_secrets < <(missing_user_secrets)
+    [ "''${#missing_secrets[@]}" -eq 0 ] || die "$secrets lacks secrets $host needs before users exist, so those users would have no password: ''${missing_secrets[*]}; add them with: sops-update admin $secrets"
 
     # tmpfs, so the private key and kept state never touch this machine's disk.
     work="$(mktemp -d -p /dev/shm os-install.XXXXXXXX)"
@@ -159,7 +144,7 @@ writeShellApplication {
 
     if [ -n "$keep_state" ]; then
       [ -n "$storage" ] || die "--keep-state needs a host with an ephemeral root (persistence.storage)"
-      mapfile -t kept < <(eval_host --apply 'c: builtins.concatStringsSep "\n" c.persistence.keptPaths')
+      mapfile -t kept < <(jq -r '.keptPaths[]' <<<"$facts")
       [ "''${#kept[@]}" -gt 0 ] || die "$host keeps no paths"
 
       quoted="$(printf '%q ' "''${kept[@]}")"
@@ -200,12 +185,8 @@ writeShellApplication {
       # at boot on a host with an ephemeral root; the key's directory is kept, so
       # it goes on the storage.
       key="$root$storage$key_file"
-      install -d -m 755 "$(dirname "$key")"
-      (umask 077 && age-keygen -pq -o "$key" 2>/dev/null)
-      # The sops module also writes this on activation; here sops-update-key
-      # reads the recipient from it.
-      age-keygen -y "$key" > "$key.pub"
-      chmod 644 "$key.pub"
+      # sops-update-key reads the recipient from the key's .pub.
+      make_key "$key"
 
       install -d -m 700 "$work/backup"
       cp .sops.yaml "$work/backup/.sops.yaml"

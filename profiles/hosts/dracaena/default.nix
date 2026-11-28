@@ -9,8 +9,6 @@
       system = "aarch64-linux";
       stateVersion = "26.11";
       modules = [
-        config.flake.modules.generic.base
-
         # base
         config.flake.modules.nixos.base
 
@@ -39,8 +37,6 @@
       homeManager.username = "snowflake";
       homeManager.stateVersion = "26.11";
       homeManager.modules = [
-        config.flake.modules.generic.base
-
         # base
         config.flake.modules.homeManager.base-linux
 

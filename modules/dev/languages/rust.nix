@@ -2,11 +2,10 @@
   flake.modules.homeManager.rust =
     { pkgs, ... }:
     {
-      my.dev.languages.rust = {
-        toolchain = [ pkgs.rustup ];
-        lsp = [ pkgs.rustup ];
-        formatter = pkgs.rustup;
-        linter = [ pkgs.rustup ];
+      dev.languages.rust = {
+        # rustup provides cargo, rustc, rust-analyzer, rustfmt and clippy,
+        # following each project's rust-toolchain pin.
+        packages = [ pkgs.rustup ];
       };
     };
 }

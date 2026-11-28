@@ -1,7 +1,19 @@
 {
   flake.modules.nixos.weylus =
-    { pkgs, ... }:
+    { lib, pkgs, ... }:
+    let
+      # H-M-H/weylus commit nixpkgs builds; the fork below is checked
+      # against it.
+      checkedUpstreamRev = "38a01a8f8e429500c7e9f67fc1c88ca37a4d1e93";
+    in
     {
+      warnings = lib.optional (pkgs.weylus.src.rev != checkedUpstreamRev) ''
+        weylus.nix: nixpkgs' weylus now builds H-M-H/weylus ${pkgs.weylus.src.rev}. If it
+        includes binarin's DMA-BUF capture fix (H-M-H/weylus#560), remove the
+        programs.weylus.package override and this warning; otherwise set
+        checkedUpstreamRev to that commit.
+      '';
+
       programs.weylus = {
         enable = true;
         openFirewall = true;

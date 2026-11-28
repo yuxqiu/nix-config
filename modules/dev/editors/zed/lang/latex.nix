@@ -4,7 +4,7 @@
     {
       programs.zed-editor = {
         userSettings = {
-          languages = lib.mkIf (config.my.dev.languages ? latex) {
+          languages = lib.mkIf (config.dev.languages ? latex) {
             BibTeX = {
               formatter = {
                 external = {
@@ -21,7 +21,7 @@
               soft_wrap = "editor_width";
             };
           };
-          lsp = lib.mkIf (config.my.dev.languages ? latex) {
+          lsp = lib.mkIf (config.dev.languages ? latex) {
             texlab = {
               settings = {
                 texlab = {
@@ -30,18 +30,15 @@
                     forwardSearchAfter = true;
                   }
                   // (
-                    if config.my.dev.latex.engine == "tectonic" then
+                    if config.dev.latex.engine == "tectonic" then
                       {
                         executable = "tectonic";
                         args = [
                           "-X"
                           "compile"
                           "%f"
-                          "--untrusted"
-                          "--synctex"
-                          "--keep-logs"
-                          "--keep-intermediates"
-                        ];
+                        ]
+                        ++ config.dev.latex.tectonicFlags;
                       }
                     else
                       {
@@ -59,7 +56,7 @@
             };
           };
         };
-        extensions = lib.mkIf (config.my.dev.languages ? latex) [ "latex" ];
+        extensions = lib.mkIf (config.dev.languages ? latex) [ "latex" ];
       };
     };
 }

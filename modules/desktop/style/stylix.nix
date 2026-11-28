@@ -3,11 +3,16 @@
 {
   flake.modules.homeManager.stylix =
     {
+      config,
       pkgs,
       ...
     }:
     {
       imports = [ inputs.stylix.homeModules.stylix ];
+
+      # Popup opacity as a whole percentage, rounded to nearest, for configs
+      # that take an integer percent (Firefox menu CSS, Kvantum).
+      lib.style.popupOpacityPercent = builtins.floor (config.stylix.opacity.popups * 100 + 0.5);
 
       stylix = {
         enable = true;

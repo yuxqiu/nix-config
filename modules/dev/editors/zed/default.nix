@@ -1,6 +1,6 @@
 {
   flake.modules.homeManager.zed =
-    { lib, ... }:
+    { config, lib, ... }:
     {
       programs.zed-editor = {
         enable = true;
@@ -161,8 +161,14 @@
         installRemoteServer = false;
       };
 
-      # snippets
-      xdg.configFile."zed/snippets".source = ./snippets;
+      # snippets/<lang>.json is installed only when that language is enabled.
+      xdg.configFile = lib.listToAttrs (
+        map (file: lib.nameValuePair "zed/snippets/${file}" { source = ./snippets + "/${file}"; }) (
+          builtins.filter (file: config.dev.languages ? ${lib.removeSuffix ".json" file}) (
+            builtins.attrNames (builtins.readDir ./snippets)
+          )
+        )
+      );
 
       # stylix: use zed theme
       stylix.targets.zed.colors.enable = false;

@@ -20,7 +20,7 @@
       # sops-nix installs these two kinds in separate activation snippets.
       hasUserSecrets = lib.any (s: s.neededForUsers) secrets;
       hasOtherSecrets = lib.any (s: !s.neededForUsers) secrets;
-      # The root is wiped at boot (modules/security/ephemeral-root.nix); the key
+      # The root is wiped at boot (modules/base/ephemeral-root.nix); the key
       # directory is then a mount from the persistent filesystem.
       keyDirIsMount = config.preservation.enable or false;
       # sops-nix's own generateKey runs plain `age-keygen`, which makes a
@@ -67,7 +67,8 @@
             if [ ! -f ${keyFile} ]; then
               ${pkgs.age}/bin/age-keygen -pq -o ${keyFile}
             fi
-            if [ ! -f ${keyFile}.pub ]; then
+            # Rewritten when empty too, e.g. left by an interrupted write.
+            if [ ! -s ${keyFile}.pub ]; then
               ${pkgs.age}/bin/age-keygen -y ${keyFile} > ${keyFile}.pub
               chmod 0644 ${keyFile}.pub
             fi

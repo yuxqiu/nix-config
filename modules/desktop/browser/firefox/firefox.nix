@@ -14,7 +14,7 @@
       # 6 is Firefox's default menupopup --panel-border-radius.
       popupRadius = 6;
       menupopupSubstitutions = {
-        "@popupOpacity@" = toString (builtins.floor (config.stylix.opacity.popups * 100 + 0.5));
+        "@popupOpacity@" = toString config.lib.style.popupOpacityPercent;
         "@popupRadius@" = toString popupRadius;
       };
       menupopupCss = builtins.readFile ./css/chrome/menupopup.css;

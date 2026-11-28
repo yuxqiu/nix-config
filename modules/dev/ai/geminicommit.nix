@@ -21,7 +21,7 @@
         (pkgs.symlinkJoin {
           name = "geminicommit";
           paths = [ pkgs.geminicommit ];
-          buildInputs = [ pkgs.makeWrapper ];
+          nativeBuildInputs = [ pkgs.makeWrapper ];
           postBuild = ''
             wrapProgram "$out/bin/geminicommit" \
               --add-flags "--config ${config.programs.geminicommit.configFile}"

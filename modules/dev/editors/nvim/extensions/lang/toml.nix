@@ -6,7 +6,7 @@
       lib,
       ...
     }:
-    lib.mkIf (config.my.dev.languages ? toml) {
+    lib.mkIf (config.dev.languages ? toml) {
       programs.nixvim = {
         plugins.lsp.servers.taplo.enable = true;
         plugins.conform-nvim.settings.formatters_by_ft.toml = [ "taplo" ];

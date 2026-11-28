@@ -2,8 +2,8 @@
   flake.modules.homeManager.typos =
     { pkgs, ... }:
     {
-      my.dev.languages.typos = {
-        lsp = [ pkgs.typos-lsp ];
+      dev.languages.typos = {
+        packages = [ pkgs.typos-lsp ];
       };
     };
 }

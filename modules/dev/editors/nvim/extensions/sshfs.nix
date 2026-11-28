@@ -3,7 +3,7 @@
   flake.modules.homeManager.nvim =
     { pkgs, ... }:
     let
-      sshfs-nvim = pkgs.callPackage (inputs.self + /packages/sshfs-nvim.nix) { };
+      sshfs-nvim = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.sshfs-nvim;
     in
     {
       programs.nixvim.extraPlugins = [

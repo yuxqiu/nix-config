@@ -1,5 +1,5 @@
 {
-  flake.modules.nixos.accountservice =
+  flake.modules.nixos.accounts-daemon =
     { config, ... }:
     {
       persistence.directories = [

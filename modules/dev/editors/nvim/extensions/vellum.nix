@@ -8,9 +8,9 @@
       ...
     }:
     let
-      vellum = pkgs.callPackage (inputs.self + /packages/vellum-nvim.nix) { };
+      vellum = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.vellum-nvim;
     in
-    lib.mkIf (config.my.dev.languages ? markdown) {
+    lib.mkIf (config.dev.languages ? markdown) {
       programs.nixvim.extraPlugins = [ vellum ];
 
       programs.nixvim.extraConfigLua = ''

@@ -2,11 +2,13 @@
   flake.modules.homeManager.go =
     { pkgs, ... }:
     {
-      my.dev.languages.go = {
-        toolchain = [ pkgs.go ];
-        lsp = [ pkgs.gopls ];
-        formatter = pkgs.go;
-        linter = [ pkgs.golangci-lint ];
+      dev.languages.go = {
+        # go provides gofmt.
+        packages = with pkgs; [
+          go
+          gopls
+          golangci-lint
+        ];
       };
     };
 }

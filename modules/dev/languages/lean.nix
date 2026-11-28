@@ -2,11 +2,9 @@
   flake.modules.homeManager.lean =
     { pkgs, ... }:
     {
-      my.dev.languages.lean = {
-        toolchain = [ pkgs.elan ];
-        lsp = [ pkgs.elan ];
-        formatter = pkgs.elan;
-        linter = [ pkgs.elan ];
+      dev.languages.lean = {
+        # elan installs each project's pinned lean/lake toolchain.
+        packages = [ pkgs.elan ];
       };
     };
 }

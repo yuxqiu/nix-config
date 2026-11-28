@@ -6,7 +6,7 @@
       lib,
       ...
     }:
-    lib.mkIf (config.my.dev.languages ? bash) {
+    lib.mkIf (config.dev.languages ? bash) {
       programs.nixvim = {
         plugins.lsp.servers.bashls.enable = true;
         plugins.conform-nvim.settings.formatters_by_ft = {

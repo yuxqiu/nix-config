@@ -5,7 +5,7 @@
       lib,
       ...
     }:
-    lib.mkIf (config.my.dev.languages ? lean) {
+    lib.mkIf (config.dev.languages ? lean) {
       programs.nixvim.plugins.lean = {
         enable = true;
         settings = {

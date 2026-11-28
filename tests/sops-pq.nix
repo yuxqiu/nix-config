@@ -8,25 +8,13 @@
   genericBase,
 }:
 let
-  sshKeys = import (pkgs.path + "/nixos/tests/ssh-keys.nix") pkgs;
-  keyFile = "/var/lib/sops-nix/key.txt";
-
-  # Proton Pass with one item: the admin key at /root/admin.txt. Logs every
-  # call to /tmp/pass-log; a session exists while /tmp/pass-session does.
-  fakePassCli = pkgs.writeShellScriptBin "pass-cli" ''
-    echo "$*" >> /tmp/pass-log
-    case "$1" in
-      info) [ -e /tmp/pass-session ] ;;
-      login) touch /tmp/pass-session ;;
-      logout) rm /tmp/pass-session ;;
-      item)
-        [ -e /tmp/pass-session ] || { echo "not logged in" >&2; exit 1; }
-        [ "$*" = "item view --vault-name sops --item-title age-admin --field key" ] || exit 2
-        cat /root/admin.txt
-        ;;
-      *) exit 2 ;;
-    esac
-  '';
+  inherit (import ./lib/fakes.nix { inherit pkgs; })
+    sshKeys
+    keyFile
+    fakePassCli
+    hostFactsFile
+    fakeNix
+    ;
 
   # Records its arguments, keeps a copy of the --extra-files tree (deleted by
   # os-install when it exits) and, like the real one, writes the hardware
@@ -44,18 +32,6 @@ let
       shift
     done
     [ ! -e /tmp/fail-install ]
-  '';
-  # os-install takes `nix` from PATH: it asks for the host's key path (and,
-  # with --keep-state, its storage and kept paths) and evaluates the host.
-  # Answers come from /root/fake-eval when the test writes them there.
-  fakeNix = pkgs.writeShellScriptBin "nix" ''
-    printf '%s\n' "$*" >> /tmp/nix-args
-    answer() { if [ -e "/root/fake-eval/$1" ]; then cat "/root/fake-eval/$1"; else printf '%s' "$2"; fi; }
-    case "$*" in
-      *sops.age.keyFile*) answer key-file ${keyFile} ;;
-      *persistence.storage*) answer storage "" ;;
-      *keptPaths*) answer kept "" ;;
-    esac
   '';
   # With --keep-state, os-install runs commands on the machine it replaces.
   # Here that machine is the admin node itself: commands run locally, except
@@ -132,6 +108,7 @@ pkgs.testers.runNixOSTest {
       pkgs.sops
       pkgs.git
       pkgs.yq-go
+      pkgs.jq
     ];
     programs.ssh.extraConfig = ''
       StrictHostKeyChecking no
@@ -196,6 +173,11 @@ pkgs.testers.runNixOSTest {
         host.start()
         host.wait_for_unit("multi-user.target")
         assert host.succeed("sha256sum ${keyFile}") == before, "key changed"
+
+    with subtest("an empty recipient file is rewritten at activation"):
+        host.succeed("truncate -s 0 ${keyFile}.pub")
+        host.execute("/run/current-system/activate")
+        host.succeed("test \"$(cat ${keyFile}.pub)\" = \"$(age-keygen -y ${keyFile})\"")
 
     with subtest("admin repo: files created with the admin key from Proton Pass"):
         admin.succeed("install -d -m 700 /root/.ssh && install -m 600 ${sshKeys.snakeOilEd25519PrivateKey} /root/.ssh/id_ed25519")
@@ -275,6 +257,7 @@ pkgs.testers.runNixOSTest {
 
     with subtest("os-install: checks before wiping"):
         admin.succeed("mkdir -p /root/flake/profiles/hosts/newhost /root/fakebin && ln -s ${fakeNix}/bin/nix /root/fakebin/nix")
+        admin.succeed("cp ${hostFactsFile} /root/host-facts.json")
         out = admin.fail("cd /root/flake && os-install newhost root@1.0.0.9 2>&1")
         assert "secrets/newhost.yaml" in out, out
         admin.fail("test -e /tmp/nixos-anywhere-args")
@@ -304,6 +287,17 @@ pkgs.testers.runNixOSTest {
         admin.fail("test -e /tmp/nixos-anywhere-args")
         assert flake_state() == before, ".sops.yaml or the secrets changed"
         admin.succeed("test -z \"$(ls /dev/shm | grep os-install)\"")
+
+    with subtest("os-install: refuses a host whose user would get no password"):
+        before = flake_state()
+        admin.succeed("jq '.secretsNeededForUsers = [\"alice-password\"]' ${hostFactsFile} > /root/host-facts.json")
+        out = admin.fail(os_install("2>&1"))
+        assert "alice-password" in out and "no password" in out, out
+        admin.fail("test -e /tmp/nixos-anywhere-args")
+        assert flake_state() == before, ".sops.yaml or the secrets changed"
+        admin.succeed("test -z \"$(ls /dev/shm | grep os-install)\"")
+        # A secret the file has passes.
+        admin.succeed("jq '.secretsNeededForUsers = [\"greeting\"]' ${hostFactsFile} > /root/host-facts.json")
 
     with subtest("os-install: a failed install restores .sops.yaml and the secrets"):
         before = flake_state()
@@ -360,9 +354,12 @@ pkgs.testers.runNixOSTest {
     def keep_state():
         # The replaced machine: kept paths (one owned by another user), its
         # host key, and the granted key in its kept directory.
-        admin.succeed("rm -rf /mnt/persist /persist /var/lib/newhost-sops /root/fake-eval && mkdir -p /root/fake-eval")
-        admin.succeed("printf /persist > /root/fake-eval/storage && printf /var/lib/newhost-sops/key.txt > /root/fake-eval/key-file")
-        admin.succeed("printf '/var/lib/kept-state\\n/etc/kept-file\\n/etc/ssh/ssh_host_ed25519_key\\n/var/lib/newhost-sops' > /root/fake-eval/kept")
+        admin.succeed("rm -rf /mnt/persist /persist /var/lib/newhost-sops")
+        admin.succeed(
+            "jq '.storage = {mountPoint: \"/persist\", fileSystem: null} | .keyFile = \"/var/lib/newhost-sops/key.txt\""
+            " | .keptPaths = [\"/var/lib/kept-state\", \"/etc/kept-file\", \"/etc/ssh/ssh_host_ed25519_key\", \"/var/lib/newhost-sops\"]'"
+            " ${hostFactsFile} > /root/host-facts.json"
+        )
         admin.succeed("mkdir -p /var/lib/kept-state && echo data > /var/lib/kept-state/file && chown -R nobody:nogroup /var/lib/kept-state && chmod 640 /var/lib/kept-state/file")
         admin.succeed("echo kept > /etc/kept-file && (test -e /etc/ssh/ssh_host_ed25519_key || echo hostkey > /etc/ssh/ssh_host_ed25519_key)")
         admin.succeed(f"install -D -m 600 {granted} /var/lib/newhost-sops/key.txt")
@@ -432,7 +429,7 @@ pkgs.testers.runNixOSTest {
         admin.succeed("test -z \"$(ls /dev/shm | grep os-install)\"")
 
     with subtest("os-install: on a host with an ephemeral root the injected key is on the storage"):
-        admin.succeed("rm -rf /root/fake-eval && mkdir -p /root/fake-eval && printf /persist > /root/fake-eval/storage")
+        admin.succeed("jq '.storage = {mountPoint: \"/persist\", fileSystem: null}' ${hostFactsFile} > /root/host-facts.json")
         admin.succeed(os_install(""))
         admin.succeed("grep -q '^AGE-SECRET-KEY-PQ-1' /tmp/extra-files/persist${keyFile}")
         admin.fail("test -e /tmp/extra-files${keyFile}")

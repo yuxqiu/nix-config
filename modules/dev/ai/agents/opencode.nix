@@ -7,7 +7,7 @@
       ...
     }:
     let
-      opencodeQueue = pkgs.callPackage (inputs.self + /packages/opencode-queue.nix) { };
+      opencodeQueue = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.opencode-queue;
     in
     {
       persistence.directories = [
@@ -31,7 +31,7 @@
         enableMcpIntegration = true;
         mutableSettings = true;
         settings.autoupdate = false;
-        context = config.my.agents-md.content;
+        context = config.agents-md.content;
         cli = {
           attention = {
             notifications = true;

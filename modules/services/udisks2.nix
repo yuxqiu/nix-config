@@ -1,5 +1,5 @@
 {
-  flake.modules.nixos.udisk2 = {
+  flake.modules.nixos.udisks2 = {
     persistence.directories = [ "/var/lib/udisks2" ];
     services.udisks2.enable = true;
 

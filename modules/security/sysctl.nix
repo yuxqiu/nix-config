@@ -12,16 +12,17 @@
       # ── TTY / LDISC ──
       "dev.tty.ldisc_autoload" = 0; # Prevent line discipline autoload
 
-      # ── Filesystem hardening (NixOS defaults via systemd) ──
-      "fs.protected_fifos" = 2; # Prevent FIFO abuse
-      "fs.protected_regular" = 2; # Prevent /tmp race conditions
-      "fs.suid_dumpable" = 0; # No core dumps from SUID programs
+      # ── Filesystem hardening ──
+      # systemd's sysctl.d/50-default.conf sets protected_fifos/regular to 1
+      # (refuse O_CREAT on another user's FIFO/file in world-writable sticky
+      # directories); 2 extends that to group-writable sticky directories.
+      "fs.protected_fifos" = 2;
+      "fs.protected_regular" = 2;
+      # No core dumps from SUID programs (systemd's sysctl.d/50-coredump.conf sets 2)
+      "fs.suid_dumpable" = 0;
 
       # ── ASLR (tiny overhead, major security benefit) ──
       "kernel.randomize_va_space" = 2; # Full ASLR, incl. brk (also the kernel default without CONFIG_COMPAT_BRK)
-
-      # ── Core dumps ──
-      "kernel.core_pattern" = "|/bin/false"; # Prevent core dump files (NOT default)
 
       # ── SysRq (debug shortcut) ──
       "kernel.sysrq" = 0; # Disable SysRq key

@@ -6,7 +6,7 @@
       lib,
       ...
     }:
-    lib.mkIf (config.my.dev.languages ? c) {
+    lib.mkIf (config.dev.languages ? c) {
       programs.nixvim = {
         plugins.lsp.servers.clangd.enable = true;
         plugins.conform-nvim.settings.formatters_by_ft = {

@@ -1,6 +1,6 @@
 {
   flake.modules.homeManager.niri =
-    { pkgs, ... }:
+    { lib, pkgs, ... }:
     let
       niri-tweaks-src = pkgs.fetchFromGitHub {
         owner = "heyoeyo";
@@ -19,10 +19,25 @@
           exec python3 ${niri-tweaks-src}/niri_tilemod.py -d 5000
         '';
       };
+
+      # tilemod reads niri's outputs at startup and on ConfigLoaded only, then
+      # looks up each workspace's output with this unguarded index, which
+      # raises KeyError for a monitor plugged in later.
+      staleOutputLookup = ''all_monitor_dict[curr_wspace_dict["output"]]'';
     in
     {
-      # Run as a systemd service instead of spawn-at-startup so it auto-restarts
-      # when tilemod crashes (e.g. KeyError on monitor hotplug — upstream bug).
+      warnings =
+        lib.optional
+          (!lib.hasInfix staleOutputLookup (builtins.readFile "${niri-tweaks-src}/niri_tilemod.py"))
+          ''
+            niri-tile-to-n.nix: niri_tilemod.py no longer contains ${staleOutputLookup}.
+            If it now handles monitor hotplug, remove Restart and RestartSec from
+            systemd.user.services.niri-tile-to-n, the comment above them, staleOutputLookup
+            and this warning.
+          '';
+
+      # Run as a systemd service instead of spawn-at-startup so it restarts
+      # when tilemod crashes on monitor hotplug (staleOutputLookup above).
       # On restart it re-requests Outputs and picks up the new monitor state.
       systemd.user.services.niri-tile-to-n = {
         Unit = {

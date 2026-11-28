@@ -2,10 +2,12 @@
   flake.modules.homeManager.yaml =
     { pkgs, ... }:
     {
-      my.dev.languages.yaml = {
-        lsp = [ pkgs.yaml-language-server ];
-        formatter = pkgs.prettier;
-        linter = [ pkgs.yamllint ];
+      dev.languages.yaml = {
+        packages = with pkgs; [
+          yaml-language-server
+          prettier
+          yamllint
+        ];
       };
     };
 }

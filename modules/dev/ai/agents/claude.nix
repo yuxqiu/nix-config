@@ -69,7 +69,7 @@
             };
           };
           # Ingest the shared AGENTS.md content as Claude Code's global CLAUDE.md.
-          context = config.my.agents-md.content;
+          context = config.agents-md.content;
         };
 
         agent-skills.targets.claude.enable = true;

@@ -6,10 +6,8 @@
         name = "pass-ssh";
         runtimeInputs = [ pkgs.proton-pass-cli ];
         text = ''
-          set -euo pipefail
-
           if ! pass-cli info &>/dev/null; then
-            pass-cli login || exit 1
+            pass-cli login
           fi
 
           pass-cli ssh-agent load --vault-name ssh

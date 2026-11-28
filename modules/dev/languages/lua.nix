@@ -2,9 +2,11 @@
   flake.modules.homeManager.lua =
     { pkgs, ... }:
     {
-      my.dev.languages.lua = {
-        lsp = [ pkgs.lua-language-server ];
-        formatter = pkgs.stylua;
+      dev.languages.lua = {
+        packages = with pkgs; [
+          lua-language-server
+          stylua
+        ];
       };
     };
 }

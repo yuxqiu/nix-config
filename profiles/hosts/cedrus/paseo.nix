@@ -1,27 +1,13 @@
+{ inputs, ... }:
 let
   port = 6767;
 in
 {
   flake.modules.nixos.cedrus =
-    {
-      config,
-      lib,
-      pkgs,
-      ...
-    }:
+    { config, pkgs, ... }:
     let
-      # Paseo runs on a shared node, which OpenSnitch can't tell apart from
-      # any other node program. Give it a private copy of the node the package
-      # was built with, named `paseo`, for the firewall rules below to match.
-      paseoNode = lib.getExe' pkgs.paseo.nodejs "node";
-      paseo = pkgs.runCommand "paseo-standalone" { } ''
-        install -Dm755 ${paseoNode} $out/libexec/paseo/paseo
-        mkdir -p $out/bin
-        substitute ${pkgs.paseo}/bin/paseo-server $out/bin/paseo-server \
-          --replace-fail ${paseoNode} $out/libexec/paseo/paseo
-        chmod +x $out/bin/paseo-server
-        ln -s ${pkgs.paseo}/bin/paseo $out/bin/paseo
-      '';
+      # A private node copy for the OpenSnitch rules below to match.
+      paseo = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.paseo-standalone;
       paseoBin = "${paseo}/libexec/paseo/paseo";
     in
     {

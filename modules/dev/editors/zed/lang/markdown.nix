@@ -3,7 +3,7 @@
     { config, lib, ... }:
     {
       programs.zed-editor = {
-        extensions = lib.mkIf (config.my.dev.languages ? markdown) [ "markdown-oxide" ];
+        extensions = lib.mkIf (config.dev.languages ? markdown) [ "markdown-oxide" ];
       };
     };
 }

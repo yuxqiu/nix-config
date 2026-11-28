@@ -6,7 +6,7 @@
       lib,
       ...
     }:
-    lib.mkIf (config.my.dev.languages ? typst) {
+    lib.mkIf (config.dev.languages ? typst) {
       programs.nixvim = {
         extraPlugins = with pkgs.vimPlugins; [ typst-vim ];
 

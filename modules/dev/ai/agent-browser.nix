@@ -15,7 +15,7 @@ _: {
       agentBrowser = pkgs.symlinkJoin {
         name = "agent-browser";
         paths = [ pkgs.agent-browser ];
-        buildInputs = [ pkgs.makeWrapper ];
+        nativeBuildInputs = [ pkgs.makeWrapper ];
         postBuild = ''
           wrapProgram $out/bin/agent-browser \
             --set AGENT_BROWSER_EXECUTABLE_PATH ${headless-shell}
@@ -23,10 +23,7 @@ _: {
       };
     in
     {
-      home.packages = [
-        agentBrowser
-        pkgs.chromium
-      ];
+      home.packages = [ agentBrowser ];
 
       programs.agent-skills = {
         sources.agent-browser = {

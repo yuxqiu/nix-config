@@ -7,7 +7,7 @@
       ...
     }:
     {
-      programs.vscode.profiles.default.extensions = lib.mkIf (config.my.dev.languages ? bash) (
+      programs.vscode.profiles.default.extensions = lib.mkIf (config.dev.languages ? bash) (
         with pkgs.vscode-marketplace; [ remisa.shellman ]
       );
     };

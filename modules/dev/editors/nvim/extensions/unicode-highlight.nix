@@ -3,7 +3,8 @@
   flake.modules.homeManager.nvim =
     { pkgs, ... }:
     let
-      unicode-highlight-nvim = pkgs.callPackage (inputs.self + /packages/unicode-highlight-nvim.nix) { };
+      unicode-highlight-nvim =
+        inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.unicode-highlight-nvim;
     in
     {
       programs.nixvim.extraPlugins = [

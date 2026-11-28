@@ -2,7 +2,6 @@
   flake.modules.homeManager.zsh =
     {
       config,
-      lib,
       pkgs,
       ...
     }:
@@ -36,10 +35,10 @@
         };
 
         # Aliases
-        shellAliases = lib.mkMerge [
-          { sudo = "sudo "; }
-          (lib.mkIf pkgs.stdenv.hostPlatform.isLinux { open = "${pkgs.xdg-utils}/bin/xdg-open"; })
-        ];
+        shellAliases = {
+          sudo = "sudo ";
+          open = "${pkgs.xdg-utils}/bin/xdg-open";
+        };
 
         siteFunctions = {
           gc-pip = ''
@@ -59,19 +58,10 @@
             gc-nix
           '';
           gc-cache = "${pkgs.bleachbit}/bin/bleachbit";
-        }
-        // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
-          jdks = "/usr/libexec/java_home -V";
-
-          jdk = ''
-            version=$1
-            export JAVA_HOME=$(/usr/libexec/java_home -v"$version");
-            java -version
-          '';
         };
       };
 
-      # oh-my-zsh clipboard plugin dependencies (Linux only)
-      home.packages = lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.wl-clipboard ];
+      # oh-my-zsh clipboard plugin dependencies
+      home.packages = [ pkgs.wl-clipboard ];
     };
 }

@@ -2,14 +2,13 @@
   flake.modules.homeManager.c =
     { pkgs, ... }:
     {
-      my.dev.languages.c = {
-        toolchain = with pkgs; [
+      dev.languages.c = {
+        # clang-tools provides clangd, clang-format and clang-tidy.
+        packages = with pkgs; [
           clang
           cmake
+          clang-tools
         ];
-        lsp = [ pkgs.clang-tools ];
-        formatter = pkgs.clang-tools;
-        linter = [ pkgs.clang-tools ];
       };
     };
 }

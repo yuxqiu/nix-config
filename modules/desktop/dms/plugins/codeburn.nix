@@ -6,7 +6,7 @@
   flake.modules.homeManager.dms =
     { pkgs, ... }:
     let
-      codeburn = pkgs.callPackage (inputs.self + /packages/codeburn.nix) { };
+      codeburn = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.codeburn;
     in
     {
       # codeburn's parsed-session cache. Rebuilding it takes longer than the

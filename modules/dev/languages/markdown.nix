@@ -2,8 +2,8 @@
   flake.modules.homeManager.markdown =
     { pkgs, ... }:
     {
-      my.dev.languages.markdown = {
-        lsp = [ pkgs.markdown-oxide ];
+      dev.languages.markdown = {
+        packages = [ pkgs.markdown-oxide ];
       };
     };
 }

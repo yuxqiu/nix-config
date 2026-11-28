@@ -1,8 +1,12 @@
 {
   flake.modules.homeManager.niri =
     { pkgs, lib, ... }:
-    let
-      niri-sidebar-config = pkgs.writeText "config.toml" ''
+    {
+      home.packages = [ pkgs.niri-sidebar ];
+
+      # niri-sidebar reads $XDG_CONFIG_HOME/niri-sidebar/config.toml
+      # (dirs::config_dir in src/config.rs).
+      xdg.configFile."niri-sidebar/config.toml".text = ''
         [geometry]
         width = 550
         height = 335
@@ -19,24 +23,6 @@
         focus_peek = 70
         sticky = false
       '';
-
-      configDir = pkgs.runCommand "niri-sidebar-xdg-config" { } ''
-        mkdir -p "$out/niri-sidebar"
-        cp ${niri-sidebar-config} "$out/niri-sidebar/config.toml"
-      '';
-
-      niri-sidebar-wrapped = pkgs.symlinkJoin {
-        name = "niri-sidebar-wrapped";
-        paths = [ pkgs.niri-sidebar ];
-        buildInputs = [ pkgs.makeWrapper ];
-        postBuild = ''
-          wrapProgram "$out/bin/niri-sidebar" \
-            --set XDG_CONFIG_HOME "${configDir}"
-        '';
-      };
-    in
-    {
-      home.packages = [ niri-sidebar-wrapped ];
 
       wayland.windowManager.niri.settings = {
         binds = {

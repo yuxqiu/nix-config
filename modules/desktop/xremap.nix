@@ -12,7 +12,7 @@
     in
     {
       options.services.xremap.settings = lib.mkOption {
-        type = yaml.type;
+        inherit (yaml) type;
         description = "xremap configuration, written as its YAML config file (https://github.com/xremap/xremap#configuration).";
       };
 

@@ -7,7 +7,7 @@
       ...
     }:
     {
-      programs.vscode.profiles.default.extensions = lib.mkIf (config.my.dev.languages ? c) (
+      programs.vscode.profiles.default.extensions = lib.mkIf (config.dev.languages ? c) (
         with pkgs.vscode-marketplace;
         [
           cschlosser.doxdocgen
@@ -18,7 +18,7 @@
         ]
       );
 
-      programs.vscode.profiles.default.userSettings = lib.mkIf (config.my.dev.languages ? c) {
+      programs.vscode.profiles.default.userSettings = lib.mkIf (config.dev.languages ? c) {
         "clangd.arguments" = [
           "--background-index"
           "--compile-commands-dir=\${workspaceFolder}"

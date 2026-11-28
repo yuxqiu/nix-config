@@ -7,7 +7,7 @@
       wrappedAgentsview = pkgs.symlinkJoin {
         name = "agentsview";
         paths = [ inputs.llm-agents-nix.packages.${pkgs.stdenv.system}.agentsview ];
-        buildInputs = [ pkgs.makeWrapper ];
+        nativeBuildInputs = [ pkgs.makeWrapper ];
         postBuild = ''
           wrapProgram $out/bin/agentsview \
             --set AGENTSVIEW_TELEMETRY_ENABLED 0

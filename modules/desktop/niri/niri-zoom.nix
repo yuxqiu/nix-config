@@ -3,7 +3,7 @@
   flake.modules.homeManager.niri =
     { pkgs, lib, ... }:
     let
-      niri-zoom = pkgs.callPackage (inputs.self + /packages/niri-zoom.nix) { };
+      niri-zoom = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.niri-zoom;
       ctl = "${niri-zoom}/bin/niri-zoomctl";
       daemon = "${niri-zoom}/bin/niri-zoomd";
     in

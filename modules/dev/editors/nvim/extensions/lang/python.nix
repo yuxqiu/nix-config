@@ -6,7 +6,7 @@
       lib,
       ...
     }:
-    lib.mkIf (config.my.dev.languages ? python) {
+    lib.mkIf (config.dev.languages ? python) {
       programs.nixvim = {
         plugins.lsp.servers.basedpyright.enable = true;
         plugins.conform-nvim.settings.formatters_by_ft.python = [ "ruff_format" ];

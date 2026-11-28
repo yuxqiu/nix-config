@@ -34,7 +34,7 @@
             };
           };
           # Ingest the shared AGENTS.md content as Codex's global AGENTS.md.
-          context = config.my.agents-md.content;
+          context = config.agents-md.content;
         };
 
         agent-skills.targets.codex.enable = true;

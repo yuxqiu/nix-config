@@ -10,26 +10,11 @@
       };
 
       home.packages = with pkgs; [
-        bottom
         cargo-flamegraph
-        dig
-        duf
-        fastfetch
         ffmpeg
-        jq
-        less
-        mtr
-        openssl
         pandoc
-        rsync
-        screen
-        sqlite
-        strace
         tokei
-        tree
         typos
-        wget
-        which
         zmk-studio
       ];
     };

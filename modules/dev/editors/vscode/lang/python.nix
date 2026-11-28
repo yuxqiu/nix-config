@@ -7,10 +7,10 @@
       ...
     }:
     {
-      programs.vscode.profiles.default.extensions = lib.mkIf (config.my.dev.languages ? python) (
+      programs.vscode.profiles.default.extensions = lib.mkIf (config.dev.languages ? python) (
         with pkgs.vscode-marketplace;
         [
-          ms-python.black-formatter
+          charliermarsh.ruff
           ms-python.debugpy
           ms-python.python
           ms-python.vscode-pylance
@@ -23,7 +23,7 @@
         ]
       );
 
-      programs.vscode.profiles.default.userSettings = lib.mkIf (config.my.dev.languages ? python) {
+      programs.vscode.profiles.default.userSettings = lib.mkIf (config.dev.languages ? python) {
         "python.experiments.enabled" = false;
         "python.testing.pytestEnabled" = true;
         "python.analysis.typeCheckingMode" = "basic";
@@ -33,7 +33,7 @@
         "python.analysis.inlayHints.functionReturnTypes" = true;
         "python.terminal.activateEnvironment" = false;
         "[python]" = {
-          "editor.defaultFormatter" = "ms-python.black-formatter";
+          "editor.defaultFormatter" = "charliermarsh.ruff";
         };
         "python.analysis.completeFunctionParens" = true;
         "notebook.lineNumbers" = "on";
